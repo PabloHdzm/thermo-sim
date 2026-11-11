@@ -4,11 +4,13 @@ Thermodynamic property calculator for process streams, written in Python
 (NumPy / SciPy / pandas). It implements cubic equations of state, phase equilibrium and
 the full set of stream properties used for process design.
 
-> **Status.** Compared with DWSIM 10.2.12.0 (Peng-Robinson) on **one mixture (H2/N2/NH3)** at
-> 150 bar and a vapor fraction of 0.99, and with CoolProp for the pure-component data it is
-> built from. Agreement with DWSIM validates this implementation (same equation, constants and
-> interaction parameters), not accuracy against experiment. Other systems and conditions are
-> not covered yet; see [Known limitations](#known-limitations).
+> **Status.** Compared with DWSIM 10.2.12.0 on **one mixture (H2/N2/NH3)**: Peng-Robinson at
+> 175 temperature-pressure points and SRK at 163 points (200 to 1000 K, 1 to 200 bar, 64 of
+> them two-phase), plus a detailed single-point comparison at 150 bar, and with CoolProp for the
+> pure-component data it is built from. Agreement with DWSIM validates this implementation
+> (same equation, constants and interaction parameters), not accuracy against experiment.
+> Other systems, PRSV and equipment are not covered yet; see
+> [Known limitations](#known-limitations).
 
 ```python
 import numpy as np
@@ -33,7 +35,8 @@ feed.props.phi_v            # fugacity coefficients in the vapor phase
 
 ## Features
 
-* **Equations of state:** Peng-Robinson, SRK and RK, with interchangeable alpha functions
+* **Equations of state:** Peng-Robinson, SRK (`srk`, Graboski-Daubert kappa, and `srk72`,
+  Soave's original 1972 kappa as used by DWSIM) and RK, with interchangeable alpha functions
   (Soave/standard, Boston-Mathias, Mathias-Copeman, PRSV/iPRSV, Graboski-Daubert for H2)
   assignable per component, and ready-made presets (`METHODS`).
 * **Phase equilibrium:** Michelsen stability test, TP flash, vapor-fraction/pressure
@@ -113,11 +116,61 @@ CoolProp saturated-liquid densities), then Zc.
 
 ## Validation
 
-Compared with DWSIM 10.2.12.0, Peng-Robinson property package, H2/N2/NH3 feed
-(0.726 / 0.242 / 0.032), 150 bar, vapor fraction 0.99. The critical constants, acentric
-factors, binary interaction parameters and R = 8.314 are DWSIM's. The reference numbers and
-their provenance are in [`reference_data/dwsim/`](reference_data/dwsim) and the comparison is
-[`tests/test_dwsim_ammonia_feed.py`](tests/test_dwsim_ammonia_feed.py).
+All comparisons are against DWSIM 10.2.12.0 with a H2/N2/NH3 feed (0.726 / 0.242 / 0.032). The
+critical constants, acentric factors, binary interaction parameters and R = 8.314 are DWSIM's,
+so what is compared is the implementation. The reference numbers and their provenance are in
+[`reference_data/dwsim/`](reference_data/dwsim).
+
+### Temperature-pressure grids
+
+Stream sensitivity analyses exported from DWSIM, compared point by point with a TP flash in
+thermo-sim ([`tests/test_dwsim_grid.py`](tests/test_dwsim_grid.py); run
+`python scripts/compare_dwsim_grid.py` for the full table of differences).
+
+| | Peng-Robinson | SRK (`srk72`) |
+|---|---|---|
+| Points | 175 (32 two-phase) | 163 (32 two-phase) |
+| Range | 200 to 1000 K, 1 to 200 bar | 200 to 1000 K, 1 to 200 bar |
+| kij | DWSIM's (H2-N2 0.0711, N2-NH3 0.2193) | all zero, as DWSIM |
+| Liquid volume | `poly` | `eos` |
+
+| Largest difference over the grid | PR | SRK |
+|---|---:|---:|
+| Vapor fraction (absolute) | 1e-6 | 1e-6 |
+| Z, vapor (absolute) | 5e-6 | 5e-6 |
+| Z, liquid (relative) | 3e-6 | 3e-6 |
+| Fugacity coefficients, vapor (relative) | 5e-6 | 5e-6 |
+| Fugacity coefficients, liquid (relative) | 4e-6 | 4e-6 |
+| Mixture density (relative) | 7e-6 (single phase) | 6e-6 (all rows) |
+| Isothermal enthalpy difference, dH / (R T) | 1.3e-5 | 9e-6 |
+| Isothermal entropy difference, dS / R, single phase | 6.4e-6 | 8.5e-6 |
+
+Notes on what is compared:
+
+* Fugacity coefficients are compared to 5e-6 on the rows exported with six digits. The 32 PR rows
+  between 230 and 320 K come from a second export with three digits; they are compared at the
+  resolution of the file (6e-3 relative).
+* **Energy** is compared as X(T, P) - X(T, 1 bar). This removes the ideal-gas Cp, the formation
+  enthalpy and the different reference states of the two programs.
+* **Liquid density**: for PR the DWSIM export does not state the liquid model, so only
+  single-phase densities are compared. For SRK, DWSIM used the EOS volume and the two-phase
+  mixture density is compared as well.
+* The `srk` form of thermo-sim (Graboski-Daubert kappa) is *not* the one DWSIM uses; it differs
+  from DWSIM by up to 0.3 % in Z and 1.8 % in the vapor fugacity coefficients on this grid. Use
+  `ThermoMethod('srk72', 'std')` (preset `METHODS['SRK72']`) to reproduce DWSIM.
+* **DWSIM artifact, two-phase entropy.** In the two-phase region DWSIM's mixture entropy does
+  not satisfy dH = T dS at constant pressure (the excess is about 1.8 R per mole of liquid; it
+  appears in the 10 K rows at 100 to 200 bar), while its single-phase entropy does, to 1e-4 R.
+  thermo-sim gives a difference of about 0.05 R on those 23 points per case, which are marked
+  as expected failures. The check that shows which program is consistent does not depend on
+  DWSIM: [`tests/test_isobaric_consistency.py`](tests/test_isobaric_consistency.py) integrates
+  dH / T along isobars with thermo-sim's own flashes and finds the entropy consistent to
+  7e-8 R, in both the two-phase and the single-phase region.
+
+### Single point: flash at 150 bar
+
+Peng-Robinson, vapor fraction 0.99 at 150 bar
+([`tests/test_dwsim_ammonia_feed.py`](tests/test_dwsim_ammonia_feed.py)).
 
 | Quantity | Difference |
 |---|---:|
@@ -136,7 +189,7 @@ their provenance are in [`reference_data/dwsim/`](reference_data/dwsim) and the 
 * Liquid density: DWSIM's COSTALD gives 662.4 kg/m3; the `poly` model is 0.4 % lower and
   `rackett` 0.3 % higher. These are different correlations of the same quantity.
 * Not compared: Peneloux densities (DWSIM applies the shift to both phases, thermo-sim to the
-  liquid only) and entropy (different reference states).
+  liquid only) and absolute entropy (different reference states).
 
 ## Performance
 
@@ -152,7 +205,7 @@ machine). Each `Stream` construction runs the flash and assembles the property s
 | Polytropic compressor stage (pure H2, 20 integration steps) | 1.35 s |
 | 100 x 100 temperature-pressure grid (10 000 TP flashes) | 622 s (62 ms per flash) |
 
-This is an unoptimized pure-Python implementation. Profiling and vectorization (for example
+The benchmark script is not part of the repository. This is an unoptimized pure-Python implementation. Profiling and vectorization (for example
 with Numba) are on the roadmap.
 
 ## Project layout
@@ -177,9 +230,10 @@ src/thermo_sim/
 │   └── flash_drum.py      flash drum with saturated vapor and liquid outlets
 └── data/                  property database, critical-constant overrides
 scripts/
-└── build_db.py            builds the database from CoolProp
+├── build_db.py            builds the database from CoolProp
+└── compare_dwsim_grid.py  differences with the DWSIM grids (max / median per quantity)
 tests/                     pytest suite (EOS, equilibrium, stream, unit operations,
-                           DWSIM comparison)
+                           DWSIM single point and grids, thermodynamic consistency)
 reference_data/dwsim/      DWSIM reference results with provenance
 examples/                  runnable examples
 docs/                      fit quality of the property database
@@ -187,7 +241,8 @@ docs/                      fit quality of the property database
 
 ## Known limitations
 
-* Validation covers a limited set of systems (see above).
+* Validation covers one mixture (H2/N2/NH3) with PR and SRK. PRSV, RK and the unit operations
+  (compressors, coolers, flash drum) have no external reference yet.
 * Ideal-gas Cp is a polynomial fitted to CoolProp over 200 to 1000 K (maximum fit error
   0.11 %); outside that range it is extrapolated linearly and a warning is raised.
 * Viscosity and thermal conductivity use simple mass-weighted mixing and are not yet
