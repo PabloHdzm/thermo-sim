@@ -20,7 +20,7 @@ class AlphaModel(ABC):
     name: ClassVar[str]
     required: ClassVar[tuple[str, ...]] = ()  # per-component parameters that must be given
     optional: ClassVar[tuple[str, ...]] = ()
-    allowed_forms: ClassVar[frozenset] = frozenset({'pr', 'srk'})
+    allowed_forms: ClassVar[frozenset] = frozenset({'pr', 'srk','srk72'})
     only_components: ClassVar[frozenset | None] = None  # e.g. GD applies to H2 only
 
     @abstractmethod

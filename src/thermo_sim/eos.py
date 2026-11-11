@@ -107,6 +107,8 @@ FORMS: dict[str, EOSForm] = {
                    lambda w: 0.48508 + 1.55171 * w - 0.15613 * w**2),
     'rk':  EOSForm('rk', 1.0, 0.0, 0.42748025, 0.08664035,
                    lambda w: np.zeros_like(w)),
+    'srk72': EOSForm('srk72', 1.0, 0.0, 0.42748, 0.08664,
+                    lambda w: 0.48 + 1.574 * w - 0.176 * w**2),   # Soave 1972, as DWSIM
 }
 
 

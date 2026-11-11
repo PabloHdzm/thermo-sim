@@ -44,7 +44,7 @@ def _z_eos(eos, T, P_Pa, x, phase):
 
 class LiquidVolumeModel(ABC):
     name: ClassVar[str]
-    allowed_forms: ClassVar[frozenset] = frozenset({'pr', 'srk', 'rk'})
+    allowed_forms: ClassVar[frozenset] = frozenset({'pr', 'srk','srk72','rk'})
 
     @abstractmethod
     def molar_volume(self, eos, d: VolumeData, T: float, P_Pa: float, x) -> float: ...
@@ -61,7 +61,7 @@ class EOSLiquid(LiquidVolumeModel):
 # c_i = a (R Tc/Pc)(b - Zra_i);  V = V_EOS - sum(x_i c_i)
 PENELOUX = {'srk': (0.40768, 0.29441),     # Peneloux et al. 1982
             'pr':  (0.50033, 0.25969)}     # Jhaveri-Youngren 1988
-
+PENELOUX['srk72'] = PENELOUX['srk']
 
 class EOSPeneloux(EOSLiquid):
     """EOS liquid root with volume translation.
@@ -69,7 +69,7 @@ class EOSPeneloux(EOSLiquid):
     Only the volume is shifted; H, S and fugacities are left untouched.
     """
     name = 'eos_peneloux'
-    allowed_forms = frozenset(PENELOUX)
+    allowed_forms: ClassVar[frozenset] = frozenset({'pr', 'srk', 'srk72'})
 
     def shift(self, eos, d, x):
         a, b = PENELOUX[eos.form.name]

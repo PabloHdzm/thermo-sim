@@ -89,6 +89,7 @@ class ThermoMethod:
 # Presets
 METHODS: dict[str, ThermoMethod] = {k: replace(v, name=k) for k, v in {
     'STD-SRK':   ThermoMethod('srk', 'std'),
+    'SRK72':     ThermoMethod('srk72', 'std'),
     'SRK-BM':    ThermoMethod('srk', 'bm'),
     'PR':        ThermoMethod('pr', 'std'),
     'PR-BM':     ThermoMethod('pr', 'bm'),
