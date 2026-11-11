@@ -132,7 +132,7 @@ thermo-sim ([`tests/test_dwsim_grid.py`](tests/test_dwsim_grid.py); run
 | Points | 175 (32 two-phase) | 163 (32 two-phase) |
 | Range | 200 to 1000 K, 1 to 200 bar | 200 to 1000 K, 1 to 200 bar |
 | kij | DWSIM's (H2-N2 0.0711, N2-NH3 0.2193) | all zero, as DWSIM |
-| Liquid volume | `poly` | `eos` |
+| Liquid volume | `eos` | `eos` |
 
 | Largest difference over the grid | PR | SRK |
 |---|---:|---:|
@@ -141,7 +141,7 @@ thermo-sim ([`tests/test_dwsim_grid.py`](tests/test_dwsim_grid.py); run
 | Z, liquid (relative) | 3e-6 | 3e-6 |
 | Fugacity coefficients, vapor (relative) | 5e-6 | 5e-6 |
 | Fugacity coefficients, liquid (relative) | 4e-6 | 4e-6 |
-| Mixture density (relative) | 7e-6 (single phase) | 6e-6 (all rows) |
+| Mixture density (relative) | 7e-6 (all rows) | 6e-6 (all rows) |
 | Isothermal enthalpy difference, dH / (R T) | 1.3e-5 | 9e-6 |
 | Isothermal entropy difference, dS / R, single phase | 6.4e-6 | 8.5e-6 |
 
@@ -152,9 +152,8 @@ Notes on what is compared:
   resolution of the file (6e-3 relative).
 * **Energy** is compared as X(T, P) - X(T, 1 bar). This removes the ideal-gas Cp, the formation
   enthalpy and the different reference states of the two programs.
-* **Liquid density**: for PR the DWSIM export does not state the liquid model, so only
-  single-phase densities are compared. For SRK, DWSIM used the EOS volume and the two-phase
-  mixture density is compared as well.
+* **Liquid density**: in both grids DWSIM used the EOS molar volume (no Peneloux), so the
+  two-phase mixture density is compared as well, with thermo-sim's `eos` liquid-volume model.
 * The `srk` form of thermo-sim (Graboski-Daubert kappa) is *not* the one DWSIM uses; it differs
   from DWSIM by up to 0.3 % in Z and 1.8 % in the vapor fugacity coefficients on this grid. Use
   `ThermoMethod('srk72', 'std')` (preset `METHODS['SRK72']`) to reproduce DWSIM.

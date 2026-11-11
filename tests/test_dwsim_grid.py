@@ -20,7 +20,7 @@ TOL_Z = 1e-5            # Z vapor, absolute (PR observed 5e-6)
 TOL_PHI = 1e-5          # fugacity coefficients, relative, 6 printed digits (PR observed 5e-6)
 TOL_PHI_3DIG = 6e-3     # PR rows exported with 3 digits (refined block): resolution is 5e-3
 TOL_REL_ZL = 1e-5       # PR observed 3e-6
-TOL_RHO = 2e-5          # mixture density, relative (PR observed 7e-6)
+TOL_RHO = 2e-5          # mixture density, relative (observed 7e-6 PR, 6e-6 SRK)
 TOL_DH = 3e-5           # |dH| / (R T) (PR observed 1.3e-5)
 TOL_DS_1PH = 3e-5       # |dS| / R, single-phase rows (observed 8.5e-6 SRK, 6.4e-6 PR)
 

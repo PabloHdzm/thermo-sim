@@ -27,8 +27,8 @@ R = META['meta']['R_J_per_mol_K']                # 8.314, as DWSIM
 SPECIES = ['H2', 'N2', 'NH3']
 
 CASES = {
-    'pr':  dict(csv='ammonia_feed_grid.csv', base='PR', eos=None, liquid_volume='poly',
-                kij=np.array(INP['kij']), density_two_phase=False),
+    'pr':  dict(csv='ammonia_feed_grid.csv', base='PR', eos=None, liquid_volume='eos',
+                kij=np.array(INP['kij']), density_two_phase=True),
     'srk': dict(csv='ammonia_feed_grid_srk.csv', base='STD-SRK', eos='srk72',
                 liquid_volume='eos', kij=np.zeros((3, 3)), density_two_phase=True),
 }
