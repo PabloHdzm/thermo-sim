@@ -1,0 +1,13 @@
+Component,hf_298_k,gf_298_k,state_convention,source,verified
+Water,-241.83,-228.58,ideal gas,NIST-JANAF,TRUE
+Methanol,-201,-162.3,ideal gas,"NIST Chemistry WebBook (dHf, S); dGf computed",TRUE
+Ethanol,-234.8,-168.17,ideal gas,"NIST Chemistry WebBook (dHf, S); dGf computed",TRUE
+Benzene,82.9,129.8,ideal gas,"NIST Chemistry WebBook (dHf, S); dGf computed",TRUE
+Toluene,50.1,122.33,ideal gas,"NIST Chemistry WebBook (dHf, S); dGf computed",TRUE
+Acetone,-216.7,-152.2,ideal gas,"NIST Chemistry WebBook (dHf, S); dGf computed",TRUE
+CarbonDioxide,-393.51,-394.39,ideal gas,NIST-JANAF,TRUE
+Nitrogen,0,0,ideal gas,element in standard state,TRUE
+Oxygen,0,0,ideal gas,element in standard state,TRUE
+Hydrogen,0,0,ideal gas,element in standard state,TRUE
+Methane,-74.87,-50.77,ideal gas,"NIST Chemistry WebBook (dHf, S); dGf computed",TRUE
+Ammonia,-45.9,-16.37,ideal gas,NIST-JANAF,TRUE

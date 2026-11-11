@@ -1,0 +1,117 @@
+Component,property,T_min,T_max,max_err_%,mean_err_%
+Water,Cp_gas,273.2845,999.8755,0.0073,0.0032
+Water,Cp_liq,273.66,582.3864,2.9568,0.6133
+Water,Hvap,273.66,634.1541,3.7077,1.1718
+Water,Psat (Antoine),273.66,634.1541,0.1614,0.0241
+Water,"Rho_liq (A,B,n)",273.66,582.3864,2.2146,0.5428
+Water,Rho_liq (Rackett),273.66,582.3864,7.5159,2.9035
+Water,Visc_gas,273.16,1000.0,0.8383,0.1894
+Water,Visc_liq,273.66,582.3864,3.7005,0.6297
+Water,k_gas,273.16,1000.0,1.8917,0.5464
+Water,k_liq,273.66,582.3864,2.6092,0.6245
+Methanol,Cp_gas,200.1371,999.8629,0.1022,0.0381
+Methanol,Cp_liq,216.1194,462.0416,2.5277,0.5025
+Methanol,Hvap,216.1194,503.1119,6.6524,1.7603
+Methanol,Psat (Antoine),216.1194,503.1119,0.2813,0.0302
+Methanol,"Rho_liq (A,B,n)",216.1194,462.0416,0.555,0.1881
+Methanol,Rho_liq (Rackett),216.1194,462.0416,4.802,2.2299
+Methanol,Visc_gas,250.0,620.0,0.0091,0.0023
+Methanol,Visc_liq,216.1194,462.0416,1.5116,0.4593
+Methanol,k_gas,250.0,620.0,1.0148,0.3884
+Methanol,k_liq,216.1194,462.0416,0.2517,0.0644
+Ethanol,Cp_gas,200.1371,999.8629,0.065,0.0205
+Ethanol,Cp_liq,216.6779,463.2384,0.329,0.0971
+Ethanol,Hvap,216.6779,504.4151,3.711,1.6453
+Ethanol,Psat (Antoine),216.6779,504.4151,0.2788,0.0449
+Ethanol,"Rho_liq (A,B,n)",216.6779,463.2384,0.4692,0.1429
+Ethanol,Rho_liq (Rackett),216.6779,463.2384,4.1334,2.1611
+Ethanol,Visc_gas,250.0,650.0,0.0,0.0
+Ethanol,Visc_liq,216.6779,463.2384,1.5368,0.5864
+Ethanol,k_gas,250.0,650.0,1.9265,0.5999
+Ethanol,k_liq,216.6779,463.2384,1.5559,0.4742
+Benzene,Cp_gas,278.7976,999.8764,0.0303,0.0171
+Benzene,Cp_liq,279.174,505.8177,1.2911,0.2935
+Benzene,Hvap,279.174,550.7793,1.2785,0.2861
+Benzene,Psat (Antoine),279.174,550.7793,0.1517,0.0286
+Benzene,"Rho_liq (A,B,n)",279.174,505.8177,0.1507,0.046
+Benzene,Rho_liq (Rackett),279.174,505.8177,0.385,0.1161
+Benzene,Visc_gas,278.674,725.0,0.0122,0.0036
+Benzene,Visc_liq,279.174,505.8177,0.5256,0.1183
+Benzene,k_gas,278.674,725.0,3.1223,0.8227
+Benzene,k_liq,279.174,505.8177,0.5027,0.1377
+Toluene,Cp_gas,200.1371,999.8629,0.0164,0.0087
+Toluene,Cp_liq,249.0346,532.5742,1.3998,0.3095
+Toluene,Hvap,249.0346,579.9141,2.4954,0.5896
+Toluene,Psat (Antoine),249.0346,579.9141,0.1804,0.0319
+Toluene,"Rho_liq (A,B,n)",249.0346,532.5742,0.2198,0.0756
+Toluene,Rho_liq (Rackett),249.0346,532.5742,0.4549,0.2138
+Toluene,Visc_gas,250.0,700.0,0.0549,0.0157
+Toluene,Visc_liq,249.0346,532.5742,1.3367,0.2912
+Toluene,k_gas,250.0,700.0,2.5463,0.7925
+Toluene,k_liq,249.0346,532.5742,1.1177,0.3652
+Acetone,Cp_gas,200.1371,999.8629,0.0634,0.0177
+Acetone,Cp_liq,213.902,457.29,1.5954,0.3293
+Acetone,Hvap,213.902,497.938,0.6425,0.2616
+Acetone,Psat (Antoine),213.902,497.938,0.1513,0.0248
+Acetone,"Rho_liq (A,B,n)",213.902,457.29,0.1994,0.0613
+Acetone,Rho_liq (Rackett),213.902,457.29,1.221,0.517
+CarbonDioxide,Cp_gas,216.7262,999.8658,0.0333,0.0137
+CarbonDioxide,Cp_liq,217.092,273.7154,0.468,0.1172
+CarbonDioxide,Hvap,217.092,298.0456,0.4228,0.0765
+CarbonDioxide,Psat (Antoine),217.092,298.0456,0.029,0.0062
+CarbonDioxide,"Rho_liq (A,B,n)",217.092,273.7154,0.0124,0.0044
+CarbonDioxide,Rho_liq (Rackett),217.092,273.7154,0.3308,0.1211
+CarbonDioxide,Visc_gas,250.0,1000.0,0.1913,0.0384
+CarbonDioxide,Visc_liq,217.092,273.7154,0.1164,0.0328
+CarbonDioxide,k_gas,250.0,1000.0,2.044,0.4876
+CarbonDioxide,k_liq,217.092,273.7154,0.0825,0.0271
+Nitrogen,Cp_gas,200.1371,999.8629,0.0101,0.0044
+Nitrogen,Cp_liq,63.651,113.5728,2.6228,0.5664
+Nitrogen,Hvap,63.651,123.6682,2.8505,1.0049
+Nitrogen,Psat (Antoine),63.651,123.6682,0.0863,0.016
+Nitrogen,"Rho_liq (A,B,n)",63.651,113.5728,0.0447,0.0142
+Nitrogen,Rho_liq (Rackett),63.651,113.5728,0.4786,0.1558
+Nitrogen,Visc_gas,250.0,1000.0,0.2142,0.0588
+Nitrogen,Visc_liq,63.651,113.5728,0.8287,0.215
+Nitrogen,k_gas,250.0,1000.0,1.0323,0.2909
+Nitrogen,k_liq,63.651,113.5728,0.0666,0.024
+Oxygen,Cp_gas,200.1371,999.8629,0.0242,0.0126
+Oxygen,Cp_liq,65.4317,139.1395,3.6193,0.7257
+Oxygen,Hvap,65.4317,151.5074,4.3138,1.4047
+Oxygen,Psat (Antoine),65.4317,151.5074,0.1181,0.0208
+Oxygen,"Rho_liq (A,B,n)",65.4317,139.1395,0.1084,0.0356
+Oxygen,Rho_liq (Rackett),65.4317,139.1395,0.4218,0.1353
+Oxygen,Visc_gas,250.0,1000.0,0.1867,0.0522
+Oxygen,Visc_liq,65.4317,139.1395,0.8319,0.2303
+Oxygen,k_gas,250.0,1000.0,0.7784,0.2234
+Oxygen,k_liq,65.4317,139.1395,0.203,0.0602
+Methane,Cp_gas,200.1371,999.8629,0.0864,0.0364
+Methane,Cp_liq,91.1941,171.5076,2.8404,0.6052
+Methane,Hvap,91.1941,186.7527,4.1039,1.382
+Methane,Psat (Antoine),91.1941,186.7527,0.094,0.0171
+Methane,"Rho_liq (A,B,n)",91.1941,171.5076,0.035,0.0113
+Methane,Rho_liq (Rackett),91.1941,171.5076,0.1021,0.0573
+Methane,Visc_gas,250.0,625.0,0.0351,0.0101
+Methane,Visc_liq,91.1941,171.5076,0.7741,0.1891
+Methane,k_gas,250.0,625.0,0.6127,0.2236
+Methane,k_liq,91.1941,171.5076,0.4512,0.1034
+Ammonia,Cp_gas,200.1371,999.8629,0.0212,0.0095
+Ammonia,Cp_liq,195.995,365.004,2.2908,0.4748
+Ammonia,Hvap,195.995,397.4488,1.8885,0.7481
+Ammonia,Psat (Antoine),195.995,397.4488,0.0914,0.0135
+Ammonia,"Rho_liq (A,B,n)",195.995,365.004,0.0548,0.011
+Ammonia,Rho_liq (Rackett),195.995,365.004,0.3759,0.2011
+Ammonia,Visc_gas,250.0,725.0,0.3561,0.0964
+Ammonia,Visc_liq,195.995,365.004,0.1334,0.0441
+Ammonia,k_gas,250.0,725.0,8.6304,2.9693
+Ammonia,k_liq,195.995,365.004,0.5131,0.1536
+Hydrogen,Cp_gas,200.1371,999.8629,0.0217,0.0128
+Hydrogen,Cp_liq,14.457,29.8299,6.3201,1.3165
+Hydrogen,Hvap,14.457,32.4814,12.8707,3.8979
+Hydrogen,Psat (Antoine),14.457,32.4814,0.0915,0.0181
+Hydrogen,"Rho_liq (A,B,n)",14.457,29.8299,0.1546,0.0514
+Hydrogen,Rho_liq (Rackett),14.457,29.8299,2.5783,1.2388
+Hydrogen,Visc_gas,250.0,1000.0,0.1721,0.0434
+Hydrogen,Visc_liq,14.457,29.8299,0.8037,0.1915
+Hydrogen,k_gas,250.0,1000.0,2.0599,0.5179
+Hydrogen,k_liq,14.457,29.8299,0.363,0.0777

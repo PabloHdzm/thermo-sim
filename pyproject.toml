@@ -1,0 +1,28 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "thermo-sim"
+version = "0.1.0"
+description = "Cubic EOS and stream property calculator"
+requires-python = ">=3.10"
+license = "MIT"
+authors = [
+    { name = "PabloHdzm" }
+]
+dependencies = ["numpy", "scipy", "pandas"]
+
+[project.optional-dependencies]
+dev = ["pytest"]
+db = ["CoolProp"]
+sweep = ["matplotlib", "openpyxl"]
+
+[project.urls]
+Repository = "https://github.com/PabloHdzm/thermo-sim-public"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+thermo_sim = ["data/*.csv"]

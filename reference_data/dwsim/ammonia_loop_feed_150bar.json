@@ -1,0 +1,64 @@
+{
+  "meta": {
+    "case": "H2/N2/NH3 reactor-loop feed, 150 bar, vapor fraction 0.99 (VF-P flash)",
+    "source": "DWSIM 10.2.12.0, Master Property Table",
+    "property_package": "Peng-Robinson",
+    "flash_algorithm": "Inside-Out",
+    "R_J_per_mol_K": 8.314,
+    "notes": [
+      "Fugacity coefficients are printed by DWSIM divided by 1e5 (column unit says bar); values below are as printed.",
+      "DWSIM 'Molar Enthalpy' excludes the enthalpy of formation (H2 = N2 = 0 at 298.15 K reference).",
+      "DWSIM reports Zra = 0 for ammonia (not set); its Rackett option then equals the plain EOS density."
+    ]
+  },
+  "components": ["hydrogen", "nitrogen", "ammonia"],
+  "inputs": {
+    "P_bar": 150.0,
+    "V_frac": 0.99,
+    "feed_mole_fractions": [0.726, 0.242, 0.032],
+    "Tref_K": 298.15,
+    "kij": [[0.0, 0.0711, 0.0],
+            [0.0711, 0.0, 0.2193],
+            [0.0, 0.2193, 0.0]],
+    "constants": {
+      "hydrogen": {"Tc": 33.19,  "Pc": 13.13,  "omega": -0.215993, "Vc": 64.147, "Zra": 0.3139},
+      "nitrogen": {"Tc": 126.2,  "Pc": 33.98,  "omega": 0.037,     "Vc": 90.1,   "Zra": 0.2906},
+      "ammonia":  {"Tc": 405.4,  "Pc": 113.53, "omega": 0.256,     "Vc": 72.47,  "Zra": 0.0}
+    },
+    "ideal_gas_cp": {
+      "form": "Cp [J/(kmol K)] = A + exp(B/T + C + D*T + E*T^2)",
+      "A": [3994.32, 29103.6, 33239.0],
+      "B": [-48.6901, -2305.95, -913.64],
+      "C": [10.3621, 11.3194, 10.802],
+      "D": [-0.000340144, -0.00100557, 0.00021047],
+      "E": [1.96033e-7, 1.7061e-7, -4.1739e-8]
+    }
+  },
+  "results": {
+    "T_K": 248.469,
+    "phase_mole_fractions": {
+      "liquid_x": [0.00584098, 0.00118522, 0.992974],
+      "vapor_y":  [0.733274, 0.244432, 0.0222936]
+    },
+    "Z_vapor": 1.03401,
+    "Z_liquid": 0.204138,
+    "dew_T_feed_K": 257.724,
+    "dew_T_vapor_outlet_K": 248.469,
+    "bubble_T_liquid_outlet_K": 248.471,
+    "phi_vapor_as_printed": [1.05844e-05, 9.36764e-06, 5.43725e-06],
+    "phi_liquid_as_printed": [0.0013288, 0.00193201, 1.22073e-07],
+    "phi_print_scale": 1e5,
+    "molar_enthalpy_formation_free_kJ_per_kmol": {"FEED": -1943.48, "LIQUID": -24686.2, "VAPOR": -1713.77},
+    "density_kg_per_m3": {
+      "eos":      {"FEED": 62.2105, "LIQUID": 603.12,  "VAPOR": 61.1318},
+      "rackett":  {"FEED": 62.2105, "LIQUID": 603.12,  "VAPOR": 61.1318},
+      "costald":  {"FEED": 62.2215, "LIQUID": 662.371, "VAPOR": 61.1318},
+      "peneloux": {"FEED": 61.721,  "LIQUID": 603.003, "VAPOR": 60.6499}
+    }
+  },
+  "not_compared": [
+    "Peneloux densities: DWSIM applies the volume shift to both phases (Z_vapor 1.04222); thermo-sim shifts the liquid only.",
+    "Molar entropy: the reference states differ.",
+    "Feed bubble temperature (DWSIM 69.58 K): not a physical value for this H2-rich feed."
+  ]
+}
