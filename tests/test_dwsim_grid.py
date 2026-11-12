@@ -2,6 +2,7 @@
 
 pr : Peng-Robinson, 175 points (32 two-phase)           reference_data/dwsim/ammonia_feed_grid.csv
 srk: Soave 1972 SRK ('srk72'), kij = 0, 163 points (32 two-phase)  ..._srk.csv
+prsv2: PRSV2 with DWSIM's kappa values, kij = 0, 107 reproducible points  ..._prsv2.csv
 
 The equation of state, constants, kij and R are DWSIM's, so the comparison isolates the
 implementation. Tolerances come from the observed differences (PR: first run of
@@ -21,7 +22,7 @@ TOL_PHI = 1e-5          # fugacity coefficients, relative, 6 printed digits (PR 
 TOL_PHI_3DIG = 6e-3     # PR rows exported with 3 digits (refined block): resolution is 5e-3
 TOL_REL_ZL = 1e-5       # PR observed 3e-6
 TOL_RHO = 2e-5          # mixture density, relative (observed 7e-6 PR, 6e-6 SRK)
-TOL_DH = 3e-5           # |dH| / (R T) (PR observed 1.3e-5)
+TOL_DH = 3e-5           # |dH| / (R T) (observed 1.3e-5 PR, 9e-6 SRK)
 TOL_DS_1PH = 3e-5       # |dS| / R, single-phase rows (observed 8.5e-6 SRK, 6.4e-6 PR)
 
 ALL = [(c, r) for c, g in GRIDS.items() for r in g.itertuples()]
@@ -46,48 +47,52 @@ def _eq(case, r):
     return _cache[k]
 
 
-def _tol_phi(r):
-    return TOL_PHI if r.phi_digits >= 6 else TOL_PHI_3DIG
+def _sc(case):
+    return CASES[case]['tol_scale']
+
+
+def _tol_phi(r, case):
+    return (TOL_PHI if r.phi_digits >= 6 else TOL_PHI_3DIG) * _sc(case)
 
 
 @pytest.mark.parametrize('case,r', ALL, ids=_ids(ALL))
 def test_phase_split_and_vapor_compressibility(case, r):
     d = _eq(case, r)
-    assert d['dV'] == pytest.approx(0.0, abs=TOL_V)
-    assert d['dZv'] == pytest.approx(0.0, abs=TOL_Z)
+    assert d['dV'] == pytest.approx(0.0, abs=TOL_V * _sc(case))
+    assert d['dZv'] == pytest.approx(0.0, abs=TOL_Z * _sc(case))
 
 
 @pytest.mark.parametrize('case,r', ALL, ids=_ids(ALL))
 def test_vapor_fugacity_coefficients(case, r):
     d = _eq(case, r)
     for n in ('H2', 'N2', 'NH3'):
-        assert d['rel_phi_v_' + n] == pytest.approx(0.0, abs=_tol_phi(r)), n
+        assert d['rel_phi_v_' + n] == pytest.approx(0.0, abs=_tol_phi(r, case)), n
 
 
 @pytest.mark.parametrize('case,r', TWO, ids=_ids(TWO))
 def test_liquid_phase_two_phase_rows(case, r):
     d = _eq(case, r)
-    assert d['rel_Zl'] == pytest.approx(0.0, abs=TOL_REL_ZL)
+    assert d['rel_Zl'] == pytest.approx(0.0, abs=TOL_REL_ZL * _sc(case))
     for n in ('H2', 'N2', 'NH3'):
-        assert d['rel_phi_l_' + n] == pytest.approx(0.0, abs=_tol_phi(r)), n
+        assert d['rel_phi_l_' + n] == pytest.approx(0.0, abs=_tol_phi(r, case)), n
 
 
 @pytest.mark.parametrize('case,r', ONE_RHO, ids=_ids(ONE_RHO))
 def test_mixture_density(case, r):
     """Single-phase rows always; two-phase rows only where DWSIM used the EOS liquid volume."""
-    assert _eq(case, r)['rel_rho'] == pytest.approx(0.0, abs=TOL_RHO)
+    assert _eq(case, r)['rel_rho'] == pytest.approx(0.0, abs=TOL_RHO * _sc(case))
 
 
 @pytest.mark.parametrize('case,r', EALL, ids=_ids(EALL))
 def test_isothermal_enthalpy_differences(case, r):
     d = energy_diffs(GRIDS[case].loc[r.Index], case)
-    assert d['dH_RT'] == pytest.approx(0.0, abs=TOL_DH)
+    assert d['dH_RT'] == pytest.approx(0.0, abs=TOL_DH * _sc(case))
 
 
 @pytest.mark.parametrize('case,r', E_ONE, ids=_ids(E_ONE))
 def test_isothermal_entropy_differences_single_phase(case, r):
     d = energy_diffs(GRIDS[case].loc[r.Index], case)
-    assert d['dS_R'] == pytest.approx(0.0, abs=TOL_DS_1PH)
+    assert d['dS_R'] == pytest.approx(0.0, abs=TOL_DS_1PH * _sc(case))
 
 
 @pytest.mark.xfail(strict=False, reason=(
@@ -97,4 +102,4 @@ def test_isothermal_entropy_differences_single_phase(case, r):
 @pytest.mark.parametrize('case,r', E_TWO, ids=_ids(E_TWO))
 def test_isothermal_entropy_differences_two_phase(case, r):
     d = energy_diffs(GRIDS[case].loc[r.Index], case)
-    assert d['dS_R'] == pytest.approx(0.0, abs=TOL_DS_1PH)
+    assert d['dS_R'] == pytest.approx(0.0, abs=TOL_DS_1PH * _sc(case))

@@ -1,0 +1,13 @@
+component,T_K,P_bar,phase,Z,phi,model,source,rho_kg_m3
+nitrogen,90,3.60415,vapor,0.89471,0.90401,prsv2,DWSIM 10.2.12.0 pure N2 at its saturation pressure,
+nitrogen,100,7.77979,vapor,0.815639,0.842834,prsv2,DWSIM 10.2.12.0 pure N2 at its saturation pressure,
+nitrogen,110,14.6613,vapor,0.705912,0.771528,prsv2,DWSIM 10.2.12.0 pure N2 at its saturation pressure,
+hydrogen,100,50,vapor,0.953829,0.936372,pr,DWSIM 10.2.12.0 pure H2 (PRSV2 package; kappa1-3 = 0 -> PR alpha),
+hydrogen,200,50,vapor,1.01136,1.00839,pr,DWSIM 10.2.12.0 pure H2 (PRSV2 package; kappa1-3 = 0 -> PR alpha),
+hydrogen,300,50,vapor,1.01584,1.01499,pr,DWSIM 10.2.12.0 pure H2 (PRSV2 package; kappa1-3 = 0 -> PR alpha),
+hydrogen,100,150,vapor,1.03962,0.911386,pr,DWSIM 10.2.12.0 pure H2 (PRSV2 package; kappa1-3 = 0 -> PR alpha),
+hydrogen,200,150,vapor,1.06248,1.042,pr,DWSIM 10.2.12.0 pure H2 (PRSV2 package; kappa1-3 = 0 -> PR alpha),
+hydrogen,300,150,vapor,1.05699,1.05114,pr,DWSIM 10.2.12.0 pure H2 (PRSV2 package; kappa1-3 = 0 -> PR alpha),
+nitrogen,90,3.60415,liquid,0.0161666,0.904782,prsv2,DWSIM 10.2.12.0 pure N2 liquid at the same state (DWSIM P is not the EOS saturation pressure),834.635
+nitrogen,100,7.77979,liquid,0.0346424,0.845065,prsv2,DWSIM 10.2.12.0 pure N2 liquid at the same state (DWSIM P is not the EOS saturation pressure),756.687
+nitrogen,110,14.6613,liquid,0.0684108,0.774475,prsv2,DWSIM 10.2.12.0 pure N2 liquid at the same state (DWSIM P is not the EOS saturation pressure),656.462

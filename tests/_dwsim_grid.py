@@ -4,6 +4,7 @@ Cases
 -----
 pr  : Peng-Robinson, DWSIM kij, liquid volume 'poly'         -> ammonia_feed_grid.csv
 srk : Soave 1972 SRK ('srk72'), kij = 0, liquid volume 'eos' -> ammonia_feed_grid_srk.csv
+prsv2: PRSV2 (H2 with the plain PR alpha), kij = 0, 'eos'   -> ammonia_feed_grid_prsv2.csv
 
 Used by tests/test_dwsim_grid.py, tests/test_isobaric_consistency.py and
 scripts/compare_dwsim_grid.py. Reference: reference_data/dwsim/README.md.
@@ -26,13 +27,36 @@ NAMES = META['components']                       # hydrogen, nitrogen, ammonia
 R = META['meta']['R_J_per_mol_K']                # 8.314, as DWSIM
 SPECIES = ['H2', 'N2', 'NH3']
 
+# PRSV2 parameters shown by DWSIM for N2 and NH3. DWSIM displays kappa1(N2) = 0.02; the value that
+# reproduces its numbers is 0.01996 (Stryjek and Vera). H2 has kappa1-3 = 0 and behaves in DWSIM
+# like the plain Peng-Robinson alpha, hence the 'std' override.
+PRSV2_PARAMS = {'kappa1': {'nitrogen': 0.01996, 'ammonia': 0.001},
+                'kappa2': {'nitrogen': 0.3162, 'ammonia': -0.1265},
+                'kappa3': {'nitrogen': 0.5350, 'ammonia': 0.51}}
+
+# tol_scale multiplies the tolerances of test_dwsim_grid.py (PRSV2: kappa values given with 3 to 4
+# digits, and the N2 alpha is strongly extrapolated above Tr = 1).
 CASES = {
     'pr':  dict(csv='ammonia_feed_grid.csv', base='PR', eos=None, liquid_volume='eos',
-                kij=np.array(INP['kij']), density_two_phase=True),
+                kij=np.array(INP['kij']), density_two_phase=True, tol_scale=1.0),
     'srk': dict(csv='ammonia_feed_grid_srk.csv', base='STD-SRK', eos='srk72',
-                liquid_volume='eos', kij=np.zeros((3, 3)), density_two_phase=True),
+                liquid_volume='eos', kij=np.zeros((3, 3)), density_two_phase=True,
+                tol_scale=1.0),
+    'prsv2': dict(csv='ammonia_feed_grid_prsv2.csv', base='PR', eos=None, liquid_volume='eos',
+                  kij=np.zeros((3, 3)), density_two_phase=True, tol_scale=30.0, energy=False,
+                  extra=dict(alpha='prsv2', alpha_overrides={'hydrogen': 'std'},
+                             alpha_params=PRSV2_PARAMS)),
 }
-GRIDS = {k: pd.read_csv(REF_DIR / v['csv']) for k, v in CASES.items()}
+
+
+def _load(case):
+    g = pd.read_csv(REF_DIR / CASES[case]['csv'])
+    if 'status' in g:                    # keep only the rows an independent EOS code reproduces
+        g = g[g.status == 'reproduced']
+    return g.reset_index(drop=True)
+
+
+GRIDS = {k: _load(k) for k in CASES}
 GRID = GRIDS['pr']                               # kept for the PR-only consistency test
 
 
@@ -41,6 +65,7 @@ def _method(case):
     kw = dict(constants_user=INP['constants'], R=R, liquid_volume=c['liquid_volume'])
     if c['eos']:
         kw['eos'] = c['eos']
+    kw.update(c.get('extra', {}))
     return METHODS[c['base']].but(**kw)
 
 
@@ -73,7 +98,9 @@ def equilibrium_diffs(r, case='pr'):
         out['rel_phi_v_' + n] = phi_v[i] / r['phi_v_' + n] - 1.0
     if two:
         out['rel_Zl'] = p.Z_liq_eos / r.Z_liquid - 1.0
-        phi_l = np.asarray(p.phi_l, float)
+        phi_l = np.atleast_1d(np.asarray(p.phi_l, float))
+        if phi_l.size != len(SPECIES):         # thermo-sim found a single phase: no liquid values
+            phi_l = np.full(len(SPECIES), np.nan)
         for i, n in enumerate(SPECIES):
             out['rel_phi_l_' + n] = phi_l[i] / r['phi_l_' + n] - 1.0
     if (not two) or CASES[case]['density_two_phase']:
@@ -82,8 +109,12 @@ def equilibrium_diffs(r, case='pr'):
 
 
 def energy_rows(case='pr'):
-    """Rows with a 1-bar row at the same T (needed for the isothermal differences)."""
+    """Rows with a 1-bar row at the same T (needed for the isothermal differences).
+
+    Empty for cases whose DWSIM energies are not derived consistently from the EOS (PRSV2)."""
     g = GRIDS[case]
+    if not CASES[case].get('energy', True):
+        return g.iloc[0:0]
     has1 = set(g.loc[g.P_bar == 1, 'T_K'])
     return g[g.T_K.isin(has1) & (g.P_bar > 1)]
 

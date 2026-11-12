@@ -32,11 +32,12 @@ def run_case(case, out=None):
         except Exception as e:
             d['error'] = f'{type(e).__name__}: {e}'
         en.append(d)
-    en = pd.DataFrame(en).set_index('id')
+    en = pd.DataFrame(en)
+    en = en.set_index('id') if len(en) else pd.DataFrame(columns=['dH_RT', 'dS_R'])
     allr = eq.join(en, rsuffix='_en')
 
     pd.set_option('display.width', 160)
-    cols = [c for c in allr.columns if c.startswith(('d', 'rel_'))]
+    cols = [c for c in allr.columns if c.startswith(('d', 'rel_')) and allr[c].notna().any()]
     print(f'\n=== {case}: {len(eq)} rows ({int((eq.n_phases == 2).sum())} two-phase), '
           f'{len(en)} with energy ===')
     summ = pd.DataFrame({c: [allr[c].abs().max(), allr[c].abs().median(), allr[c].abs().idxmax()]

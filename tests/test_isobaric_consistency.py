@@ -10,14 +10,17 @@ ranges are tested separately. This exposes any entropy term that is inconsistent
 enthalpy, for instance the per-phase mixing term or the liquid ideal-gas reference. DWSIM fails
 this test in its two-phase region (about 1.8 R per mole of liquid), see reference_data/dwsim/README.md.
 
-Tolerance: 1e-6 R (observed 7e-8).
+Tolerance: 1e-6 R (observed 7e-8 for PR). The PRSV2 case matters for a different reason: DWSIM
+differentiates its PRSV2 alpha with kappa frozen, so its energies are not comparable; thermo-sim
+differentiates the full alpha(T) and this test shows that the result is consistent.
 """
 import numpy as np
 import pytest
 
 from _dwsim_grid import GRID, R, stream
 
-TOL = 1e-6          # |dS_flash - dS_integral| / R (observed max 7e-8)
+TOL = 1e-6          # |dS_flash - dS_integral| / R (observed 7e-8, PR)
+TOL_PRSV2 = 1e-8    # observed 3e-10 to 3e-9
 N = 16              # Simpson intervals (even)
 
 
@@ -25,10 +28,10 @@ def _dew(P):
     return float(GRID.loc[GRID.P_bar == P, 'T_dew_K'].iloc[0])
 
 
-def consistency_error(P, T1, T2, n=N):
+def consistency_error(P, T1, T2, n=N, case='pr'):
     """(S2 - S1 from the flashes) - (integral dH/T), in units of R."""
     T = np.linspace(T1, T2, n + 1)
-    pr = [stream(t, P).props for t in T]
+    pr = [stream(t, P, case).props for t in T]
     H = np.array([p.H_total_mix for p in pr])
     S = np.array([p.S_total_mix for p in pr])
     h = (T2 - T1) / n
@@ -48,3 +51,14 @@ def test_entropy_consistent_with_enthalpy_in_the_two_phase_region(P):
 def test_entropy_consistent_with_enthalpy_in_the_single_phase_region(P):
     T1 = max(_dew(P) + 10.0, 300.0) if P > 1 else 300.0
     assert consistency_error(P, T1, T1 + 100.0) == pytest.approx(0.0, abs=TOL)
+
+
+# PRSV2 (DWSIM kappa values, H2 with the PR alpha): alpha(T) is strongly curved for N2 (Tr > 1),
+# so the check also tests the finite-difference da/dT of the full alpha. Stable ranges only.
+@pytest.mark.parametrize('P', [50, 100, 200])
+def test_prsv2_entropy_consistent_with_enthalpy_in_the_two_phase_region(P):
+    assert consistency_error(P, 200.0, 230.0, case='prsv2') == pytest.approx(0.0, abs=TOL_PRSV2)
+
+@pytest.mark.parametrize('P', [50, 100, 200])
+def test_prsv2_entropy_consistent_with_enthalpy_in_the_single_phase_region(P):
+    assert consistency_error(P, 270.0, 300.0, case='prsv2') == pytest.approx(0.0, abs=TOL_PRSV2)

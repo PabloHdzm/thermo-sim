@@ -67,3 +67,67 @@ Soave-1972 kappa reproduces the file to 5e-7 (V), 4.5e-6 (Z), 2.5e-6 (Z liquid),
 2.7e-6 (phi liquid) and 3e-6 (two-phase mixture density from the EOS volumes). The thermo-sim
 default `srk` form (Graboski-Daubert kappa) differs from DWSIM by up to 0.3 % in Z and 1.8 % in
 phi, which is why the `srk72` form exists.
+
+# ammonia_feed_grid_prsv2.csv
+
+Same feed, DWSIM 10.2.12.0, **PRSV2** package, same critical constants and R = 8.314, all kij = 0
+(DWSIM reports no interaction parameters), liquid density from the EOS. 135 points (T = 200-1000 K,
+P = 1-200 bar plus the 230-320 K block). DWSIM shows these PRSV2 parameters:
+
+| | kappa1 | kappa2 | kappa3 |
+|---|---:|---:|---:|
+| H2 | 0 | 0 | 0 |
+| N2 | 0.02 | 0.3162 | 0.5350 |
+| NH3 | 0.001 | -0.1265 | 0.51 |
+
+What reproduces the DWSIM numbers (checked with an independent numpy implementation and
+confirmed in the DWSIM 10.2.12.0 PRSV2 source):
+
+* PRSV2 alpha, kappa = kappa0 + [k1 + k2 (k3 - Tr)(1 - sqrt(Tr))](1 + sqrt(Tr))(0.7 - Tr), with
+  the Stryjek-Vera kappa0 polynomial (cubic coefficient 0.0196544 in DWSIM), **applied at every
+  Tr** (N2 has Tr > 1 over the whole grid; dropping the correction above Tr = 1 gives 3 % errors
+  in Z).
+* **DWSIM uses this form only if kappa1 * kappa2 * kappa3 is nonzero.** Otherwise it falls back
+  to the plain Peng-Robinson alpha, kappa = 0.37464 + 1.5422 w - 0.26992 w^2 (w <= 0.491). H2 has
+  all three parameters at zero, so it follows the PR alpha (kappa = 0.02893), not kappa0 of PRSV
+  (0.04893). thermo-sim reproduces this with `alpha_overrides={'hydrogen': 'std'}`.
+* kappa1 of N2 is 0.01996 (the Stryjek-Vera value); DWSIM displays it rounded to 0.02. The pure
+  N2 runs cannot tell the two apart (both agree to the printed digits), but without the
+  correction (kappa1 = kappa2 = kappa3 = 0) they differ by 1e-5 to 4e-4 in Z.
+* Mixing rule: a_ij = sqrt(a_i a_j) (1 - x_i kij - x_j kij2) (Margules form), which with
+  kij = kij2 = 0 is the standard quadratic rule.
+
+Pure components (`ammonia_pure_prsv2.csv`): H2 at 100, 200, 300 K and 50, 150 bar (PR alpha with
+1.5422) agrees with DWSIM to 5e-6 in Z and 1e-5 in phi; N2 vapor at 90, 100, 110 K on the DWSIM
+saturation pressures (PRSV2) agrees to 2e-6; the N2 liquid root at the same states agrees to 3e-6 in Z, 2e-6 in phi and 2e-7 in density. DWSIM's own phi_l/phi_v at those points is 1.00085, 1.00265 and 1.00382 (thermo-sim: the same), so its pressures are not the EOS saturation pressure (0.1 to 0.6 % below it); the numbers match anyway, since both phases are evaluated at the same T and P. The coefficient 1.54226 (more digits) is worse, and
+kappa0 alone (no override) is off by 0.1 to 0.8 % for H2.
+
+Rows are classified in the `status` column and only `reproduced` ones (95, all at T <= 400 K) are
+used by the tests:
+
+| status | rows | meaning |
+|---|---:|---|
+| reproduced | 95 | independent numpy PRSV2 flash agrees within 2e-4 (most within 1e-5) |
+| unstable_single_phase | 12 | DWSIM reports one vapor phase, but a dense N2 phase has a negative tangent-plane distance (350 K at 50 and 75 bar; 500 to 800 K) |
+| dense_root_mismatch | 14 | T >= 500 K, Z of 0.02 to 0.1: agrees to 2e-4 to 6e-4, too sensitive to the 4-digit kappa values |
+| dwsim_liquid_only | 7 | DWSIM reports a single liquid phase where a vapor root exists |
+| two_phase_not_reproduced | 5 | DWSIM two-phase solutions that the independent flash did not find |
+| nonfinite | 2 | fugacity coefficients of 1e288 or infinity |
+
+**Energies are not compared for PRSV2.** DWSIM's enthalpy and entropy match, to 1e-6 in dH/(R T),
+a calculation in which the temperature derivative of alpha is taken with kappa frozen (kappa
+treated as constant; confirmed in the DWSIM source, where d(a)/dT omits dkappa/dT). The exact derivative, which includes dkappa/dT, differs by 0.3 to 0.4 R T
+(and 0.3 to 0.4 R in entropy) at 75 to 200 bar. DWSIM's PRSV2 energies are therefore not derived consistently from
+its own equation of state, and thermo-sim (which differentiates the full alpha) is not expected to
+reproduce them. `tests/test_isobaric_consistency.py` checks that thermo-sim's PRSV2 energies are
+consistent with its own equation instead.
+
+**The instability above 500 K is the equation, not only the flash.** With kappa2 > 0 and kappa3
+below Tr, the N2 correction term grows like Tr^2 and kappa reaches about -120 at 1000 K, so the
+attractive parameter a(T) of N2 becomes absurdly large (Z of 0.0002, fugacity coefficients of
+1e288). PRSV2 is a correlation for Tr < 1 and DWSIM extrapolates it. At 350 and 400 K it even
+produces an N2-rich "liquid" (vapor fraction 0.758 = 1 - y(N2)); the independent flash reproduces
+those points (`reproduced`, 400 K at 75 to 200 bar), so they are valid solutions of the equation.
+At 500 K and above the feed is unstable as a single vapor (tangent-plane distance of dense N2 from
+-100 at 500 K to -457 at 600 K, in units of RT), yet DWSIM reports one vapor phase: those rows are
+`unstable_single_phase`, and a stability test (as in thermo-sim) correctly finds two phases there.

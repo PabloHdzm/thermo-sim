@@ -96,6 +96,7 @@ METHODS: dict[str, ThermoMethod] = {k: replace(v, name=k) for k, v in {
     'PR-MC':     ThermoMethod('pr', 'mc'),            # needs alpha_params {'c1': {...}} for ALL components
     'PRSV':      ThermoMethod('pr', 'prsv'),          # needs alpha_params {'kappa1': {...}} or a kappa1 column in the DB
     'IPRSV':     ThermoMethod('pr', 'iprsv'),
+    'PRSV2':     ThermoMethod('pr', 'prsv2'),         # needs alpha_params kappa1 (kappa2, kappa3 optional)
     'RK':        ThermoMethod('rk', 'rk'),
 }.items()}
 
