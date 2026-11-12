@@ -180,6 +180,7 @@ class Stream(EquilibriumMixin):
         self.gamma, self.forced_cubic = gamma, forced_cubic
         self.gamma_psat_factor = psat_factor
         self.component_data = component_data.copy(deep=True).sort_values(by='Tc (K)')
+        self._database = self.component_data.copy()      # all components, before dropping inactive ones
         self.kij = kij
         self.k_mode = k_mode
         self.method = get_method(method)
@@ -268,6 +269,11 @@ class Stream(EquilibriumMixin):
     @property
     def props(self) -> StreamProperties:
         return self._props
+
+    @property
+    def database(self) -> pd.DataFrame:
+        """Property table of all components, including those inactive in this stream."""
+        return self._database
     
     def at(self, T: float | None = None, P: float | None = None,
            description: str | None = None, *, fn: float | None = None,
@@ -290,7 +296,7 @@ class Stream(EquilibriumMixin):
                       fn=self.fn if fn is None else fn,
                       comp_mol=self.comp_mol if comp_mol is None else comp_mol,
                       P=self.P if P is None else P, Tref=self.Tref, Pref=self.Pref,
-                      gamma=self.gamma, component_data=self.component_data, kij=self.kij,
+                      gamma=self.gamma, component_data=self._database, kij=self.kij,
                       k_mode=self.k_mode, method=self.method, forced_cubic=self.forced_cubic,
                       solver_options=self.solver_options, emit_warnings=self.emit_warnings,
                       psat_factor=self.gamma_psat_factor, **thermal)
