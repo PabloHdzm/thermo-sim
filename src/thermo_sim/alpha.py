@@ -173,9 +173,29 @@ class RKAlpha(AlphaModel):
         return Tr ** (-0.5)
 
 
+class PRSV2Alpha(_PRSVBase):
+    """PRSV2 (Stryjek and Vera 1986):
+    kappa = kappa0 + [k1 + k2 (k3 - Tr)(1 - sqrt(Tr))] (1 + sqrt(Tr)) (0.7 - Tr),
+    applied at every Tr, as DWSIM does. kappa2 and kappa3 are optional (0 when absent)."""
+    name = 'prsv2'
+    optional = ('kappa2', 'kappa3')
+
+    def _kappa(self, Tr, omega, params):
+        k1 = params['kappa1']
+        k2 = np.nan_to_num(params.get('kappa2', 0.0))
+        k3 = np.nan_to_num(params.get('kappa3', 0.0))
+        s = np.sqrt(Tr)
+        return self.kappa0(omega) + (k1 + k2 * (k3 - Tr) * (1.0 - s)) * (1.0 + s) * (0.7 - Tr)
+
+    def alpha(self, Tr, omega, kappa_form, params):
+        return _std(Tr, self._kappa(Tr, omega, params))
+
+    def sqrt_alpha(self, Tr, omega, kappa_form, params):
+        return _lin(Tr, self._kappa(Tr, omega, params))
+
 ALPHAS: dict[str, AlphaModel] = {m.name: m for m in (
     StdAlpha(), BostonMathias(), MathiasCopeman(), GraboskiDaubertH2(),
-    PRSVAlpha(), IPRSVAlpha(), RKAlpha())}
+    PRSVAlpha(), IPRSVAlpha(), PRSV2Alpha(), RKAlpha())}
 
 
 def get_alpha(name: str) -> AlphaModel:

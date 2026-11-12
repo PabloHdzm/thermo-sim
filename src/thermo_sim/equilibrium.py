@@ -204,7 +204,7 @@ class SolverOptions:
     n_scan: int = 48                   # T points scanned to locate the bubble/dew crossing
     max_ss: int = 400                  # max successive-substitution iterations
     ztol: float = 1e-14                # z <= ztol counts as an inactive component
-    stability_extra_starts: bool = False   # also try each pure component as trial phase (Michelsen)
+    stability_extra_starts: bool = True    # also try each pure component as trial phase (Michelsen)
     # Fields of the previous solver: accepted and ignored.
     max_newton: int = 60
     n_inner: int = 12
@@ -502,14 +502,14 @@ class EquilibriumEngine:
         lnz, Zref, tag, nr = k.stable_root(T, P, z)
         d = np.log(z) + lnz
         Kw = self._wilson(T, P)
-        starts = [("v", z * Kw), ("l", z / Kw)]
+        starts = [("v", z * Kw, False), ("l", z / Kw, False)]
         if self.opt.stability_extra_starts:
             for i in range(z.size):
                 e = np.full(z.size, 1e-10)
                 e[i] = 1.0
-                starts += [("v", e), ("l", e.copy())]
+                starts += [("v", e, True), ("l", e.copy(), True)]
         best, unconverged = None, False
-        for trial, W0 in starts:
+        for trial, W0, extra in starts:
             W = W0.copy()
             converged = False
             for _ in range(self.opt.max_ss):
@@ -522,7 +522,8 @@ class EquilibriumEngine:
                     converged = True
                     break
             if not converged:
-                unconverged = True
+                if not extra:          # pure-component starts are best effort: a slow drift to
+                    unconverged = True  # the trivial solution is not a reason to doubt stability
                 continue
             S = float(W.sum())
             w = W / S
