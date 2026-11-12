@@ -1,78 +1,129 @@
 # DWSIM reference data
 
-Numbers read from the Master Property Table of DWSIM 10.2.12.0 (Peng-Robinson property
-package). They are results of a simulation run by the author; no DWSIM code is used or
-distributed here. DWSIM is an independent open-source project and this repository is not
-affiliated with it.
+Reference values extracted from the Master Property Table of DWSIM
+10.2.12.0 using the Peng-Robinson property package. These values were
+obtained from simulation runs performed by the author. No DWSIM code
+is used or distributed in this repository. DWSIM is an independent
+open-source project, and this repository is not affiliated with it.
 
 ## How the case was produced
 
-- Components: hydrogen, nitrogen, ammonia (ordered by critical temperature).
-- Feed: 0.726 / 0.242 / 0.032 mole fractions, 150 bar, vapor fraction 0.99 (T solved).
-- Equation of state: Peng-Robinson with the critical constants, acentric factors and
-  binary interaction parameters that DWSIM shows for these components (see the JSON).
-- DWSIM uses R = 8.314 J/(mol K); thermo-sim runs use `METHODS['PR'].but(R=8.314, ...)`.
-- Liquid density options recorded: plain EOS, Rackett, COSTALD and EOS + Peneloux.
+- Components: hydrogen, nitrogen, ammonia (ordered by critical
+  temperature).
+- Feed: 0.726 / 0.242 / 0.032 mole fractions, 150 bar, vapor fraction
+  0.99 (T solved).
+- Equation of state: Peng-Robinson, using the critical constants,
+  acentric factors and binary interaction parameters displayed by
+  DWSIM for these components (see the JSON).
+- DWSIM uses R = 8.314 J/(mol K); thermo-sim runs use
+  `METHODS['PR'].but(R=8.314, ...)`.
+- Liquid density options recorded: plain EOS, Rackett, COSTALD and
+  EOS + Peneloux.
 
 ## Conventions
 
-- DWSIM prints fugacity coefficients divided by 1e5.
-- DWSIM "Molar Enthalpy" excludes the enthalpy of formation, so the tests compare the
-  residual (departure) enthalpy, which does not depend on the ideal-gas reference.
-- The ideal-gas Cp used by DWSIM for these components is recorded in the JSON so that the
-  ideal part can be rebuilt independently of the thermo-sim database.
-
+- DWSIM displays fugacity coefficients divided by 1e5.
+- DWSIM's "Molar Enthalpy" excludes the enthalpy of formation.
+  Therefore, the tests compare residual (departure) enthalpy, which is
+  independent of the ideal-gas reference.
+- The ideal-gas Cp values used by DWSIM for these components are
+  recorded in the JSON, allowing the ideal contribution to be
+  reconstructed independently of the thermo-sim database.
 
 ## Files
 
-- `ammonia_loop_feed_150bar.json`: inputs, results and the list of quantities that are
-  deliberately not compared.
-- `tests/test_dwsim_ammonia_feed.py` compares thermo-sim against this file.
+- `ammonia_loop_feed_150bar.json`: inputs, results and the list of
+  quantities intentionally excluded from comparison.
+- `tests/test_dwsim_ammonia_feed.py`: compares thermo-sim against this
+  reference file.
 
 # ammonia_feed_grid.csv
 
-DWSIM 10.2.12.0, Peng-Robinson with DWSIM's own constants, kij and R = 8.314. Feed H2/N2/NH3 =
-0.726/0.242/0.032 (same as `ammonia_loop_feed_150bar.json`). 175 temperature-pressure points
-exported from stream sensitivity analyses (one independent variable at a time):
+DWSIM 10.2.12.0, Peng-Robinson with DWSIM's own constants, kij and
+R = 8.314. Feed H2/N2/NH3 = 0.726/0.242/0.032 (same as
+`ammonia_loop_feed_150bar.json`).
 
-* `sensitivity_complete_v3`: T = 200-1000 K x P = 1-200 bar (143 points, full precision).
-* `sensitivity_refined_230-320K_v2`: T = 230-320 K step 10 at 50/100/150/200 bar (32 new points,
-  exported with 3 significant digits in the fugacity coefficients: `phi_digits = 3`).
+The file contains 175 temperature-pressure points exported from
+stream sensitivity analyses, varying one independent variable at a
+time:
 
-Columns: fugacity coefficients are the true values (DWSIM prints them divided by 1e5).
-`n_phases = 2` only when the liquid fraction is above 1e-4. Rows with a single phase carry no
-liquid values: DWSIM then reports hypothetical liquid Z and phi (NaN for T >= 500 K, and one
-visible glitch at 300 K / 200 bar), which are not physical and are removed.
+- `sensitivity_complete_v3`: T = 200-1000 K x P = 1-200 bar (143
+  points, full precision).
+- `sensitivity_refined_230-320K_v2`: T = 230-320 K step 10 at
+  50/100/150/200 bar (32 additional points, exported with 3
+  significant digits in the fugacity coefficients: `phi_digits = 3`).
 
-Not used: the bubble temperature column (constant 69.58 K in the export). Enthalpy and entropy
-are compared as differences against the 1 bar row at the same T (cancels Cp, formation enthalpy
-and reference states), so only temperatures that have a 1 bar row enter that comparison.
-Independent check: a plain numpy PR implementation reproduces Z, phi, density (single phase,
-120 rows) and V, x/y-derived phi, Z (two-phase rows) to ~5e-6, the print precision.
+Columns: fugacity coefficients are stored as true values (DWSIM
+displays them divided by 1e5).
 
-Known DWSIM artifact: in two-phase points the mixture entropy does not satisfy dH = T dS at
-constant P (the excess is ~1.8 R per mole of liquid, checked on the 10 K rows at 100-200 bar),
-while single-phase points do (to 1e-4 R). Two-phase entropy is therefore not used as a
-reference.
+`n_phases = 2` only when the liquid fraction is above 1e-4.
+Single-phase rows contain no physical liquid-phase values. In these
+cases, DWSIM also reports hypothetical liquid Z and phi values (NaN
+for T >= 500 K, with one isolated numerical anomaly at 300 K / 200
+bar). These hypothetical values are excluded from the reference data.
+
+Not used: the bubble temperature column (constant 69.58 K in the
+export).
+
+Enthalpy and entropy are compared as differences relative to the
+1 bar row at the same temperature. This removes the contributions of
+Cp, formation enthalpy and reference states, so only temperatures
+with a corresponding 1 bar row are included in this comparison.
+
+Independent validation: a plain numpy PR implementation reproduces Z,
+phi and density for single-phase points (120 rows), as well as V and
+x/y-derived phi and Z for two-phase points, to approximately 5e-6,
+consistent with the exported print precision.
+
+**Two-phase entropy notes:** At constant pressure, the mixture
+entropy values in the two-phase region do not satisfy dH = T dS to
+the same degree as the single-phase results. The difference is
+approximately 1.8 R per mole of liquid, based on the 10 K rows at
+100-200 bar. Single-phase points satisfy this relation to 1e-4 R. For
+this reason, two-phase entropy values are excluded from the reference
+comparisons.
 
 # ammonia_feed_grid_srk.csv
 
-Same feed, DWSIM 10.2.12.0, **SRK** package (Soave 1972: kappa = 0.48 + 1.574 w - 0.176 w^2,
-Omega_a = 0.42748, Omega_b = 0.08664), same critical constants and R = 8.314, all kij = 0
-(DWSIM reports no interaction parameters for this package), liquid density from the EOS (no
-Peneloux). 163 points (T = 200-1000 K x P = 1-200 bar plus the 230-320 K block at 50-200 bar),
-32 of them two-phase, all with full-precision fugacity coefficients (`phi_digits = 6`).
-Columns and filtering rules are the same as for the PR grid. An independent numpy SRK with the
-Soave-1972 kappa reproduces the file to 5e-7 (V), 4.5e-6 (Z), 2.5e-6 (Z liquid), 1e-6 (phi vapor),
-2.7e-6 (phi liquid) and 3e-6 (two-phase mixture density from the EOS volumes). The thermo-sim
-default `srk` form (Graboski-Daubert kappa) differs from DWSIM by up to 0.3 % in Z and 1.8 % in
-phi, which is why the `srk72` form exists.
+Same feed, DWSIM 10.2.12.0, **SRK** package (Soave 1972:
+kappa = 0.48 + 1.574 w - 0.176 w^2, Omega_a = 0.42748,
+Omega_b = 0.08664), same critical constants and R = 8.314, all
+kij = 0 (no interaction parameters are reported by DWSIM for this
+package), and liquid density calculated from the EOS (no Peneloux).
+
+The file contains 163 points (T = 200-1000 K x P = 1-200 bar, plus
+the 230-320 K block at 50-200 bar). Of these, 32 are two-phase
+points. All fugacity coefficients are stored at full precision
+(`phi_digits = 6`).
+
+Columns and filtering rules are the same as for the PR grid.
+
+An independent numpy SRK implementation using the Soave-1972 kappa
+reproduces the reference values with the following maximum
+differences:
+
+- V: 5e-7
+- Z: 4.5e-6
+- Z liquid: 2.5e-6
+- phi vapor: 1e-6
+- phi liquid: 2.7e-6
+- Two-phase mixture density from EOS volumes: 3e-6
+
+The thermo-sim default `srk` form (Graboski-Daubert kappa) produces
+differences of up to 0.3 % in Z and 1.8 % in phi relative to this
+reference. The `srk72` form is provided to reproduce the Soave-1972
+formulation used in DWSIM.
 
 # ammonia_feed_grid_prsv2.csv
 
-Same feed, DWSIM 10.2.12.0, **PRSV2** package, same critical constants and R = 8.314, all kij = 0
-(DWSIM reports no interaction parameters), liquid density from the EOS. 135 points (T = 200-1000 K,
-P = 1-200 bar plus the 230-320 K block). DWSIM shows these PRSV2 parameters:
+Same feed, DWSIM 10.2.12.0, **PRSV2** package, same critical
+constants and R = 8.314, all kij = 0 (no interaction parameters are
+reported), and liquid density calculated from the EOS.
+
+The file contains 135 points (T = 200-1000 K, P = 1-200 bar, plus the
+230-320 K block).
+
+DWSIM displays the following PRSV2 parameters:
 
 | | kappa1 | kappa2 | kappa3 |
 |---|---:|---:|---:|
@@ -80,54 +131,192 @@ P = 1-200 bar plus the 230-320 K block). DWSIM shows these PRSV2 parameters:
 | N2 | 0.02 | 0.3162 | 0.5350 |
 | NH3 | 0.001 | -0.1265 | 0.51 |
 
-What reproduces the DWSIM numbers (checked with an independent numpy implementation and
-confirmed in the DWSIM 10.2.12.0 PRSV2 source):
+The following implementation details reproduce the DWSIM reference
+values, as verified with an independent numpy implementation and
+confirmed in the DWSIM 10.2.12.0 PRSV2 source:
 
-* PRSV2 alpha, kappa = kappa0 + [k1 + k2 (k3 - Tr)(1 - sqrt(Tr))](1 + sqrt(Tr))(0.7 - Tr), with
-  the Stryjek-Vera kappa0 polynomial (cubic coefficient 0.0196544 in DWSIM), **applied at every
-  Tr** (N2 has Tr > 1 over the whole grid; dropping the correction above Tr = 1 gives 3 % errors
-  in Z).
-* **DWSIM uses this form only if kappa1 * kappa2 * kappa3 is nonzero.** Otherwise it falls back
-  to the plain Peng-Robinson alpha, kappa = 0.37464 + 1.5422 w - 0.26992 w^2 (w <= 0.491). H2 has
-  all three parameters at zero, so it follows the PR alpha (kappa = 0.02893), not kappa0 of PRSV
-  (0.04893). thermo-sim reproduces this with `alpha_overrides={'hydrogen': 'std'}`.
-* kappa1 of N2 is 0.01996 (the Stryjek-Vera value); DWSIM displays it rounded to 0.02. The pure
-  N2 runs cannot tell the two apart (both agree to the printed digits), but without the
-  correction (kappa1 = kappa2 = kappa3 = 0) they differ by 1e-5 to 4e-4 in Z.
-* Mixing rule: a_ij = sqrt(a_i a_j) (1 - x_i kij - x_j kij2) (Margules form), which with
-  kij = kij2 = 0 is the standard quadratic rule.
+- **PRSV2 alpha formulation:** kappa = kappa0 + [k1 + k2 (k3 - Tr)
+  (1 - sqrt(Tr))](1 + sqrt(Tr))(0.7 - Tr), using the Stryjek-Vera
+  kappa0 polynomial (cubic coefficient 0.0196544 in DWSIM). The
+  correction is applied over the entire Tr range. In this grid, N2
+  has Tr > 1 throughout; omitting the correction above Tr = 1
+  produces differences of approximately 3 % in Z.
+- **Selection of the alpha formulation:** DWSIM applies the PRSV2
+  expression only when kappa1 * kappa2 * kappa3 is nonzero.
+  Otherwise, it uses the standard Peng-Robinson alpha,
+  kappa = 0.37464 + 1.5422 w - 0.26992 w^2 (w <= 0.491). Since H2 has
+  all three parameters set to zero, it uses the PR alpha
+  (kappa = 0.02893) rather than the PRSV kappa0 value (0.04893).
+  thermo-sim reproduces this behavior through
+  `alpha_overrides={'hydrogen': 'std'}`.
+- **Nitrogen kappa1 value:** The value used for N2 is 0.01996 (the
+  Stryjek-Vera value), while DWSIM displays it rounded to 0.02. Pure
+  N2 runs cannot distinguish these values at the displayed precision,
+  but when the correction is omitted altogether
+  (kappa1 = kappa2 = kappa3 = 0), the resulting Z values differ by
+  1e-5 to 4e-4.
+- **Mixing rule:** a_ij = sqrt(a_i a_j) (1 - x_i kij - x_j kij2)
+  (Margules form). With kij = kij2 = 0, this reduces to the standard
+  quadratic mixing rule.
 
-Pure components (`ammonia_pure_prsv2.csv`): H2 at 100, 200, 300 K and 50, 150 bar (PR alpha with
-1.5422) agrees with DWSIM to 5e-6 in Z and 1e-5 in phi; N2 vapor at 90, 100, 110 K on the DWSIM
-saturation pressures (PRSV2) agrees to 2e-6; the N2 liquid root at the same states agrees to 3e-6 in Z, 2e-6 in phi and 2e-7 in density. DWSIM's own phi_l/phi_v at those points is 1.00085, 1.00265 and 1.00382 (thermo-sim: the same), so its pressures are not the EOS saturation pressure (0.1 to 0.6 % below it); the numbers match anyway, since both phases are evaluated at the same T and P. The coefficient 1.54226 (more digits) is worse, and
-kappa0 alone (no override) is off by 0.1 to 0.8 % for H2.
+## Pure-component validation
 
-Rows are classified in the `status` column and only `reproduced` ones (95, all at T <= 400 K) are
-used by the tests:
+`ammonia_pure_prsv2.csv` contains additional pure-component
+comparisons:
+
+- H2 at 100, 200, 300 K and 50, 150 bar (PR alpha with 1.5422) agrees
+  with DWSIM to 5e-6 in Z and 1e-5 in phi.
+- N2 vapor at 90, 100, 110 K, evaluated at the DWSIM saturation
+  pressures using PRSV2, agrees to 2e-6.
+- The N2 liquid root at the same states agrees to 3e-6 in Z, 2e-6 in
+  phi and 2e-7 in density.
+
+At these points, DWSIM's own phi_l/phi_v values are 1.00085, 1.00265
+and 1.00382, respectively, and thermo-sim produces the same values.
+The corresponding pressures are 0.1 to 0.6 % below the EOS saturation
+pressure. The fugacity coefficients nevertheless agree because both
+phases are evaluated at the same T and P.
+
+Using the coefficient 1.54226 (with more digits) produces larger
+differences. Using kappa0 alone, without the alpha override, results
+in differences of 0.1 to 0.8 % for H2.
+
+## PRSV2 grid classification
+
+Rows are classified in the `status` column. Only rows marked
+`reproduced` (95, all at T <= 400 K) are included in the tests:
 
 | status | rows | meaning |
 |---|---:|---|
-| reproduced | 95 | independent numpy PRSV2 flash agrees within 2e-4 (most within 1e-5) |
-| unstable_single_phase | 12 | DWSIM reports one vapor phase, but a dense N2 phase has a negative tangent-plane distance (350 K at 50 and 75 bar; 500 to 800 K) |
-| dense_root_mismatch | 14 | T >= 500 K, Z of 0.02 to 0.1: agrees to 2e-4 to 6e-4, too sensitive to the 4-digit kappa values |
-| dwsim_liquid_only | 7 | DWSIM reports a single liquid phase where a vapor root exists |
-| two_phase_not_reproduced | 5 | DWSIM two-phase solutions that the independent flash did not find |
-| nonfinite | 2 | fugacity coefficients of 1e288 or infinity |
+| reproduced | 95 | Independent numpy PRSV2 flash agrees within 2e-4 (most within 1e-5) |
+| unstable_single_phase | 12 | DWSIM reports one vapor phase, while a dense N2 phase has a negative tangent-plane distance (350 K at 50 and 75 bar; 500 to 800 K) |
+| dense_root_mismatch | 14 | T >= 500 K, Z of 0.02 to 0.1: agreement within 2e-4 to 6e-4, with sensitivity to the 4-digit kappa values |
+| dwsim_liquid_only | 7 | DWSIM reports a single liquid phase at conditions where a vapor root also exists |
+| two_phase_not_reproduced | 5 | DWSIM two-phase solutions not found by the independent flash calculation |
+| nonfinite | 2 | Fugacity coefficients of 1e288 or infinity |
 
-**Energies are not compared for PRSV2.** DWSIM's enthalpy and entropy match, to 1e-6 in dH/(R T),
-a calculation in which the temperature derivative of alpha is taken with kappa frozen (kappa
-treated as constant; confirmed in the DWSIM source, where d(a)/dT omits dkappa/dT). The exact derivative, which includes dkappa/dT, differs by 0.3 to 0.4 R T
-(and 0.3 to 0.4 R in entropy) at 75 to 200 bar. DWSIM's PRSV2 energies are therefore not derived consistently from
-its own equation of state, and thermo-sim (which differentiates the full alpha) is not expected to
-reproduce them. `tests/test_isobaric_consistency.py` checks that thermo-sim's PRSV2 energies are
-consistent with its own equation instead.
+## PRSV2 energy calculation notes
 
-**The instability above 500 K is the equation, not only the flash.** With kappa2 > 0 and kappa3
-below Tr, the N2 correction term grows like Tr^2 and kappa reaches about -120 at 1000 K, so the
-attractive parameter a(T) of N2 becomes absurdly large (Z of 0.0002, fugacity coefficients of
-1e288). PRSV2 is a correlation for Tr < 1 and DWSIM extrapolates it. At 350 and 400 K it even
-produces an N2-rich "liquid" (vapor fraction 0.758 = 1 - y(N2)); the independent flash reproduces
-those points (`reproduced`, 400 K at 75 to 200 bar), so they are valid solutions of the equation.
-At 500 K and above the feed is unstable as a single vapor (tangent-plane distance of dense N2 from
--100 at 500 K to -457 at 600 K, in units of RT), yet DWSIM reports one vapor phase: those rows are
-`unstable_single_phase`, and a stability test (as in thermo-sim) correctly finds two phases there.
+**Energies are not compared for PRSV2.**
+
+DWSIM's enthalpy and entropy values agree, to 1e-6 in dH/(R T), with
+a calculation in which the temperature derivative of alpha is
+evaluated with kappa frozen (kappa treated as constant). This
+behavior is confirmed in the DWSIM source, where the calculation of
+d(a)/dT omits dkappa/dT.
+
+A full derivative that includes dkappa/dT produces differences of 0.3
+to 0.4 R T in enthalpy and 0.3 to 0.4 R in entropy at 75 to 200 bar.
+
+These results reflect two different derivative conventions for the
+PRSV2 alpha function. thermo-sim differentiates the complete alpha
+expression, including the temperature dependence of kappa, so its
+energy calculations follow the full derivative rather than the
+frozen-kappa convention. Consequently, the two sets of energy results
+are not expected to coincide.
+
+`tests/test_isobaric_consistency.py` verifies that thermo-sim's PRSV2
+energy calculations are consistent with its own equation of state.
+
+## PRSV2 behavior outside the correlation range
+
+The behavior observed above 500 K is closely related to extrapolating
+the PRSV2 correlation beyond its intended Tr < 1 range.
+
+For N2, with kappa2 > 0 and kappa3 below Tr, the correction term
+grows approximately as Tr^2. At 1000 K, kappa reaches approximately
+-120, leading to extremely large attractive parameter values a(T).
+This produces results such as Z = 0.0002 and fugacity coefficients of
+1e288.
+
+At 350 and 400 K, the model also predicts an N2-rich liquid phase
+(vapor fraction 0.758 = 1 - y(N2)). The independent flash reproduces
+these points (`reproduced`, 400 K at 75 to 200 bar), indicating that
+they are valid solutions of the specified equation of state.
+
+At 500 K and above, the feed is unstable as a single vapor phase
+according to the tangent-plane distance criterion. The dense N2 phase
+has tangent-plane distances ranging from -100 at 500 K to -457 at
+600 K, in units of RT. The DWSIM results for these conditions contain
+a single vapor phase, while a stability analysis such as the one
+implemented in thermo-sim identifies a two-phase solution.
+
+These results illustrate the sensitivity of PRSV2 extrapolation
+outside its intended correlation range and the importance of
+phase-stability analysis when evaluating these conditions.
+
+# Ammonia synthesis loop (unit operations)
+
+`ammonia_loop_streams.csv`, `ammonia_loop_units.json` and
+`ammonia_loop_cp.json` contain the results of the DWSIM 10.2.12.0
+"Ammonia Synthesis" flowsheet used to validate the unit operations.
+
+Flowsheet:
+
+Feed (300 K, 30 bar, 4 mol/s, H2 0.75 / N2 0.25) -> compressor
+(200 bar, adiabatic efficiency 0.75) -> heater (700 K) -> isothermal
+reactor (N2 conversion 48.8008 %) -> cooler (250 K) -> flash drum.
+
+Property package: Peng-Robinson with the grid kij and constants,
+R = 8.314, inside-out flash, liquid volume from the EOS (no
+Peneloux).
+
+Tests: `tests/test_dwsim_loop.py` (helper: `tests/_dwsim_loop.py`).
+
+Script containing all comparison differences:
+`python scripts/compare_dwsim_loop.py`.
+
+## What is compared and what is not
+
+- Stream T, P, flows, phase compositions, Z and density, stream by
+  stream.
+- Duties and compressor power as relative differences. The reactor is
+  a fixed-conversion unit (`StoichReactor`) configured at DWSIM's
+  equilibrium conversion, so the comparison evaluates the heat of
+  reaction rather than independently solving chemical equilibrium.
+- Entropy is excluded from the comparison because the two-phase
+  entropy results differ from the enthalpy-based thermodynamic
+  consistency relation.
+
+## Enthalpy reference
+
+DWSIM's displayed "Molar Enthalpy" does **not** include the formation
+enthalpy, whereas its "Energy Flow" (used in the unit balances) does.
+
+thermo-sim's `H_total_mix` includes the formation enthalpy, so the
+appropriate comparison is against Energy Flow divided by molar flow
+(`energy_flow_per_kmol_kJ`).
+
+## Ideal-gas Cp
+
+The loop tests replace the ideal-gas Cp of H2, N2 and NH3 in the
+database with the equation used by DWSIM:
+
+`Cp = A + exp(B/T + C + D*T + E*T^2)`
+
+Cp is expressed in J/(kmol K), with coefficients stored in
+`ammonia_loop_cp.json`. These coefficients were fitted with a quartic
+over 240-720 K, with the higher-order columns set to zero.
+
+With this Cp formulation, the differences relative to DWSIM are:
+
+| Quantity | Difference |
+|---|---|
+| Compressor T_out | 0.019 K |
+| Compressor power, reactor, cooler duty | below 1e-4 relative |
+| Heater duty | 2.4e-4 relative |
+| Z, density, composition | 5e-6 (flash phases 2e-5) |
+
+The packaged database fits ideal-gas Cp to CoolProp, whose values
+differ from the DWSIM equation by 0.3 to 0.5 %. Using the packaged
+database, duties differ by 0.15 to 0.9 % and the compressor outlet
+temperature differs by +0.56 K.
+
+The equilibrium results (Z, composition and vapor fraction) remain
+the same because they do not depend on ideal-gas Cp.
+
+`tests/test_dwsim_loop.py` records this as a known difference between
+the two Cp sources, with acceptance tolerances of 1.5 % for duties
+and 1 K for T_out. This preserves regression coverage for the energy
+balances while accounting for the different ideal-gas Cp
+correlations.

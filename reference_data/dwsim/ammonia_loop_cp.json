@@ -1,0 +1,35 @@
+{
+  "equation": "Cp = A + exp(B/T + C + D*T + E*T^2), Cp in J/(kmol K), T in K",
+  "source": "DWSIM 10.2.12.0 compound data, ideal-gas heat capacity",
+  "components": [
+    "hydrogen",
+    "nitrogen",
+    "ammonia"
+  ],
+  "A": [
+    3994.32,
+    29103.6,
+    33239.0
+  ],
+  "B": [
+    -48.6901,
+    -2305.95,
+    -913.64
+  ],
+  "C": [
+    10.3621,
+    11.3194,
+    10.802
+  ],
+  "D": [
+    -0.000340144,
+    -0.00100557,
+    0.00021047
+  ],
+  "E": [
+    1.96033e-07,
+    1.7061e-07,
+    -4.1739e-08
+  ],
+  "check": "reproduces the mixture Cp of the loop streams (Ideal Gas Heat Capacity Cp) to 8e-6"
+}

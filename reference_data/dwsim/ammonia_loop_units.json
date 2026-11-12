@@ -1,0 +1,37 @@
+{
+  "meta": {
+    "dwsim": "10.2.12.0",
+    "package": "Peng-Robinson, inside-out flash, liquid volume from the EOS (no Peneloux), kij and constants of the grid runs",
+    "flowsheet": "feed (300 K, 30 bar, 4 mol/s, H2 0.75 N2 0.25) -> C-1 -> H-1 -> R-1 -> CL-1 -> V-1",
+    "power_unit": "kW"
+  },
+  "compressor": {
+    "P_out_bar": 200,
+    "eta_adiabatic": 0.75,
+    "power_kW": 34.5901,
+    "T_out_K": 588.76
+  },
+  "heater": {
+    "T_out_K": 700,
+    "dP_bar": 0,
+    "duty_kW": 13.4293
+  },
+  "reactor": {
+    "mode": "isothermal",
+    "conversion_N2": 0.488008,
+    "dP_bar": 0,
+    "duty_kW": -52.9415,
+    "initial_gibbs_kW": 54.8381,
+    "final_gibbs_kW": 37.8009
+  },
+  "cooler": {
+    "T_out_K": 250,
+    "dP_bar": 0,
+    "duty_kW": -66.4019,
+    "vapor_fraction": 0.689385
+  },
+  "flash": {
+    "T_K": 250,
+    "P_bar": 200
+  }
+}
