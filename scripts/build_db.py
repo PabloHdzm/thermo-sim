@@ -18,7 +18,7 @@ COMPONENTS = {"Water": "Water", "Methanol": "Methanol", "Ethanol": "Ethanol",
               "Benzene": "Benzene", "Toluene": "Toluene", "Acetone": "Acetone",
               "CarbonDioxide": "CarbonDioxide", "Nitrogen": "Nitrogen",
               "Oxygen": "Oxygen", "Methane": "Methane", "Ammonia": "Ammonia",
-              "Hydrogen": "Hydrogen",}
+              "Hydrogen": "Hydrogen", "Propane": "Propane",}
 
 GAS_T_LOW = 250.0     # K, lower limit of the gas transport fits (viscosity, k)
 GAS_CP_T_LOW = 200.0  # K, lower limit of the ideal-gas Cp fit (clipped to the EOS Tmin) 
@@ -37,10 +37,10 @@ COL = {
 }
 
 # moles of gaseous elements (H2, N2, O2) in the formation reaction of one mole of compound;
-# graphite is a solid and does not count. Used to refer the formation entropy to Pref.
+# graphite is a solid and does not count (propane: 3 C + 4 H2). Used to refer the formation entropy to Pref.
 N_GAS_EL = {'water': 1.5, 'methanol': 2.5, 'ethanol': 3.5, 'benzene': 3.0, 'toluene': 4.0,
             'acetone': 3.5, 'carbondioxide': 1.0, 'nitrogen': 1.0, 'oxygen': 1.0,
-            'methane': 2.0, 'ammonia': 2.0, 'hydrogen': 1.0}
+            'methane': 2.0, 'ammonia': 2.0, 'hydrogen': 1.0, 'propane': 4.0}
 
 # ----------------------------------------------------------------------
 # Utilities
