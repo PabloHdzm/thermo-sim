@@ -428,3 +428,30 @@ why liquid N2 forced with a vapor fraction did not match. Consequences:
   above its own dew point, which is liquid in the EOS.
 - The inlet offset cancels in the compressor temperature rise (72.141 K against 72.143 K), and compressor
   power, condenser and evaporator duty agree to 0.1 to 0.15 %, which is Cp x 0.226 K.
+
+## P-T phase envelope: natural-gas-like mixture (DWSIM 10.2.12.0)
+
+Mixture: 0.80 CH4, 0.10 C2H6, 0.05 C3H8, 0.03 n-C4H10, 0.02 n-C5H12. Peng-Robinson with the DWSIM
+constants, k_ij and R = 8.314 (see `natgas_phase_envelope.json`). Operating point 300 K, 1 atm (vapor).
+
+DWSIM options: phase identification curve and operating point; stability curve and quality lines off.
+Bubble-point initialization, initial flash PVF, T_max 1000 K, dP 50000 Pa, dT 2.5, 300 points.
+Two exports are stored (`natgas_phase_envelope.csv`): default initialization (the bubble branch
+starts at 85.75 K) and custom initialization at P = 1.01325 bar (the same starting point as
+`PhaseEnvelope.trace`, which needs no initialization options).
+
+Method (`thermo_sim.phase_envelope.PhaseEnvelope`): Michelsen continuation in (ln K, ln T, ln P) from
+the bubble and dew points at 1 atm up to the critical point, which is interpolated across the sign change of ln K (a smooth
+polynomial fit of ln T and ln P on the last points of both branches). The cricondentherm and cricondenbar are the extrema of T and P along the curve.
+The phase identification curve is the equal-Gibbs-energy line of the mixture as a pseudo component
+below the pseudo-critical point and Pi = 1 (Venkatarathnam and Oellrich) above it.
+
+| Quantity | thermo-sim | DWSIM |
+|---|---|---|
+| Critical point | 246.738 K, 98.0392 bar | 246.738 K, 98.0392 bar |
+| Cricondentherm | 300.903 K, 60.33 bar | 300.903 K, 60.05 to 60.55 bar |
+| Cricondenbar | 108.528 bar at 270.35 K | 108.528 bar at 270.238 K (1 K grid) |
+| Bubble and dew points | max distance 0.0024 and 0.0072 (K, 100 ln P) | |
+
+Known differences, not model differences: DWSIM reports P = 1E-5 bar on the phase identification
+curve below 178.42 K; its Pi = 1 points carry finite-difference noise of about 5e-4 in P.

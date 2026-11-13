@@ -1,0 +1,25 @@
+{
+  "description": "Natural-gas-like mixture, P-T phase envelope, DWSIM 10.2.12.0, Peng-Robinson",
+  "composition": {"methane": 0.80, "ethane": 0.10, "propane": 0.05, "butane": 0.03, "pentane": 0.02},
+  "operating_point": {"T_K": 300.0, "P_bar": 1.01325},
+  "R": 8.314,
+  "constants": {
+    "methane": {"Tc": 190.56, "Pc": 45.99, "omega": 0.011, "Vc": 98.6,  "Zra": 0.2876},
+    "ethane":  {"Tc": 305.32, "Pc": 48.72, "omega": 0.099, "Vc": 145.5, "Zra": 0.2793},
+    "propane": {"Tc": 369.83, "Pc": 42.48, "omega": 0.152, "Vc": 200.0, "Zra": 0.2763},
+    "butane":  {"Tc": 425.12, "Pc": 37.96, "omega": 0.199, "Vc": 255.0, "Zra": 0.2728},
+    "pentane": {"Tc": 469.7,  "Pc": 33.7,  "omega": 0.251, "Vc": 311.0, "Zra": 0.2685}
+  },
+  "kij": {
+    "methane-ethane": -0.0033, "methane-propane": 0.0119, "methane-butane": 0.0244, "methane-pentane": 0.0230,
+    "ethane-propane": 0.0011, "ethane-butane": 0.0089, "ethane-pentane": 0.0078,
+    "propane-butane": 0.0033, "propane-pentane": 0.0267, "butane-pentane": 0.0174
+  },
+  "dwsim_options": {
+    "curves": "phase identification curve and operating point (stability curve and quality line off)",
+    "initialization": "bubble point; the custom-initialization export starts at P = 1.01325 bar",
+    "initial_flash": "PVF", "T_initial_K": 200, "T_max_K": 1000, "dP_Pa": 50000, "dT": 2.5,
+    "max_points": 300
+  },
+  "notes": "Vc in cm3/mol (DWSIM m3/kmol x 1000). DWSIM reports P = 1E-5 bar on the phase identification curve below 178.42 K (artifact, ignored)."
+}
