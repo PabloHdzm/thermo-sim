@@ -1,7 +1,7 @@
 """Ammonia synthesis loop (DWSIM tutorial flowsheet) run with thermo-sim units.
 
 feed (300 K, 30 bar, 4 mol/s, H2 0.75 / N2 0.25) -> compressor (200 bar, eta 0.75) -> heater
-(700 K) -> reactor (isothermal, conversion of N2 fixed at the DWSIM equilibrium value) ->
+(700 K) -> equilibrium reactor (isothermal, ln K = 11000/T - 25, as in the DWSIM reaction set) ->
 cooler (250 K) -> flash drum (250 K).  DWSIM: PR, inside-out flash, liquid volume from the EOS,
 kij and critical constants of the grid runs, R = 8.314.
 Reference: reference_data/dwsim/ammonia_loop_streams.csv and ammonia_loop_units.json.
@@ -16,7 +16,7 @@ from numpy.polynomial import Polynomial
 import pandas as pd
 
 from thermo_sim import METHODS, Stream, load_database
-from thermo_sim.unitops import Compressor, Cooler, FlashDrum, StoichReactor
+from thermo_sim.unitops import Compressor, Cooler, EquilibriumReactor, FlashDrum, StoichReactor
 
 from _dwsim_grid import INP, NAMES, R, REF_DIR
 
@@ -96,19 +96,33 @@ def loop_packaged():
         return _run_loop(load_database())
 
 
+P0_DWSIM = 1.01325   # bar
+
+
 def _run_loop(db=None):
     u = UNITS
     feed = _feed(db)
     comp = Compressor(u['compressor']['P_out_bar'], eta=u['compressor']['eta_adiabatic']).run(feed)
     heat = Cooler(u['heater']['T_out_K'], dP=u['heater']['dP_bar']).run(comp.outlet)
-    rx = StoichReactor(SYNTHESIS, conversion=u['reactor']['conversion_N2'],
-                       key='nitrogen', dP=u['reactor']['dP_bar']).run(heat.outlet)
+    # DWSIM conventions (see reference_data/dwsim/README.md): quotient referred to P0 = 1 atm and a
+    # user ln K(T) expression evaluated at T + 1 K.
+    rx = EquilibriumReactor(SYNTHESIS, dP=u['reactor']['dP_bar'], P_ref=P0_DWSIM,
+                            lnK=lambda T: 11000.0 / (T + 1.0) - 25.0).run(heat.outlet)
     cool = Cooler(u['cooler']['T_out_K'], dP=u['cooler']['dP_bar'],
                   allow_condensation=True).run(rx.outlet)
     drum = FlashDrum(T=u['flash']['T_K']).run(cool.outlet)
     streams = {'feed': feed, 'comp_out': comp.outlet, 'hot': heat.outlet, 'rx_out': rx.outlet,
                'cold': cool.outlet, 'purge': drum.vapor, 'nh3_liquid': drum.liquid}
     return dict(comp=comp, heat=heat, rx=rx, cool=cool, drum=drum, streams=streams)
+
+
+@lru_cache(maxsize=None)
+def fixed_conversion_reactor():
+    """StoichReactor at DWSIM's converged conversion on the heater outlet (same inlet as R-1)."""
+    with warnings.catch_warnings():
+        warnings.filterwarnings('ignore', message=r'Zra \(user\)')
+        return StoichReactor(SYNTHESIS, conversion=UNITS['reactor']['conversion_N2'], key='nitrogen',
+                             dP=UNITS['reactor']['dP_bar']).run(loop()['streams']['hot'])
 
 
 def stream_diffs(name):

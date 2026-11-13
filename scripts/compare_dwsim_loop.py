@@ -8,7 +8,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / 'tests'))
 
-from _dwsim_loop import (STREAMS, cp_ideal_diffs, enthalpy_diffs, loop, stream_diffs,  # noqa: E402
+from _dwsim_loop import (STREAMS, UNITS, cp_ideal_diffs, enthalpy_diffs, loop, stream_diffs,  # noqa: E402
                          unit_diffs)
 
 print('UNITS (thermo-sim - DWSIM)')
@@ -32,3 +32,7 @@ L = loop()
 print('\n' + L['comp'].report())
 print(L['rx'].report())
 print(L['drum'].report())
+
+u = UNITS['reactor']
+print(f"conversion N2  thermo-sim {L['rx'].conversion:.6f}  DWSIM {u['conversion_N2']:.6f}  "
+      f"diff {L['rx'].conversion - u['conversion_N2']:+.3e}")

@@ -1,0 +1,21 @@
+reaction,T_K,P_bar,feed,mode,tolerance,conversion_pct,base,source
+ammonia,500,1,3 H2 : 1 N2,gibbs,default (1e-3 / 1e-2),15.3857,hydrogen,DWSIM 10.2.12.0 GUI
+ammonia,500,1,3 H2 : 1 N2,gibbs,1e-9,15.4957,hydrogen,DWSIM 10.2.12.0 GUI
+ammonia,500,1,3 H2 : 1 N2,equation,default (1e-3 / 1e-2),11.489,hydrogen,DWSIM 10.2.12.0 GUI
+ammonia,500,1,3 H2 : 1 N2,equation,1e-9,11.6174,hydrogen,DWSIM 10.2.12.0 GUI
+ammonia,600,200,3 H2 : 1 N2,gibbs,default (1e-3 / 1e-2),74.6987,hydrogen,DWSIM 10.2.12.0 GUI
+ammonia,600,200,3 H2 : 1 N2,gibbs,1e-9,74.8017,hydrogen,DWSIM 10.2.12.0 GUI
+ammonia,600,200,3 H2 : 1 N2,equation,default (1e-3 / 1e-2),72.5842,hydrogen,DWSIM 10.2.12.0 GUI
+ammonia,600,200,3 H2 : 1 N2,equation,1e-9,72.6903,hydrogen,DWSIM 10.2.12.0 GUI
+ammonia,700,200,3 H2 : 1 N2,gibbs,default (1e-3 / 1e-2),48.388,hydrogen,DWSIM 10.2.12.0 GUI
+ammonia,700,200,3 H2 : 1 N2,gibbs,1e-9,48.463,hydrogen,DWSIM 10.2.12.0 GUI
+ammonia,700,200,3 H2 : 1 N2,equation,default (1e-3 / 1e-2),48.8008,hydrogen,DWSIM 10.2.12.0 GUI
+ammonia,700,200,3 H2 : 1 N2,equation,1e-9,48.8759,hydrogen,DWSIM 10.2.12.0 GUI
+ammonia,800,200,3 H2 : 1 N2,gibbs,default (1e-3 / 1e-2),25.9275,hydrogen,DWSIM 10.2.12.0 GUI
+ammonia,800,200,3 H2 : 1 N2,gibbs,1e-9,26.0928,hydrogen,DWSIM 10.2.12.0 GUI
+ammonia,800,200,3 H2 : 1 N2,equation,default (1e-3 / 1e-2),29.087,hydrogen,DWSIM 10.2.12.0 GUI
+ammonia,800,200,3 H2 : 1 N2,equation,1e-9,29.2661,hydrogen,DWSIM 10.2.12.0 GUI
+wgs,1100,1.01325,1 CO : 1 H2O,equation ln K = 0,not stated,50.0148,carbon monoxide,DWSIM 10.2.12.0 automation script and GUI
+wgs,600,1.01325,1 CO : 1 H2O,equation ln K = 4577.8/T - 4.33,not stated (not converged),83.935,carbon monoxide,DWSIM GUI (script: 83.9368)
+wgs,600,1.01325,1 CO : 1 H2O,equation ln K = 4577.8/T - 4.33,1e-9,83.7935,carbon monoxide,DWSIM GUI
+wgs,800,1.01325,1 CO : 1 H2O,equation ln K = 4577.8/T - 4.33,not stated (not converged),66.7356,carbon monoxide,DWSIM GUI (script: 66.8154)

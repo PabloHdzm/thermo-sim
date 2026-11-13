@@ -255,7 +255,8 @@ Flowsheet:
 
 Feed (300 K, 30 bar, 4 mol/s, H2 0.75 / N2 0.25) -> compressor
 (200 bar, adiabatic efficiency 0.75) -> heater (700 K) -> isothermal
-reactor (N2 conversion 48.8008 %) -> cooler (250 K) -> flash drum.
+equilibrium reactor (reaction set ln K = 11000/T - 25, N2 conversion 
+48.8758 %) -> cooler (250 K) -> cooler (250 K) -> flash drum.
 
 Property package: Peng-Robinson with the grid kij and constants,
 R = 8.314, inside-out flash, liquid volume from the EOS (no
@@ -271,9 +272,10 @@ Script containing all comparison differences:
 - Stream T, P, flows, phase compositions, Z and density, stream by
   stream.
 - Duties and compressor power as relative differences. The reactor is
-  a fixed-conversion unit (`StoichReactor`) configured at DWSIM's
-  equilibrium conversion, so the comparison evaluates the heat of
-  reaction rather than independently solving chemical equilibrium.
+  (`EquilibriumReactor`) with P0 = 1.01325 bar and ln K evaluated at 
+  T + 1 K (DWSIM conventions, see the equilibrium reactor section); 
+  a StoichReactor at DWSIM's converged conversion is also checked. 
+  The reference is the converged DWSIM export (R-1 tolerances 1e-9).
 - Entropy is excluded from the comparison because the two-phase
   entropy results differ from the enthalpy-based thermodynamic
   consistency relation.
@@ -320,3 +322,62 @@ the two Cp sources, with acceptance tolerances of 1.5 % for duties
 and 1 K for T_out. This preserves regression coverage for the energy
 balances while accounting for the different ideal-gas Cp
 correlations.
+
+## Equilibrium reactor
+
+`thermo_sim.unitops.EquilibriumReactor` solves one reaction in a single vapor phase:
+
+    prod_i (phi_i y_i P / P0)^nu_i = K(T),    P0 = 1 bar
+
+- `K(T)` comes from the formation data of the database (`hf_298_k`, `gf_298_k`, tabulated for an
+  ideal gas at 1 bar) and the ideal-gas Cp polynomials: `dH0(T) = dH0(298.15) + int dCp dT`,
+  `dS0(T) = (dH0 - dG0)(298.15) / 298.15 + int dCp / T dT`, `dG0 = dH0 - T dS0`, `ln K = -dG0 / (R T)`.
+  It uses the same Cp (and the same linear extrapolation outside the fitted range) as `Stream`, so
+  `K(T)` is consistent with the stream enthalpy and entropy. `reaction_thermo()` returns these values.
+- `phi_i` are the EOS fugacity coefficients of the outlet composition (successive substitution).
+- Options: `lnK=` (a function of T replaces the computed `K`), `P_ref=` (standard-state pressure
+  in bar), `fugacity=False` (partial pressures, `phi = 1`), `T_out=`, `dP=`.
+- Limits: one reaction, one vapor phase (an error is raised otherwise).
+
+### Tests
+
+`tests/test_equilibrium_reactor.py`:
+
+- `K(T)`: `dG0(298.15)` equals the tabulated value and `d ln K / dT = dH0 / (R T^2)` from 400 to 900 K.
+- The solution satisfies the equilibrium condition to 1e-8; the reaction runs backwards from the
+  products or from pure NH3 to the same state; the conversion rises with P and falls with T.
+- DWSIM 10.2.12.0 equilibrium reactor, ammonia synthesis, 3 H2 : 1 N2 feed, 500 K / 1 bar and
+  600, 700, 800 K / 200 bar, in two DWSIM modes (Gibbs energy of formation and the equation
+  `ln K = 11000 / T - 25`). Reference values: `equilibrium_reactor.csv`.
+
+### Agreement with DWSIM
+
+DWSIM must be run with its internal and external tolerances at 1e-9. With the defaults
+(1e-3 and 1e-2) it stops 0.1 to 0.2 conversion points early and the result depends on the starting
+point.
+
+Two conventions of the DWSIM equilibrium reactor explain the difference with thermo-sim, found
+with the ammonia synthesis and confirmed with the water-gas shift:
+
+- **Standard-state pressure P0 = 1 atm.** With a constant `ln K`, `ln Q - ln K` (Q on a 1 bar basis)
+  is -0.02632, -0.02630 and -0.02634 for `ln K` = -9.2857, -5 and -12, and `2 ln(1.01325)` is
+  0.02633. With P0 = 1.01325 bar the residual is 3e-5 or less, so the reaction quotient, the mass
+  balance, the EOS and the solver of DWSIM agree with thermo-sim.
+- **The expression `ln K(T)` is evaluated at T + 1 K.** The temperature T' for which
+  `11000 / T' - 25` reproduces the `ln K` that DWSIM used is 501.0000, 600.9993, 701.0006 and
+  801.0004 K at 500, 600, 700 and 800 K. On the water-gas shift at 600 K (`4577.8 / T - 4.33`, sum of
+  nu = 0, 1 atm) DWSIM gives 83.7935 %, against 83.887 % with K at T and 83.801 % with K at T + 1.
+  The expression `ln K` without T (a constant) is not affected. This looks like a DWSIM
+  implementation detail, not a thermodynamic effect: with these two conventions the ammonia
+  conversions agree to 0.01 conversion points or better (equation mode, 500 to 800 K).
+
+In Gibbs mode (K from the formation data) DWSIM does not show the T + 1 shift. With P0 = 1 atm,
+thermo-sim is within +0.12, +0.06, +0.005 and -0.045 conversion points at 500, 600, 700 and
+800 K; the remaining difference is not identified.
+
+Standard state of the formation data: the formation Gibbs energy of NH3 in the database
+(-16.37 kJ/mol, from NIST) is for 1 bar; DWSIM's (-16.40 kJ/mol, DIPPR) is for 1 atm. They are the same
+data (the formation entropy differs by R ln 1.01325). `EquilibriumReactor` uses P0 = 1 bar by
+default, consistent with the database; compare with DWSIM using `P_ref=1.01325`.
+
+Carbon monoxide is not in the packaged database, so the water-gas shift is not part of the tests.

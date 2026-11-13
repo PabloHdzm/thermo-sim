@@ -2,8 +2,9 @@
   "meta": {
     "dwsim": "10.2.12.0",
     "package": "Peng-Robinson, inside-out flash, liquid volume from the EOS (no Peneloux), kij and constants of the grid runs",
-    "flowsheet": "feed (300 K, 30 bar, 4 mol/s, H2 0.75 N2 0.25) -> C-1 -> H-1 -> R-1 -> CL-1 -> V-1",
-    "power_unit": "kW"
+    "flowsheet": "feed (300 K, 30 bar, 4 mol/s, H2 0.75 N2 0.25) -> C-1 -> H-1 -> R-1 (equilibrium) -> CL-1 -> V-1",
+    "power_unit": "kW",
+    "note": "Converged export: R-1 solver tolerances 1e-9, no initialization from the previous calculation. Reaction set ln K = 11000/T - 25 (activity basis)."
   },
   "compressor": {
     "P_out_bar": 200,
@@ -17,18 +18,19 @@
     "duty_kW": 13.4293
   },
   "reactor": {
-    "mode": "isothermal",
-    "conversion_N2": 0.488008,
+    "mode": "equilibrium, isothermal",
+    "ln_K": "11000/T - 25",
+    "conversion_N2": 0.488758,
     "dP_bar": 0,
-    "duty_kW": -52.9415,
+    "duty_kW": -53.0239,
     "initial_gibbs_kW": 54.8381,
-    "final_gibbs_kW": 37.8009
+    "final_gibbs_kW": 37.7842
   },
   "cooler": {
     "T_out_K": 250,
     "dP_bar": 0,
-    "duty_kW": -66.4019,
-    "vapor_fraction": 0.689385
+    "duty_kW": -66.4212,
+    "vapor_fraction": 0.688707
   },
   "flash": {
     "T_K": 250,
