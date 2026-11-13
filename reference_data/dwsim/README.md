@@ -381,3 +381,50 @@ data (the formation entropy differs by R ln 1.01325). `EquilibriumReactor` uses 
 default, consistent with the database; compare with DWSIM using `P_ref=1.01325`.
 
 Carbon monoxide is not in the packaged database, so the water-gas shift is not part of the tests.
+
+## Propane refrigeration cycle (valve, condenser, evaporator)
+
+`propane_cycle_streams.csv` and `propane_cycle_units.json` hold the results of the DWSIM 10.2.12.0
+propane refrigeration flowsheet used to validate `Valve` and the compressor/cooler pair on a pure
+component that crosses the saturation dome: 1_evap_out (saturated vapor, 2.45 bar, 1 mol/s) ->
+compressor C-1 (12.5 bar, adiabatic efficiency 0.8) -> condenser CD-1 (305 K) -> isenthalpic valve
+V-1 (2.45 bar) -> evaporator EV-1 (253 K) -> 5_evap_out. Property package: Peng-Robinson with the
+DWSIM propane constants (Tc 369.83 K, Pc 42.48 bar, omega 0.152, Vc 0.2 m3/kmol, ZRA 0.2763) and
+R = 8.314. DWSIM results: W = 4.20275 kW, Q_cond = 15.9372 kW, Q_evap = 11.7348 kW, COP = 2.79.
+
+Tests: `tests/test_dwsim_cycle.py` (helper: `tests/_dwsim_cycle.py`). Script with all the
+differences: `python scripts/compare_dwsim_cycle.py`. The streams file is regenerated from a DWSIM
+export with `python scripts/import_dwsim_cycle_streams.py <export.csv>`.
+
+- The ideal-gas Cp is DWSIM's own equation, A + exp(B/T + C + D T + E T^2), fitted with a quartic
+  over 230 to 340 K (other Cp columns zeroed). With the packaged CoolProp-based Cp the duties
+  differ by the Cp difference only.
+- Absolute enthalpies are compared as differences with respect to stream 1: thermo-sim and DWSIM use
+  slightly different formation enthalpies of propane.
+- `Valve`: for a pure component the PH flash cannot solve T inside the dome (T is fixed at the
+  saturation temperature and H(T) jumps), so the valve solves the vapor fraction with the VF-P flash.
+  For mixtures it uses the PH flash directly.
+
+### Known difference: where DWSIM puts the saturation point of a pure component
+
+With DWSIM's own constants, Peng-Robinson gives Z(liquid, 305 K, 12.5 bar) = 0.0436526 and
+Z(vapor, 252.995 K, 2.45 bar) = 0.934560, identical to DWSIM (thermo-sim agrees to 1e-6 on stream 3).
+The saturation temperature at 2.45 bar from the EOS equal-fugacity condition is 253.2214 K (thermo-sim
+253.221 K, and an independent solution of the cubic). DWSIM reports 252.995 K, because for a pure
+compound it places the saturation points with the vapor-pressure correlation of the compound,
+`exp(A + B/T + C ln T + D T^E)` (propane: A 55.2725, B -3396.95, C -5.42339, D 8.95373e-6, E 2, Pa):
+
+| T [K] | correlation [bar] | DWSIM | EOS [bar] |
+|---|---|---|---|
+| 252.995 | 2.45004 | 2.45 | 2.4302 |
+| 305 | 11.37562 | 11.3756 | 11.3023 |
+| 325.138 | 17.96016 | 17.9601 | 17.9583 |
+
+and its Tsat(12.5 bar) = 308.9471 K (correlation) against 309.1735 K (EOS). The same reason explains
+why liquid N2 forced with a vapor fraction did not match. Consequences:
+
+- Streams on the dome (1, 2, 4, 5) inherit the 0.226 K shift; those cases are marked xfail.
+- The evaporator is taken to saturated vapor (`Cooler(V_frac=1.0)`); DWSIM heats to 253 K, 0.005 K
+  above its own dew point, which is liquid in the EOS.
+- The inlet offset cancels in the compressor temperature rise (72.141 K against 72.143 K), and compressor
+  power, condenser and evaporator duty agree to 0.1 to 0.15 %, which is Cp x 0.226 K.

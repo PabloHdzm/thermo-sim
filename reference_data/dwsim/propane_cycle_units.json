@@ -1,0 +1,64 @@
+{
+  "meta": {
+    "dwsim": "10.2.12.0",
+    "package": "Peng-Robinson, rigorous (non-ideal) flash, inside-out, liquid volume from the EOS without Peneloux, DWSIM propane constants, R = 8.314",
+    "flowsheet": "1_evap_out (sat. vapor, 2.45 bar, 1 mol/s propane) -> C-1 -> CD-1 -> V-1 -> EV-1 -> 5_evap_out",
+    "power_unit": "kW"
+  },
+  "constants": {
+    "propane": {
+      "Tc": 369.83,
+      "Pc": 42.48,
+      "omega": 0.152,
+      "Vc": 200.0,
+      "Zra": 0.2763
+    }
+  },
+  "constants_note": "Vc = 0.2 m3/kmol = 200 cm3/mol. IG formation (25 C): H -2373.93 kJ/kg, G -553.116 kJ/kg, S -6.10705 kJ/(kg K); MW 44.0956.",
+  "cp": {
+    "equation": "Cp = A + exp(B/T + C + D*T + E*T^2), J/(kmol K), T in K",
+    "A": 37840.4,
+    "B": -445.579,
+    "C": 11.8387,
+    "D": 0.000653764,
+    "E": -2.20014e-07
+  },
+  "feed": {
+    "P_bar": 2.45,
+    "vapor_fraction": 1.0,
+    "n_mol_s": 1.0
+  },
+  "compressor": {
+    "P_out_bar": 12.5,
+    "eta_adiabatic": 0.8,
+    "power_kW": 4.20275,
+    "T_out_K": 325.138
+  },
+  "condenser": {
+    "T_out_K": 305.0,
+    "dP_bar": 0.0,
+    "duty_kW": -15.9372
+  },
+  "valve": {
+    "P_out_bar": 2.45
+  },
+  "evaporator": {
+    "T_out_K": 253.0,
+    "dP_bar": 0.0,
+    "duty_kW": 11.7348,
+    "note": "DWSIM specifies 253 K, 0.005 K above its own dew point; thermo-sim takes the outlet to saturated vapor (V_frac=1)."
+  },
+  "cop": {
+    "value": 2.7922,
+    "definition": "Q_evap / W_comp = 11.7348 / 4.20275"
+  },
+  "saturation": {
+    "vapor_pressure_equation": "exp(A + B/T + C ln T + D T^E), Pa",
+    "A": 55.2725,
+    "B": -3396.95,
+    "C": -5.42339,
+    "D": 8.95373e-06,
+    "E": 2,
+    "note": "DWSIM places pure-component saturation points with this correlation (Tsat(2.45 bar) = 252.9946 K, Tsat(12.5 bar) = 308.9471 K), not with the EOS (253.2214 K, 309.1735 K)."
+  }
+}
