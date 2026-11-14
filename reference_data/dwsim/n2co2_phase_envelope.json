@@ -73,5 +73,52 @@
     "dT": 2.5,
     "max_points": 300
   },
-  "notes": "Vc in cm3/mol (DWSIM m3/kmol x 1000). k_ij of DWSIM (Peng-Robinson interaction parameters), symmetric."
+  "notes": "Vc in cm3/mol (DWSIM m3/kmol x 1000). k_ij of DWSIM (Peng-Robinson interaction parameters), symmetric.",
+  "cp_ideal_gas": {
+    "form": "A + exp(B/T + C + D*T + E*T**2) [J/(kmol K)]",
+    "nitrogen": {
+      "A": 29103.6,
+      "B": -2305.95,
+      "C": 11.319,
+      "D": -0.00100557,
+      "E": 1.7061e-07
+    },
+    "carbondioxide": {
+      "A": 28933,
+      "B": -494.28,
+      "C": 10.658,
+      "D": -2.7375e-05,
+      "E": 3.3268e-09
+    },
+    "methane": {
+      "A": 33151.9,
+      "B": -1220,
+      "C": 12.0907,
+      "D": -0.000384791,
+      "E": 9.8964e-08
+    },
+    "ethane": {
+      "A": 35666.2,
+      "B": -616.52,
+      "C": 11.6991,
+      "D": 0.000444525,
+      "E": -1.54194e-07
+    },
+    "propane": {
+      "A": 37840.4,
+      "B": -445.579,
+      "C": 11.8387,
+      "D": 0.000653764,
+      "E": -2.20014e-07
+    }
+  },
+  "molar_mass": {
+    "nitrogen": 28.0134,
+    "carbondioxide": 44.0095,
+    "methane": 16.0425,
+    "ethane": 30.069,
+    "propane": 44.0956
+  },
+  "enthalpy_reference": "DWSIM mixture enthalpy: ideal gas at 298.15 K and 1 atm, no formation enthalpy; kJ/kg",
+  "ps_offset_kJ_kgK": 0.0682
 }

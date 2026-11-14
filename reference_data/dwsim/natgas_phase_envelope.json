@@ -73,5 +73,52 @@
   },
   "notes": "Vc in cm3/mol (DWSIM m3/kmol x 1000). DWSIM reports P = 1E-5 bar on the phase identification curve below 178.42 K (artifact, ignored).",
   "pip_vle_max_T_K": 228.5,
-  "title": "natural gas (CH4/C2H6/C3H8/n-C4H10/n-C5H12)"
+  "title": "natural gas (CH4/C2H6/C3H8/n-C4H10/n-C5H12)",
+  "molar_mass": {
+    "methane": 16.0425,
+    "ethane": 30.069,
+    "propane": 44.0956,
+    "butane": 58.1222,
+    "pentane": 72.1488
+  },
+  "cp_ideal_gas": {
+    "form": "A + exp(B/T + C + D*T + E*T**2) [J/(kmol K)]",
+    "methane": {
+      "A": 33151.9,
+      "B": -1220,
+      "C": 12.0907,
+      "D": -0.000384791,
+      "E": 9.8964e-08
+    },
+    "ethane": {
+      "A": 35666.2,
+      "B": -616.52,
+      "C": 11.6991,
+      "D": 0.000444525,
+      "E": -1.54194e-07
+    },
+    "propane": {
+      "A": 37840.4,
+      "B": -445.579,
+      "C": 11.8387,
+      "D": 0.000653764,
+      "E": -2.20014e-07
+    },
+    "butane": {
+      "A": 44749.9,
+      "B": -338.141,
+      "C": 11.8145,
+      "D": 0.00097744,
+      "E": -3.35913e-07
+    },
+    "pentane": {
+      "A": 81062,
+      "B": -706.86,
+      "C": 12.962,
+      "D": -4.9298e-05,
+      "E": 2.8357e-09
+    }
+  },
+  "enthalpy_reference": "DWSIM mixture enthalpy: ideal gas at 298.15 K and 1 atm, no formation enthalpy; kJ/kg",
+  "ps_offset_kJ_kgK": 0.0821
 }

@@ -22,6 +22,11 @@ from thermo_sim.phase_envelope import PhaseEnvelope
 ROOT = Path(__file__).resolve().parents[1]
 REF_DIR = ROOT / 'reference_data' / 'dwsim'
 CASES = ('natgas', 'n2co2')
+PH_CASES = tuple(c for c in CASES if (REF_DIR / f'{c}_phase_envelope_ph.csv').exists())
+PS_CASES = tuple(c for c in CASES if (REF_DIR / f'{c}_phase_envelope_ps.csv').exists())
+TH_CASES = tuple(c for c in CASES if (REF_DIR / f'{c}_phase_envelope_th.csv').exists())
+TS_CASES = tuple(c for c in CASES if (REF_DIR / f'{c}_phase_envelope_ts.csv').exists())
+TREF = 298.15                           # K, reference of the ideal-gas enthalpy (same as DWSIM)
 P_START = 1.01325                       # bar, initial pressure of the DWSIM custom-initialization run
 SCALE = 100.0
 
@@ -133,3 +138,383 @@ def pip_diffs(case):
     keep = P > 1.0
     mine = pe.phase_identification_curve(T[keep])
     return T[keep], P[keep], mine / P[keep] - 1.0
+
+
+# ---------------------------------------------------------------------------------------------------
+# Enthalpy along the envelope (PH diagram)
+#
+# DWSIM prints the mixture enthalpy [kJ/kg] with the ideal gas at 298.15 K as reference and no formation
+# enthalpy; thermo-sim H = ideal gas (database Cp, with its linear extension outside the fitted range)
+# + EOS departure, formation enthalpy left out. The database Cp differs from the DWSIM Cp equation
+# (1 to 3 % at 300 K, more below the 200 K limit of the fit), so two comparisons are made:
+#   raw       thermo-sim with the database Cp against DWSIM;
+#   corrected thermo-sim minus  z . integral(Cp_database - Cp_DWSIM) dT, i.e. what the EOS part alone gives.
+# ---------------------------------------------------------------------------------------------------
+_GL_X, _GL_W = np.polynomial.legendre.leggauss(64)
+
+
+@lru_cache(maxsize=None)
+def _ph_ref(case):
+    return pd.read_csv(REF_DIR / f'{case}_phase_envelope_ph.csv')
+
+
+def ph_points(case, section):
+    d = _ph_ref(case)
+    d = d[d['section'] == section]
+    return d['value'].to_numpy(), d['P_bar'].to_numpy()
+
+
+def _stream_z(case):
+    return np.asarray(feed(case).z, float)
+
+
+def _stream_names(case):
+    return [str(c).lower() for c in feed(case).component_data['Component']]
+
+
+def _int_cp_database(case, T):
+    """Per component, integral of the database ideal-gas Cp from TREF to T [J/mol]."""
+    from thermo_sim.stream import Stream as _S
+    return _S._int_cp_gas(feed(case).component_data, TREF, T).to_numpy(dtype=float)
+
+
+def _int_cp_dwsim(case, T):
+    """Per component, integral of the DWSIM ideal-gas Cp from TREF to T [J/mol] (Gauss-Legendre)."""
+    cp = config(case)['cp_ideal_gas']
+    t = 0.5 * (T - TREF) * _GL_X + 0.5 * (T + TREF)
+    out = []
+    for n in _stream_names(case):
+        c = cp[n]
+        f = (c['A'] + np.exp(c['B'] / t + c['C'] + c['D'] * t + c['E'] * t ** 2)) / 1000.0     # J/(mol K)
+        out.append(0.5 * (T - TREF) * float(_GL_W @ f))
+    return np.array(out)
+
+
+def _eos_residual(case, T, P, phase):
+    s = feed(case)
+    return float(s._eos.H_residual(T, P, _stream_z(case), phase))
+
+
+def mixture_molar_mass(case, source='dwsim'):
+    """Molar mass of the mixture [g/mol]: DWSIM's (config `molar_mass`, if it covers every component) or the
+    database's."""
+    z, nm = _stream_z(case), _stream_names(case)
+    mm = config(case).get('molar_mass', {})
+    if source == 'dwsim' and all(n in mm for n in nm):
+        return float(z @ np.array([mm[n] for n in nm]))
+    return float(z @ np.asarray(feed(case).MM, float))         # no DWSIM molar masses for this case
+
+
+def cp_enthalpy_difference(case, T):
+    """z . integral(Cp_database - Cp_DWSIM) dT from TREF to T [J/mol]."""
+    z = _stream_z(case)
+    return float(z @ (_int_cp_database(case, T) - _int_cp_dwsim(case, T)))
+
+
+def saturation_enthalpy(case):
+    """Enthalpy [kJ/kg] along the traced envelope: dict with arrays P, H, dH_cp for the bubble branch
+    (saturated liquid) and the dew branch (saturated vapor), both ending at the critical point."""
+    pe, r = envelope(case)
+    z, MM = _stream_z(case), mixture_molar_mass(case)
+    out = {}
+    for branch, phase in (('bubble', 'l'), ('dew', 'v')):
+        T = [p.T for p in r.path if p.branch == branch] + [r.critical_point[0]]
+        P = [p.P for p in r.path if p.branch == branch] + [r.critical_point[1]]
+        H = [(float(z @ _int_cp_database(case, t)) + _eos_residual(case, t, p, phase)) / MM for t, p in zip(T, P)]
+        dC = [cp_enthalpy_difference(case, t) / MM for t in T]
+        out[branch] = dict(T=np.array(T), P=np.array(P), H=np.array(H), dH_cp=np.array(dC))
+    return out
+
+
+def ph_distances(case, section, branch, corrected):
+    """Distance of the DWSIM points (H, P) to our curve, in (kJ/kg, 100 ln P)."""
+    c = saturation_enthalpy(case)[branch]
+    H = c['H'] - c['dH_cp'] if corrected else c['H']
+    h, P = ph_points(case, section)
+    keep = P >= P_START - 1e-6
+    return h[keep], P[keep], distance(H, c['P'], h[keep], P[keep])
+
+
+def operating_point_enthalpy(case):
+    """thermo-sim minus DWSIM enthalpy at the operating point (vapor) [kJ/kg]: raw and corrected."""
+    op, z, MM = config(case)['operating_point'], _stream_z(case), mixture_molar_mass(case)
+    h_dw = ph_points(case, 'operating')[0][0]
+    h = (float(z @ _int_cp_database(case, op['T_K'])) + _eos_residual(case, op['T_K'], op['P_bar'], 'v')) / MM
+    return h - h_dw, h - cp_enthalpy_difference(case, op['T_K']) / MM - h_dw
+
+
+def critical_enthalpy(case):
+    """thermo-sim minus DWSIM enthalpy at the critical point [kJ/kg], raw and corrected; DWSIM's value is
+    the last point of its bubble and dew branches."""
+    c = saturation_enthalpy(case)
+    h_dw = ph_points(case, 'bubble_custom_init')[0][-1]
+    return c['bubble']['H'][-1] - h_dw, c['bubble']['H'][-1] - c['bubble']['dH_cp'][-1] - h_dw
+
+
+# ---------------------------------------------------------------------------------------------------
+# Entropy along the envelope (PS diagram)
+#
+# thermo-sim S = ideal gas (database Cp, integral of Cp/T from TREF) + ideal mixing (-R sum z ln z)
+# + EOS departure - R ln(P / Pref), formation entropy left out (as in the Stream, minus the formation term).
+# DWSIM prints S in kJ/(kg K). Its values differ from thermo-sim's by a constant, 0.0821 kJ/(kg K)
+# (1.74 J/(mol K)) that does not depend on T or P (it varies 5e-4 along the whole envelope): a
+# difference in the entropy reference of DWSIM that cancels in differences. The curves are therefore
+# compared after taking out that offset, measured at the operating point (vapor, 300 K, 1 atm); the
+# offset itself is reported, and as in the PH diagram the comparison is made raw (database Cp) and
+# corrected for the integral of (Cp_database - Cp_DWSIM)/T. Distances are in (J/(kg K), 100 ln P).
+# ---------------------------------------------------------------------------------------------------
+@lru_cache(maxsize=None)
+def _ps_ref(case):
+    return pd.read_csv(REF_DIR / f'{case}_phase_envelope_ps.csv')
+
+
+def ps_points(case, section):
+    d = _ps_ref(case)
+    d = d[d['section'] == section]
+    return d['value'].to_numpy(), d['P_bar'].to_numpy()
+
+
+def _int_cp_over_T_database(case, T):
+    """Per component, integral of the database ideal-gas Cp / T from TREF to T [J/(mol K)]."""
+    from thermo_sim.stream import Stream as _S
+    return _S._int_cp_gas_over_T(feed(case).component_data, TREF, T).to_numpy(dtype=float)
+
+
+def _int_cp_over_T_dwsim(case, T):
+    cp = config(case)['cp_ideal_gas']
+    t = 0.5 * (T - TREF) * _GL_X + 0.5 * (T + TREF)
+    out = []
+    for n in _stream_names(case):
+        c = cp[n]
+        f = (c['A'] + np.exp(c['B'] / t + c['C'] + c['D'] * t + c['E'] * t ** 2)) / 1000.0 / t
+        out.append(0.5 * (T - TREF) * float(_GL_W @ f))
+    return np.array(out)
+
+
+def _eos_entropy_terms(case, T, P, phase):
+    """EOS departure and pressure term [J/(mol K)]."""
+    s = feed(case)
+    eos = s._eos
+    return float(eos.S_residual(T, P, _stream_z(case), phase)) - float(eos.R) * np.log(P / s.Pref)
+
+
+def _mixing_entropy(case):
+    z = _stream_z(case)
+    return -float(feed(case)._eos.R) * float(np.sum(z[z > 0] * np.log(z[z > 0])))
+
+
+def cp_entropy_difference(case, T):
+    """z . integral((Cp_database - Cp_DWSIM) / T) dT from TREF to T [J/(mol K)]."""
+    return float(_stream_z(case) @ (_int_cp_over_T_database(case, T) - _int_cp_over_T_dwsim(case, T)))
+
+
+def _entropy(case, T, P, phase):
+    """thermo-sim entropy [kJ/(kg K)] with the database Cp, DWSIM molar mass, no formation entropy."""
+    return (float(_stream_z(case) @ _int_cp_over_T_database(case, T)) + _mixing_entropy(case)
+            + _eos_entropy_terms(case, T, P, phase)) / mixture_molar_mass(case)
+
+
+def saturation_entropy(case):
+    """Entropy [kJ/(kg K)] along the traced envelope, same layout as saturation_enthalpy (dS_cp is the
+    Cp-difference term, in kJ/(kg K))."""
+    pe, r = envelope(case)
+    MM = mixture_molar_mass(case)
+    out = {}
+    for branch, phase in (('bubble', 'l'), ('dew', 'v')):
+        T = [p.T for p in r.path if p.branch == branch] + [r.critical_point[0]]
+        P = [p.P for p in r.path if p.branch == branch] + [r.critical_point[1]]
+        S = [_entropy(case, t, p, phase) for t, p in zip(T, P)]
+        dC = [cp_entropy_difference(case, t) / MM for t in T]
+        out[branch] = dict(T=np.array(T), P=np.array(P), S=np.array(S), dS_cp=np.array(dC))
+    return out
+
+
+def entropy_offset(case, corrected=False):
+    """thermo-sim minus DWSIM entropy at the operating point (vapor) [kJ/(kg K)]."""
+    op = config(case)['operating_point']
+    s_dw = ps_points(case, 'operating')[0][0]
+    s = _entropy(case, op['T_K'], op['P_bar'], 'v')
+    if corrected:
+        s -= cp_entropy_difference(case, op['T_K']) / mixture_molar_mass(case)
+    return s - s_dw
+
+
+def ps_distances(case, section, branch, corrected):
+    """Distance of the DWSIM points (S, P) to our curve once the offset is taken out, in
+    (J/(kg K), 100 ln P)."""
+    c = saturation_entropy(case)[branch]
+    S = (c['S'] - c['dS_cp'] if corrected else c['S']) - entropy_offset(case, corrected)
+    s, P = ps_points(case, section)
+    keep = P >= P_START - 1e-6
+    Sc = np.column_stack([1000.0 * S, SCALE * np.log(c['P'])])
+    a, ab = Sc[:-1], np.diff(Sc, axis=0)
+    out = []
+    for s_, p_ in zip(s[keep], P[keep]):
+        p = np.array([1000.0 * s_, SCALE * np.log(p_)])
+        u = np.clip(np.einsum('ij,ij->i', p - a, ab) / (np.einsum('ij,ij->i', ab, ab) + 1e-30), 0, 1)
+        out.append(float(np.min(np.linalg.norm(p - (a + u[:, None] * ab), axis=1))))
+    return s[keep], P[keep], np.array(out)
+
+
+def critical_entropy(case):
+    """thermo-sim minus DWSIM entropy at the critical point, offset taken out [kJ/(kg K)]: raw, corrected."""
+    c = saturation_entropy(case)['bubble']
+    s_dw = ps_points(case, 'bubble_custom_init')[0][-1]
+    return (c['S'][-1] - entropy_offset(case) - s_dw,
+            c['S'][-1] - c['dS_cp'][-1] - entropy_offset(case, True) - s_dw)
+
+
+# ---------------------------------------------------------------------------------------------------
+# Point-by-point tables and curves for the PH and PS diagrams (compare and plot scripts)
+# ---------------------------------------------------------------------------------------------------
+def _curve(case, kind, branch, corrected=False):
+    """(P, T, value) along our branch; value is H [kJ/kg] or S [kJ/(kg K)] with the offset taken out."""
+    if kind == 'PH':
+        c = saturation_enthalpy(case)[branch]
+        v = c['H'] - c['dH_cp'] if corrected else c['H']
+    else:
+        c = saturation_entropy(case)[branch]
+        v = (c['S'] - c['dS_cp'] if corrected else c['S']) - entropy_offset(case, corrected)
+    return c['P'], c['T'], v
+
+
+def comparison_table(case, kind, corrected=False, rows=12):
+    """Rows (branch, P, T, DWSIM value, thermo-sim value, difference) at DWSIM's own pressures, on the part
+    of each branch where P increases (up to the cricondenbar on the dew branch). Our value is
+    interpolated in ln P along our curve."""
+    ref = ph_points if kind == 'PH' else ps_points
+    out = []
+    for section, branch in (('bubble_custom_init', 'bubble'), ('dew', 'dew')):
+        x_dw, P_dw = ref(case, section)
+        keep = P_dw >= P_START - 1e-6
+        x_dw, P_dw = x_dw[keep], P_dw[keep]
+        n_dw = int(np.argmax(P_dw)) + 1 if branch == 'dew' else len(P_dw) - 1
+        P, T, v = _curve(case, kind, branch, corrected)
+        n = int(np.argmax(P)) + 1 if branch == 'dew' else len(P) - 1
+        idx = np.unique(np.linspace(0, n_dw - 1, rows).round().astype(int))
+        for i in idx:
+            if not (P[0] <= P_dw[i] <= P[:n].max()):
+                continue
+            lnp = np.log(P[:n])
+            mine = float(np.interp(np.log(P_dw[i]), lnp, v[:n]))
+            t = float(np.interp(np.log(P_dw[i]), lnp, T[:n]))
+            out.append((branch, float(P_dw[i]), t, float(x_dw[i]), mine, mine - float(x_dw[i])))
+    return out
+
+
+# ---------------------------------------------------------------------------------------------------
+# TH and TS diagrams (temperature as ordinate)
+#
+# They are the same saturation curves as PH and PS, so H(T, P) and S(T, P) are the ones already validated;
+# what these diagrams add is the geometry near the critical point and the cricondentherm, where T is not
+# monotonic. Distances are measured in (kJ/kg, K) for TH and (J/(kg K), K) for TS. DWSIM does not
+# compute the TH diagram of natgas (calculation failed, index out of range) with or without custom
+# initialization, and for n2co2 only without it, so the TH case lists depend on the files present.
+# The DWSIM operating point of the TS diagram need not be at the same T as that of the PS diagram (natgas:
+# 300 K and 298.15 K), so the entropy offset is measured at the T of each file.
+# ---------------------------------------------------------------------------------------------------
+@lru_cache(maxsize=None)
+def _t_ref(case, kind):
+    return pd.read_csv(REF_DIR / f'{case}_phase_envelope_{kind.lower()}.csv')
+
+
+def t_points(case, kind, section):
+    """(value, T_K) of a section of the TH or TS export (H in kJ/kg, S in kJ/(kg K))."""
+    d = _t_ref(case, kind)
+    d = d[d['section'] == section]
+    return d['value'].to_numpy(), d['T_K'].to_numpy()
+
+
+def bubble_section(case, kind):
+    """Name of the bubble section of the TH/TS export: custom or default initialization."""
+    names_ = set(_t_ref(case, kind)['section'])
+    return 'bubble_custom_init' if 'bubble_custom_init' in names_ else 'bubble_default_init'
+
+
+def _polyline_distance(cx, cy, px, py):
+    c = np.column_stack([cx, cy])
+    a, ab = c[:-1], np.diff(c, axis=0)
+    out = []
+    for x_, y_ in zip(px, py):
+        p = np.array([x_, y_])
+        u = np.clip(np.einsum('ij,ij->i', p - a, ab) / (np.einsum('ij,ij->i', ab, ab) + 1e-30), 0, 1)
+        out.append(float(np.min(np.linalg.norm(p - (a + u[:, None] * ab), axis=1))))
+    return np.array(out)
+
+
+def ts_offset(case, corrected=False):
+    """thermo-sim minus DWSIM entropy at the operating point of the TS export (vapor) [kJ/(kg K)]."""
+    s_dw, T_op = t_points(case, 'TS', 'operating')
+    P_op = config(case)['operating_point']['P_bar']
+    s = _entropy(case, float(T_op[0]), P_op, 'v')
+    if corrected:
+        s -= cp_entropy_difference(case, float(T_op[0])) / mixture_molar_mass(case)
+    return s - float(s_dw[0])
+
+
+def th_distances(case, section, branch, corrected):
+    """Distance of the DWSIM points (H, T) to our curve in (kJ/kg, K), for the part of DWSIM's branch above
+    the temperature of our first point (1 atm)."""
+    c = saturation_enthalpy(case)[branch]
+    H = c['H'] - c['dH_cp'] if corrected else c['H']
+    h, T = t_points(case, 'TH', section)
+    keep = T >= c['T'][0] - 1e-6
+    return h[keep], T[keep], _polyline_distance(H, c['T'], h[keep], T[keep])
+
+
+def ts_distances(case, section, branch, corrected):
+    """Distance of the DWSIM points (S, T) to our curve once the offset is taken out, in (J/(kg K), K)."""
+    c = saturation_entropy(case)[branch]
+    S = (c['S'] - c['dS_cp'] if corrected else c['S']) - ts_offset(case, corrected)
+    s, T = t_points(case, 'TS', section)
+    keep = T >= c['T'][0] - 1e-6
+    return s[keep], T[keep], _polyline_distance(1000.0 * S, c['T'], 1000.0 * s[keep], T[keep])
+
+
+def operating_point_th(case):
+    """thermo-sim minus DWSIM enthalpy at the TH operating point (vapor) [kJ/kg]: raw and corrected."""
+    h_dw, T_op = t_points(case, 'TH', 'operating')
+    T, P = float(T_op[0]), config(case)['operating_point']['P_bar']
+    z, MM = _stream_z(case), mixture_molar_mass(case)
+    h = (float(z @ _int_cp_database(case, T)) + _eos_residual(case, T, P, 'v')) / MM
+    return h - float(h_dw[0]), h - cp_enthalpy_difference(case, T) / MM - float(h_dw[0])
+
+
+def _curve_t(case, kind, branch, corrected=False):
+    """(T, value) along our branch for the TH or TS diagram; value is H [kJ/kg] or S [kJ/(kg K)] (offset out)."""
+    if kind == 'TH':
+        c = saturation_enthalpy(case)[branch]
+        v = c['H'] - c['dH_cp'] if corrected else c['H']
+    else:
+        c = saturation_entropy(case)[branch]
+        v = (c['S'] - c['dS_cp'] if corrected else c['S']) - ts_offset(case, corrected)
+    return c['T'], v
+
+
+def comparison_table_t(case, kind, corrected=False, rows=14):
+    """Rows (branch, T, DWSIM value, thermo-sim value, difference) at DWSIM's own temperatures (above the
+    1 atm point of our branch). The dew branch is split at the cricondentherm: points of DWSIM before its
+    maximum T are compared with the rising part of our curve, the later ones with the falling part. Our value
+    is interpolated in T."""
+    out = []
+    for branch in ('bubble', 'dew'):
+        section = bubble_section(case, kind) if branch == 'bubble' else 'dew'
+        x_dw, T_dw = t_points(case, kind, section)
+        T, v = _curve_t(case, kind, branch, corrected)
+        keep = T_dw >= T[0] - 1e-6
+        x_dw, T_dw = x_dw[keep], T_dw[keep]
+        if branch == 'dew':
+            k_dw, k = int(np.argmax(T_dw)), int(np.argmax(T))
+            parts = [(np.arange(0, k_dw + 1), T[:k + 1], v[:k + 1]),
+                     (np.arange(k_dw + 1, len(T_dw)), T[k:][::-1], v[k:][::-1])]
+        else:
+            parts = [(np.arange(len(T_dw)), T, v)]
+        for idx, Tp, vp in parts:
+            if len(idx) == 0:
+                continue
+            for i in np.unique(np.linspace(idx[0], idx[-1], max(2, rows // len(parts))).round().astype(int)):
+                if not (Tp.min() <= T_dw[i] <= Tp.max()):
+                    continue
+                mine = float(np.interp(T_dw[i], Tp, vp))
+                out.append((branch, float(T_dw[i]), float(x_dw[i]), mine, mine - float(x_dw[i])))
+    return out

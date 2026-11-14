@@ -470,3 +470,66 @@ Known differences, not model differences: DWSIM reports P = 1E-5 bar on the phas
 curve below 178.42 K (natgas); its Pi = 1 points carry finite-difference noise of about 5e-4 in P.
 `tests/test_phase_envelope.py` adds six mixtures of very different volatility with no DWSIM data
 (binaries from ethane/propane to methane/pentane): consistency of the trace, residuals and extrema.
+
+### PH diagram (natgas, enthalpy in kJ/kg)
+
+DWSIM export `natgas_phase_envelope_ph.csv` (`value` = specific enthalpy [kJ/kg], mass basis; imported with
+`--kind PH`). DWSIM's reference is the ideal gas at 298.15 K without formation enthalpy; thermo-sim H is the
+ideal-gas part from the database Cp (integral from 298.15 K) plus the EOS departure, formation enthalpy
+left out, divided by the DWSIM molar mass of the mixture (21.2323 g/mol). Absolute values are compared.
+
+The database Cp is a fit that differs from DWSIM's equation `A + exp(B/T + C + D T + E T^2)`: 1 to 3 % at
+300 K, 17 % for n-butane at 114 K (the fit stops at 200 K and is extended linearly below). The comparison
+is therefore made twice: raw (database Cp) and corrected for the integral of the Cp difference,
+`z . integral(Cp_database - Cp_DWSIM) dT`, which leaves the EOS departure alone.
+
+| Distance to the DWSIM points, (kJ/kg, 100 ln P) | raw (database Cp) | corrected |
+|---|---|---|
+| Bubble branch (66 points) | max 0.94, median 0.26 | max 0.008, median 0.002 |
+| Dew branch (237 points) | max 0.70, median 0.03 | max 0.016, median 0.005 |
+| Operating point (300 K, 1 atm, vapor) | -0.024 kJ/kg (2.375 in DWSIM) | -2e-5 kJ/kg |
+| Critical point | +0.60 kJ/kg (-389.07 in DWSIM) | +1e-4 kJ/kg |
+
+The raw differences (at most 1 kJ/kg in a 460 kJ/kg range, 0.2 %) come from the Cp fit, mostly below
+200 K on the bubble branch; with the Cp difference taken out the EOS part agrees to 0.02 kJ/kg.
+
+### PS diagram (natgas, entropy in kJ/(kg K))
+
+DWSIM export `natgas_phase_envelope_ps.csv` (`value` = specific entropy [kJ/(kg K)], imported with
+`--kind PS`). thermo-sim S = ideal gas (database Cp, integral of Cp/T from 298.15 K) + ideal mixing
+(-R sum z ln z) + EOS departure - R ln(P / Pref), Pref = 1.01325 bar, formation entropy left out, divided
+by the DWSIM molar mass.
+
+DWSIM's entropy differs from thermo-sim's by a constant: 0.0821 kJ/(kg K) (1.74 J/(mol K)), the same on
+both branches and at every pressure (it varies by 5e-4 along the whole envelope). It is a difference of
+entropy reference that has not been traced to a term of the DWSIM calculation. It cancels in differences,
+so the curves are compared after taking it out, measured at the operating point (vapor, 300 K, 1 atm), and
+`test_ps_constant_offset_to_dwsim` keeps it from drifting. As for the enthalpy, the comparison is made raw
+(database Cp) and corrected for `z . integral((Cp_database - Cp_DWSIM)/T) dT`.
+
+| Distance to the DWSIM points, (J/(kg K), 100 ln P) | raw (database Cp) | corrected |
+|---|---|---|
+| Bubble branch (66 points) | max 2.7, median 0.29 | max 0.15, median 0.015 |
+| Dew branch (237 points) | max 2.3, median 0.015 | max 0.021, median 0.004 |
+| Critical point (offset out) | +2.3e-3 kJ/(kg K) | -2e-6 kJ/(kg K) |
+| Offset at the operating point | 0.0820 kJ/(kg K) | 0.0821 kJ/(kg K) |
+
+The entropy range of the envelope is 5.0 kJ/(kg K), so the raw distances are 0.05 % and the corrected ones
+0.003 % of it.
+
+### TH and TS diagrams
+
+Same saturation curves as PH and PS with T as ordinate (DWSIM exports `Enthalpy (kJ/kg)` or `Entropy (kJ/[kg.K])` against `Temperature (K)`), imported with `scripts/import_dwsim_phase_envelope.py CASE FILE --kind TH|TS` into `<case>_phase_envelope_th.csv` and `_ts.csv`. H(T, P) and S(T, P) are the ones validated in PH and PS; these diagrams add the geometry near the critical point and the cricondentherm, where T is not monotonic. Distances are measured in (kJ/kg, K) and (J/(kg K), K) against the part of the DWSIM branch above the temperature of thermo-sim's first point (1.01325 bar).
+
+- TH is available for N2/CO2 only, run without custom initialization (bubble points written as `bubble_default_init`, `--default-init`). DWSIM 10.2.12.0 fails the natgas TH diagram with "Calculation failed. Index was out of range" with and without custom initialization; this is a DWSIM limitation, not a gap in the comparison.
+- TS runs in both cases. The DWSIM operating point of the natgas TS diagram is at 300 K (the PS one at 298.15 K); the entropy offset to DWSIM is the same in both (0.0820 kJ/(kg K) raw, 0.0821 with the Cp difference removed), as expected for a reference difference that does not depend on T.
+- The entropy offset is composition dependent and unexplained (pure N2 and pure methane agree with DWSIM to 6 digits at 298.15 K and 1.01325 bar; the offset is 0.0682 kJ/(kg K) for the five-component N2/CO2 mixture and 0.0821 for natgas).
+
+| Diagram | Case | Branch | Max distance, database Cp | Max distance, DWSIM Cp removed |
+|---|---|---|---|---|
+| TH (kJ/kg, K) | n2co2 | bubble | 0.13 | 0.003 |
+| TH (kJ/kg, K) | n2co2 | dew | 0.41 | 0.005 |
+| TS (J/(kg K), K) | n2co2 | bubble | 0.16 | 0.021 |
+| TS (J/(kg K), K) | n2co2 | dew | 1.50 | 0.007 |
+| TS (J/(kg K), K) | natgas | bubble | 0.36 | 0.019 |
+| TS (J/(kg K), K) | natgas | dew | 2.26 | 0.021 |
