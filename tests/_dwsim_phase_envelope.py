@@ -26,6 +26,8 @@ PH_CASES = tuple(c for c in CASES if (REF_DIR / f'{c}_phase_envelope_ph.csv').ex
 PS_CASES = tuple(c for c in CASES if (REF_DIR / f'{c}_phase_envelope_ps.csv').exists())
 TH_CASES = tuple(c for c in CASES if (REF_DIR / f'{c}_phase_envelope_th.csv').exists())
 TS_CASES = tuple(c for c in CASES if (REF_DIR / f'{c}_phase_envelope_ts.csv').exists())
+VP_CASES = tuple(c for c in CASES if (REF_DIR / f'{c}_phase_envelope_vp.csv').exists())
+VT_CASES = tuple(c for c in CASES if (REF_DIR / f'{c}_phase_envelope_vt.csv').exists())
 TREF = 298.15                           # K, reference of the ideal-gas enthalpy (same as DWSIM)
 P_START = 1.01325                       # bar, initial pressure of the DWSIM custom-initialization run
 SCALE = 100.0
@@ -52,6 +54,17 @@ def missing_components(case, db=None):
 
 def sections(case):
     return sorted(set(_ref(case)['section']))
+
+
+BRANCH_SECTIONS = (('bubble_custom_init', 'bubble'), ('bubble_default_init', 'bubble'),
+                   ('dew', 'dew'), ('dew_default_init', 'dew'))
+
+
+def branch_sections(case):
+    """(section, branch) of the P-T export of `case`: custom and default initialization of both branches, those
+    that exist (DWSIM's default-initialization runs only change where each branch starts)."""
+    have = set(_ref(case)['section'])
+    return [(s_, b_) for s_, b_ in BRANCH_SECTIONS if s_ in have]
 
 
 def points(case, section):
@@ -517,4 +530,105 @@ def comparison_table_t(case, kind, corrected=False, rows=14):
                     continue
                 mine = float(np.interp(T_dw[i], Tp, vp))
                 out.append((branch, float(T_dw[i]), float(x_dw[i]), mine, mine - float(x_dw[i])))
+    return out
+
+
+# ---------------------------------------------------------------------------------------------------
+# VP and VT diagrams: molar volume [m3/kmol] of the saturated liquid (bubble) and vapor (dew)
+#
+# DWSIM prints the volume of each saturated phase as Z R T / P of the cubic EOS (no volume translation:
+# the agreement with thermo-sim's EOS roots is 1e-6 relative). Distances are measured in
+# (100 ln V, 100 ln P) for VP and (100 ln V, K) for VT, i.e. in percent of volume. Its critical-point volume
+# is printed in m3/mol (1000 times smaller than the other points, 8.9e-5 against 8.9e-2 m3/kmol).
+# ---------------------------------------------------------------------------------------------------
+DWSIM_CRITICAL_VOLUME_FACTOR = 1000.0         # DWSIM prints the critical volume in m3/mol, the rest in m3/kmol
+
+
+@lru_cache(maxsize=None)
+def _v_ref(case, kind):
+    return pd.read_csv(REF_DIR / f'{case}_phase_envelope_{kind.lower()}.csv')
+
+
+def v_points(case, kind, section):
+    """(volume [m3/kmol], P [bar] or T [K]) of a section of the VP or VT export."""
+    d = _v_ref(case, kind)
+    d = d[d['section'] == section]
+    return d['value'].to_numpy(), d[d.columns[2]].to_numpy()
+
+
+def molar_volume(case, T, P, phase):
+    """EOS molar volume of the feed composition [m3/kmol] ('l': liquid root, 'v': vapor root)."""
+    eos, z = feed(case)._eos, _stream_z(case)
+    R = float(eos.R)
+    am, bm = eos.mixture_params(T, z)
+    A, B = am * P * 1e5 / (R * T) ** 2, bm * P * 1e5 / (R * T)
+    Z = eos.Z_roots(A, B)[0] if phase == 'v' else eos.liquid_Z_root(A, B)
+    return float(Z * R * T / (P * 1e5) * 1000.0)
+
+
+def saturation_volume(case):
+    """Volume along the traced envelope: dict branch -> T, P, V arrays, both ending at the critical point."""
+    pe, r = envelope(case)
+    out = {}
+    for branch, phase in (('bubble', 'l'), ('dew', 'v')):
+        T = [p.T for p in r.path if p.branch == branch] + [r.critical_point[0]]
+        P = [p.P for p in r.path if p.branch == branch] + [r.critical_point[1]]
+        V = [molar_volume(case, t, p, phase) for t, p in zip(T, P)]
+        out[branch] = dict(T=np.array(T), P=np.array(P), V=np.array(V))
+    return out
+
+
+def vp_distances(case, section, branch):
+    """Distance of the DWSIM points (V, P) to our curve in (100 ln V, 100 ln P)."""
+    c = saturation_volume(case)[branch]
+    v, P = v_points(case, 'VP', section)
+    keep = P >= P_START - 1e-6
+    return v[keep], P[keep], _polyline_distance(SCALE * np.log(c['V']), SCALE * np.log(c['P']),
+                                                SCALE * np.log(v[keep]), SCALE * np.log(P[keep]))
+
+
+def vt_distances(case, section, branch):
+    """Distance of the DWSIM points (V, T) to our curve in (100 ln V, K)."""
+    c = saturation_volume(case)[branch]
+    v, T = v_points(case, 'VT', section)
+    keep = T >= c['T'][0] - 1e-6
+    return v[keep], T[keep], _polyline_distance(SCALE * np.log(c['V']), c['T'], SCALE * np.log(v[keep]), T[keep])
+
+
+def critical_volume(case):
+    """thermo-sim minus DWSIM critical volume, relative: (liquid root, vapor root) at our critical point."""
+    c = saturation_volume(case)
+    v_dw = v_points(case, 'VP', 'critical')[0][0] * DWSIM_CRITICAL_VOLUME_FACTOR
+    return c['bubble']['V'][-1] / v_dw - 1.0, c['dew']['V'][-1] / v_dw - 1.0
+
+
+def comparison_table_v(case, kind, rows=14):
+    """Rows (branch, P or T, DWSIM V, thermo-sim V, relative difference [%]) at DWSIM's own abscissas, above the
+    1 atm point of our branch. The dew branch is split at its maximum (cricondenbar for VP, cricondentherm for
+    VT): DWSIM points before its maximum are compared with the rising part of our curve, later ones with the
+    falling part. ln V is interpolated in ln P (VP) or T (VT)."""
+    key, tr = ('P', np.log) if kind == 'VP' else ('T', lambda x: x)
+    out = []
+    for branch in ('bubble', 'dew'):
+        section = 'bubble_custom_init' if branch == 'bubble' else 'dew'
+        v_dw, x_dw = v_points(case, kind, section)
+        c = saturation_volume(case)[branch]
+        x, lv = tr(c[key]), np.log(c['V'])
+        keep = (x_dw >= (P_START if key == 'P' else c['T'][0]) - 1e-6)
+        v_dw, x_dw = v_dw[keep], x_dw[keep]
+        if branch == 'dew':
+            k_dw, k = int(np.argmax(x_dw)), int(np.argmax(x))
+            parts = [(np.arange(0, k_dw + 1), x[:k + 1], lv[:k + 1]),
+                     (np.arange(k_dw + 1, len(x_dw)), x[k:][::-1], lv[k:][::-1])]
+        else:
+            parts = [(np.arange(len(x_dw)), x, lv)]
+        for idx, xp, lp in parts:
+            if len(idx) == 0:
+                continue
+            for i in np.unique(np.linspace(idx[0], idx[-1], max(2, rows // len(parts))).round().astype(int)):
+                xi = tr(x_dw[i])
+                if not (xp.min() <= xi <= xp.max()):
+                    continue
+                mine = float(np.exp(np.interp(xi, xp, lp)))
+                out.append((branch, float(x_dw[i]), float(v_dw[i]), mine, 100.0 * (mine / float(v_dw[i]) - 1.0)))
     return out

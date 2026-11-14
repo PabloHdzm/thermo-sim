@@ -533,3 +533,35 @@ Same saturation curves as PH and PS with T as ordinate (DWSIM exports `Enthalpy 
 | TS (J/(kg K), K) | n2co2 | dew | 1.50 | 0.007 |
 | TS (J/(kg K), K) | natgas | bubble | 0.36 | 0.019 |
 | TS (J/(kg K), K) | natgas | dew | 2.26 | 0.021 |
+
+### VP and VT diagrams (N2/CO2)
+
+Molar volume [m3/kmol] of the saturated liquid (bubble) and vapor (dew) against P (VP) or T (VT), custom initialization on. DWSIM prints the volumes as Z R T / P of the cubic EOS, without volume translation, so thermo-sim's EOS roots reproduce them to about 1e-6 relative. Imported with `--kind VP|VT`; DWSIM prints these exports with P or T first and the volume second, and the importer swaps them. Distances are measured in (100 ln V, 100 ln P) for VP and (100 ln V, K) for VT, so 0.01 means 0.01 % of volume.
+
+| Diagram | Branch | Max distance | Median |
+|---|---|---|---|
+| VP | bubble | 0.0048 | 0.0003 |
+| VP | dew | 0.0038 | 0.0009 |
+| VT | bubble | 0.0019 | 0.0003 |
+| VT | dew | 0.0026 | 0.0005 |
+
+- The critical volume agrees to 1e-10 relative. DWSIM prints it in m3/mol (8.89939E-05), 1000 times smaller than the other points (m3/kmol); it is kept as printed and the factor is applied in the test.
+- The largest point-by-point differences in `compare_dwsim_phase_envelope.py` (about 0.3 % at 78.4887 bar on the dew branch) sit next to the cricondenbar, where V changes at almost constant P and the comparison at DWSIM's abscissa amplifies a tiny shift; the curve distances above are the meaningful measure.
+- The DWSIM VP/VT bubble branch repeats its first point three times (1.51325 bar / 105.249 K), which does not affect the distances.
+
+### VP and VT diagrams (natgas)
+
+Same exports for natural gas (custom initialization on). The volumes are again Z R T / P of the PR roots.
+
+| Diagram | Branch | Max distance | Median |
+|---|---|---|---|
+| VP | bubble | 0.0033 | 0.0001 |
+| VP | dew | 0.0065 | 0.0014 |
+| VT | bubble | 0.0013 | 0.0001 |
+| VT | dew | 0.0057 | 0.0015 |
+
+The critical volume agrees to 2e-7 relative (DWSIM prints it in m3/mol, see above).
+
+### Initialization of the dew branch
+
+DWSIM can also run the dew branch with default initialization (it starts at the lowest temperature it reaches, not at 1.01325 bar), as it does the bubble branch; in DWSIM the results do not change. `import_dwsim_phase_envelope.py CASE CUSTOM.txt DEFAULT.txt` writes both branches of the default-initialization export as `bubble_default_init` and `dew_default_init`; the tests and `compare_dwsim_phase_envelope.py` pick up every P-T section present (`branch_sections`), and like the bubble branch only the points above 1.01325 bar are compared, since thermo-sim traces both branches from 1.01325 bar and needs no initialization options. For natgas the dew branch was exported with and without custom initialization (`dew` and `dew_default_init`, 237 and 139 points, steps of 0.25 bar and 2.5 K): both start at 1.01325 bar and follow the same curve (max distance to thermo-sim 0.0072 and 0.0077 in (K, 100 ln P)), so unlike the bubble branch, which starts at 85.75 K and 0.05 bar without initialization, the dew branch does not depend on it. The bubble branch is the one that needs the initialization: from low pressure its K values are poorly known.

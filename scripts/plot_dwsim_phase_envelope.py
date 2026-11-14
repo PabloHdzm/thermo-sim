@@ -1,13 +1,14 @@
 """Plot the phase envelope of thermo-sim over the DWSIM points (same layout as the DWSIM charts).
 
 Run from the repository root:
-    python scripts/plot_dwsim_phase_envelope.py [natgas|n2co2] [PT|PH|PS|TH|TS] [output.png]
+    python scripts/plot_dwsim_phase_envelope.py [natgas|n2co2] [PT|PH|PS|TH|TS|VP|VT] [output.png]
 Writes docs/figures/<case>_phase_envelope[_<kind>].png by default (needs matplotlib).
 
 PT: pressure against temperature, with the phase identification curve, critical point, cricondentherm,
     cricondenbar and the operating point.
 PH, PS: pressure against specific enthalpy [kJ/kg] or entropy [kJ/(kg K)] of the saturated liquid
     (bubble) and vapor (dew), database Cp, entropy offset to DWSIM taken out (see the README section).
+VP, VT: pressure or temperature against the molar volume [m3/kmol] (log axis) of the saturated phases.
 TH, TS: temperature against the same enthalpy or entropy (DWSIM does not export TH for natgas).
 """
 import sys
@@ -22,18 +23,18 @@ import matplotlib  # noqa: E402
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt  # noqa: E402
 
-from _dwsim_phase_envelope import (CASES, PH_CASES, PS_CASES, TH_CASES, TS_CASES, _curve,  # noqa: E402
+from _dwsim_phase_envelope import (CASES, PH_CASES, PS_CASES, TH_CASES, TS_CASES, VP_CASES, VT_CASES, _curve,  # noqa: E402
                                    _curve_t, bubble_section, config, envelope, missing_components, ph_points, points,
-                                   ps_points, sections, t_points)
+                                   ps_points, saturation_volume, sections, t_points, v_points)
 
 args = sys.argv[1:]
 case = args[0] if args else 'natgas'
-KINDS = ('PT', 'PH', 'PS', 'TH', 'TS')
+KINDS = ('PT', 'PH', 'PS', 'TH', 'TS', 'VP', 'VT')
 kind = args[1].upper() if len(args) > 1 and args[1].upper() in KINDS else 'PT'
 out_arg = [a for a in args[1:] if a.upper() not in KINDS]
 if case not in CASES:
     sys.exit(f'case must be one of {CASES}')
-if case not in {'PH': PH_CASES, 'PS': PS_CASES, 'TH': TH_CASES, 'TS': TS_CASES, 'PT': CASES}[kind]:
+if case not in {'PH': PH_CASES, 'PS': PS_CASES, 'TH': TH_CASES, 'TS': TS_CASES, 'VP': VP_CASES, 'VT': VT_CASES, 'PT': CASES}[kind]:
     sys.exit(f'no {kind} export for {case}')
 if missing_components(case):
     sys.exit(f'Missing in the database: {missing_components(case)}. Run scripts/build_db.py first.')
@@ -54,7 +55,7 @@ if kind == 'PT':
     ax.plot(T_pip, pe.phase_identification_curve(T_pip), '-', color=GREEN, lw=1.4,
             label='thermo-sim phase identification')
     Tb, Pb = points(case, 'bubble_default_init' if 'bubble_default_init' in sections(case) else 'bubble_custom_init')
-    Td, Pd = points(case, 'dew')
+    Td, Pd = points(case, 'dew_default_init' if 'dew_default_init' in sections(case) else 'dew')
     Tp, Pp = points(case, 'pip')
     keep = Pp > 1.0
     ax.plot(Tb, Pb, 'o', mfc='none', color=BLUE, ms=3.5, mew=0.7, label='DWSIM bubble')
@@ -70,6 +71,20 @@ if kind == 'PT':
     ax.set_ylim(0, 1.1 * max(Pd.max(), Pp.max()))
     ax.set_xlabel('Temperature [K]')
     ax.set_title(f"P-T phase envelope, {config(case)['title']} (PR)")
+elif kind in ('VP', 'VT'):
+    key = 'P' if kind == 'VP' else 'T'
+    c = saturation_volume(case)
+    ax.plot(c['bubble']['V'], c['bubble'][key], '-', color=BLUE, lw=1.8, label='thermo-sim bubble')
+    ax.plot(c['dew']['V'], c['dew'][key], '-', color=RED, lw=1.8, label='thermo-sim dew')
+    vb, xb = v_points(case, kind, 'bubble_custom_init')
+    vd, xd = v_points(case, kind, 'dew')
+    ax.plot(vb, xb, 'o', mfc='none', color=BLUE, ms=3.5, mew=0.7, label='DWSIM bubble')
+    ax.plot(vd, xd, 'o', mfc='none', color=RED, ms=3.5, mew=0.7, label='DWSIM dew')
+    ax.plot(c['bubble']['V'][-1], c['bubble'][key][-1], '*', color='k', ms=11,
+            label=f"critical point ({c['bubble'][key][-1]:.2f} {'bar' if key == 'P' else 'K'})")
+    ax.set_xscale('log')
+    ax.set_xlabel('Molar volume [m3/kmol]')
+    ax.set_title(f"{key}-V phase envelope, {config(case)['title']} (PR)")
 elif kind in ('TH', 'TS'):
     unit, name = ('kJ/kg', 'Enthalpy') if kind == 'TH' else ('kJ/(kg K)', 'Entropy')
     Tb_, vb = _curve_t(case, kind, 'bubble')
@@ -106,7 +121,7 @@ else:
     ax.set_xlabel(f'{name} [{unit}]')
     ax.set_title(f"P-{kind[1]} phase envelope, {config(case)['title']} (PR)")
 
-ax.set_ylabel('Temperature [K]' if kind in ('TH', 'TS') else 'Pressure [bar]')
+ax.set_ylabel('Temperature [K]' if kind in ('TH', 'TS', 'VT') else 'Pressure [bar]')
 ax.title.set_fontsize(9)
 ax.grid(alpha=0.3)
 ax.legend(fontsize=7, loc='best', framealpha=0.9)

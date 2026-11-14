@@ -2,18 +2,19 @@
 
 Bubble and dew branches, critical point, cricondentherm, cricondenbar, phase identification curve,
 equilibrium residuals, the phase at the operating point and the enthalpy and entropy along the envelope
-(PH, PS, TH and TS diagrams). See _dwsim_phase_envelope.py and
+(PH, PS, TH, TS, VP and VT diagrams). See _dwsim_phase_envelope.py and
 reference_data/dwsim/README_phase_envelope_section.md.
 Needs ethane, butane, pentane (natgas) in the packaged database (scripts/build_db.py).
 """
 import numpy as np
 import pytest
 
-from _dwsim_phase_envelope import (CASES, P_START, PH_CASES, PS_CASES, TH_CASES, TS_CASES, branch_distances, config, critical_enthalpy,
-                                   bubble_section, critical_entropy, entropy_offset, envelope, feed,
-                                   missing_components, operating_point_enthalpy, operating_point_th, ph_distances,
-                                   pip_diffs, points, ps_distances, sections, special_points, th_distances,
-                                   ts_distances, ts_offset)
+from _dwsim_phase_envelope import (CASES, P_START, PH_CASES, PS_CASES, TH_CASES, TS_CASES, VP_CASES, VT_CASES,
+                                   branch_distances, branch_sections, config, critical_enthalpy, bubble_section,
+                                   critical_entropy, entropy_offset, envelope, feed, missing_components,
+                                   operating_point_enthalpy, operating_point_th, ph_distances, pip_diffs, points,
+                                   ps_distances, special_points, th_distances, ts_distances, ts_offset, vp_distances,
+                                   vt_distances, critical_volume)
 
 DIST_TOL = 0.02          # K, or 2e-4 relative in P (observed: natgas 7e-3, n2co2 4e-3; chord error of the polyline)
 
@@ -32,11 +33,12 @@ def test_envelope_traced_to_the_end(case):
     assert r.critical_point is not None
 
 
-@pytest.mark.parametrize('section,branch', [('bubble_custom_init', 'bubble'), ('bubble_default_init', 'bubble'),
-                                           ('dew', 'dew')])
+@pytest.mark.parametrize('case,section,branch', [(c, s_, b_) for c in CASES for s_, b_ in branch_sections(c)])
 def test_branch_points_vs_dwsim(case, section, branch):
-    if section not in sections(case):
-        pytest.skip(f'no {section} export for {case}')
+    """Every export present: custom and default initialization of each branch (no skips)."""
+    miss = missing_components(case)
+    if miss:
+        pytest.skip(f'{miss} missing: run scripts/build_db.py')
     T, P, d = branch_distances(case, section, branch)
     assert d.max() < DIST_TOL, f'worst point {T[d.argmax()]} K, {P[d.argmax()]} bar'
 
@@ -225,3 +227,41 @@ def test_ts_entropy_without_the_cp_difference_vs_dwsim(ts_case, branch):
 def test_ts_offset_is_the_same_as_in_the_ps_diagram(ts_case):
     """The entropy offset to DWSIM does not depend on T (natgas: operating points at 300 K in TS, same offset)."""
     assert ts_offset(ts_case, corrected=True) == pytest.approx(config(ts_case)['ps_offset_kJ_kgK'], abs=1e-3)
+
+
+# ---- VP and VT diagrams: molar volume of the saturated phases ---------------------------------------------
+# DWSIM's volumes are Z R T / P of the cubic EOS (no volume translation), so thermo-sim's EOS roots agree to
+# 1e-6 relative. Distances in (100 ln V, 100 ln P) and (100 ln V, K): 0.01 means 0.01 % of volume.
+
+@pytest.fixture(params=VP_CASES)
+def vp_case(request):
+    miss = missing_components(request.param)
+    if miss:
+        pytest.skip(f'{miss} missing: run scripts/build_db.py')
+    return request.param
+
+
+@pytest.fixture(params=VT_CASES)
+def vt_case(request):
+    miss = missing_components(request.param)
+    if miss:
+        pytest.skip(f'{miss} missing: run scripts/build_db.py')
+    return request.param
+
+
+@pytest.mark.parametrize('section,branch', [('bubble_custom_init', 'bubble'), ('dew', 'dew')])
+def test_vp_volume_vs_dwsim(vp_case, section, branch):
+    v, P, d = vp_distances(vp_case, section, branch)
+    assert d.max() < 0.05, f'worst point V = {v[d.argmax()]} m3/kmol, {P[d.argmax()]} bar'     # observed 0.005
+
+
+@pytest.mark.parametrize('section,branch', [('bubble_custom_init', 'bubble'), ('dew', 'dew')])
+def test_vt_volume_vs_dwsim(vt_case, section, branch):
+    v, T, d = vt_distances(vt_case, section, branch)
+    assert d.max() < 0.05, f'worst point V = {v[d.argmax()]} m3/kmol, {T[d.argmax()]} K'       # observed 0.003
+
+
+def test_critical_volume_vs_dwsim(vp_case):
+    """DWSIM prints this volume in m3/mol (the other points in m3/kmol)."""
+    liquid, vapor = critical_volume(vp_case)
+    assert abs(liquid) < 1e-4 and abs(vapor) < 1e-4                                          # observed 1e-10
