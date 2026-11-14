@@ -196,6 +196,7 @@ class PhaseEnvelope:
         t, ispec = self._tangent(X, flags, n + 1)
         if t[n + 1] < 0:                                   # leave the starting pressure upward
             t = -t
+        v0 = X[:n] / np.linalg.norm(X[:n])                 # ln K changes sign (along v0) at the critical point
         ds, status, guard = 0.05, 'ok', 0
         while len(path) < max_points:
             guard += 1
@@ -209,6 +210,12 @@ class PhaseEnvelope:
                 ds *= 0.5
                 if ds < 1e-8:
                     status = 'step_collapsed'
+                    break
+                continue
+            if float(Xn[:n] @ v0) <= 0.0 and float(np.linalg.norm(X[:n])) > k_stop:
+                ds *= 0.5                                  # do not step over the critical point
+                if ds < 1e-8:
+                    status = 'critical' if float(np.linalg.norm(X[:n])) < 5 * k_stop else 'step_collapsed'
                     break
                 continue
             t, _ = self._tangent(Xn, flags, ispec, sign_ref=t)
@@ -255,6 +262,11 @@ class PhaseEnvelope:
             T_b.append(crit[0]); P_b.append(crit[1])
             T_d.append(crit[0]); P_d.append(crit[1])
         cth, cbar = self._extrema(res)
+        cand = [(p.T, p.P) for p in pts] + ([crit] if crit is not None else [])
+        if cth is None and cand:                           # no interior maximum: the critical point is the extreme
+            cth = max(cand, key=lambda c: c[0])
+        if cbar is None and cand:
+            cbar = max(cand, key=lambda c: c[1])
         return PhaseEnvelopeResult(np.array(T_b), np.array(P_b), np.array(T_d), np.array(P_d), crit, cth,
                                    cbar, pts, len(pts), status)
 
@@ -382,3 +394,5 @@ class PhaseEnvelope:
     def phase_identification_curve(self, T):
         """Pressures [bar] of the phase identification curve for the temperatures `T` (array, K)."""
         return np.array([self.phase_identification_point(float(t)) for t in np.atleast_1d(T)])
+
+

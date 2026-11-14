@@ -1,0 +1,77 @@
+{
+  "description": "Natural gas with N2 and CO2, P-T phase envelope, DWSIM 10.2.12.0, Peng-Robinson",
+  "title": "N2/CO2/CH4/C2H6/C3H8",
+  "composition": {
+    "nitrogen": 0.05,
+    "carbondioxide": 0.1,
+    "methane": 0.7,
+    "ethane": 0.1,
+    "propane": 0.05
+  },
+  "operating_point": {
+    "T_K": 298.15,
+    "P_bar": 1.01325
+  },
+  "R": 8.314,
+  "constants": {
+    "nitrogen": {
+      "Tc": 126.2,
+      "Pc": 33.98,
+      "omega": 0.037,
+      "Vc": 90.1,
+      "Zra": 0.2906
+    },
+    "carbondioxide": {
+      "Tc": 304.21,
+      "Pc": 73.83,
+      "omega": 0.223621,
+      "Vc": 94.0,
+      "Zra": 0.270937
+    },
+    "methane": {
+      "Tc": 190.56,
+      "Pc": 45.99,
+      "omega": 0.011,
+      "Vc": 98.6,
+      "Zra": 0.2876
+    },
+    "ethane": {
+      "Tc": 305.32,
+      "Pc": 48.72,
+      "omega": 0.099,
+      "Vc": 145.5,
+      "Zra": 0.2793
+    },
+    "propane": {
+      "Tc": 369.83,
+      "Pc": 42.48,
+      "omega": 0.152,
+      "Vc": 200.0,
+      "Zra": 0.2763
+    }
+  },
+  "kij": {
+    "methane-ethane": -0.0033,
+    "methane-propane": 0.0119,
+    "methane-nitrogen": 0.0289,
+    "methane-carbondioxide": 0.0793,
+    "ethane-propane": 0.0011,
+    "ethane-nitrogen": 0.0344,
+    "ethane-carbondioxide": 0.1326,
+    "propane-nitrogen": 0.0878,
+    "propane-carbondioxide": 0.1315,
+    "nitrogen-carbondioxide": -0.0222
+  },
+  "pip_vle_max_T_K": 236.6,
+  "dwsim_options": {
+    "curves": "phase identification curve and operating point",
+    "initialization": "bubble point, custom initialization at P = 1.01325 bar",
+    "initial_flash": "PVF",
+    "T_initial_K": 200,
+    "T_max_K": 1000,
+    "dP_Pa": 50000,
+    "dT": 2.5,
+    "max_points": 300
+  },
+  "notes": "Vc in cm3/mol (DWSIM m3/kmol x 1000). k_ij of DWSIM (Peng-Robinson interaction parameters), symmetric."
+}
