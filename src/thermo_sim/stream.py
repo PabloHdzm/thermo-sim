@@ -699,6 +699,17 @@ class Stream(EquilibriumMixin):
             setattr(p, f'{X}_ig_indiv_{ph}', np.asarray(arr, float).copy())
             setattr(p, f'{X}_ig_mix_{ph}', val)
 
+    def _T_dew_liquid_ref(self) -> float:
+        """T_dew at Pref used to build the gamma-phi liquid ideal part. Independent of the stream P,
+        so the liquid H and S do not pick up a spurious pressure dependence through T_dew(P)."""
+        if getattr(self, '_T_dew_ref', None) is None:
+            try:
+                r = self._engine.dew_T(self.Pref, self.z)
+                self._T_dew_ref = float(r.T) if r.status in ('ok', 'near_critical') else np.nan
+            except Exception:
+                self._T_dew_ref = np.nan
+        return self._T_dew_ref
+
     # ideal-gas enthalpy and Cp
 
     def _enthalpies(self) -> None:
@@ -727,9 +738,13 @@ class Stream(EquilibriumMixin):
         if eos_liq:
             H_liq = H_gas.copy()
         else:                                    # gamma-phi mode
-            H_sat = self._int_cp_gas(cd, self.Tref, T_dew_s).to_numpy(dtype=float)
-            H_liq = (H_sat - p.HVAP * 1000.0
-                     + self._int_cp_liq(cd, T_dew_s, T).to_numpy(dtype=float) + hf)
+            T_d = self._T_dew_liquid_ref()
+            T_d = T_d if np.isfinite(T_d) else T
+            tau_d = np.clip(1.0 - T_d / cd['Tc (K)'], 0.0, 1.0)
+            HVAP_d = (cd['A_HVav'] * tau_d**cd['n_HVav']).to_numpy(dtype=float)
+            H_sat = self._int_cp_gas(cd, self.Tref, T_d).to_numpy(dtype=float)
+            H_liq = (H_sat - HVAP_d * 1000.0
+                     + self._int_cp_liq(cd, T_d, T).to_numpy(dtype=float) + hf)
 
         self._store_ig('Cp', Cp_gas, Cp_liq, yi, xi)
         self._store_ig('H',  H_gas,  H_liq,  yi, xi)
@@ -760,12 +775,13 @@ class Stream(EquilibriumMixin):
         if eos_liq:
             S_liq = S_gas.copy()
         else:                                    # gamma-phi mode
-            T_dew_s = p.TDew if np.isfinite(p.TDew) else T
-            S_sat = self._int_cp_gas_over_T(cd, self.Tref, T_dew_s).to_numpy(dtype=float)
-            tau = np.clip(1.0 - T_dew_s / cd['Tc (K)'], 0.0, 1.0)
+            T_d = self._T_dew_liquid_ref()
+            T_d = T_d if np.isfinite(T_d) else T
+            S_sat = self._int_cp_gas_over_T(cd, self.Tref, T_d).to_numpy(dtype=float)
+            tau = np.clip(1.0 - T_d / cd['Tc (K)'], 0.0, 1.0)
             HVAP = (cd['A_HVav'] * tau**cd['n_HVav']).to_numpy(dtype=float)
-            S_liq = (S_sat - HVAP * 1000.0 / T_dew_s
-                     + self._int_cp_liq_over_T(cd, T_dew_s, T).to_numpy(dtype=float))
+            S_liq = (S_sat - HVAP * 1000.0 / T_d
+                     + self._int_cp_liq_over_T(cd, T_d, T).to_numpy(dtype=float))
 
         self._store_ig('S', S_gas, S_liq, yi, xi, mixing=_smix)
 
@@ -801,13 +817,17 @@ class Stream(EquilibriumMixin):
             except Exception as e:
                 warnings.warn(f"dep_mix phase={phase}: {e}", RuntimeWarning)
                 return np.nan, np.nan, np.nan
-
+            
+        gamma_phi = self._liquid_model is not None
         for ph, phase, w, active in (('gas', 'v', yi, self._gas_active()),
                                      ('liq', 'l', xi, self._liq_active())):
             if not active:
                 continue
             Hi, Si, Cpi = _dep_indiv(phase)
             Hm, Sm, Cpm = _dep_mix(w, phase)
+            if ph == 'liq' and gamma_phi:
+                Hi, Cpi, Si = np.zeros(n), np.zeros(n), np.zeros(n)
+                Hm, Cpm, Sm = 0.0, 0.0, 0.0
             for X, vi, vm in (('H', Hi, Hm), ('S', Si, Sm), ('Cp', Cpi, Cpm)):
                 setattr(p, f'{X}_dep_indiv_{ph}', vi)
                 setattr(p, f'{X}_dep_mix_{ph}',  vm)
@@ -976,8 +996,8 @@ class Stream(EquilibriumMixin):
         T_dew = self._props.TDew          # only used in gamma-phi (see _T_from_H)
 
         def _h(x, phase):
-            return (self._h_ig_mix(T, self.Tref, cd, x, phase, T_dew, eos_liq)
-                    + eos.H_residual(T, P, x, phase))
+            res = 0.0 if (phase == 'l' and not eos_liq) else eos.H_residual(T, P, x, phase)
+            return self._h_ig_mix(T, self.Tref, cd, x, phase, T_dew, eos_liq) + res
 
         fl = self._engine.flash_TP(T, P, z)
         if fl.phase == 'two_phase':
