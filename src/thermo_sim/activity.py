@@ -196,7 +196,8 @@ class GammaPhiModel:
         Tr = T / self.Tc
         psat = self._psat_antoine(T)
         eos_only = (Tr > self.TR_THRESHOLD) | self._cubic_by_name | self._no_antoine | (psat <= 0)
-        invalid = (~self._no_antoine) & (psat <= 0) & (Tr < self.TR_THRESHOLD) & ~self._cubic_by_name
+        invalid = (np.logical_not(self._no_antoine) & (psat <= 0) & (Tr < self.TR_THRESHOLD)
+           & np.logical_not(self._cubic_by_name))
         if invalid.any():
             warnings.warn(f"Invalid Antoine Psat at T={T:.1f} K for {list(self._names[invalid])}; using the EOS.",
                           RuntimeWarning)
@@ -205,7 +206,7 @@ class GammaPhiModel:
         for i in np.where(~eos_only)[0]:
             e = np.zeros(self.n)
             e[i] = 1.0
-            lnphisat[i] = k.phi_eos(T, max(psat[i], 1e-6), e, "l")[0][i]
+            lnphisat[i] = k.phi_eos(T, max(psat[i], 1e-6), e, "v")[0][i]
         self._cT = T
         self._cs = dict(Tr=Tr, psat=psat, eos_only=eos_only, v_liq=v_liq, lnphisat=lnphisat)
         return self._cs

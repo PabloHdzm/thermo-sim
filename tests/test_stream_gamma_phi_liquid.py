@@ -40,3 +40,14 @@ def test_liquid_entropy_is_independent_of_pressure(water):
     a = water.at(T=300.0, P=1.01325).props.s_total_mix
     b = water.at(T=300.0, P=5.0).props.s_total_mix
     assert abs(b - a) < 1e-3
+
+
+@pytest.mark.parametrize('name,Tb', [('water', 373.124), ('benzene', 353.216), ('methanol', 337.632), ('toluene', 383.746)])
+def test_gamma_phi_boiling_point_follows_the_antoine_fit(name, Tb):
+    # pure component at 1 atm: K = 1 at the Antoine saturation temperature, not at the EOS one
+    # (PR puts water 1.4 K high)
+    s = Stream(name, fm=1.0, comp_mass=None, fn=None, comp_mol={name: 1.0}, V_frac=None, T=Tb - 20.0, P=1.01325,
+               Tref=298.15, Pref=1.01325, psat_factor=None, gamma=None, component_data=load_database(),
+               kij=None, method='PR', k_mode='gamma', emit_warnings=False)
+    assert s.props.TBubble == pytest.approx(Tb, abs=0.15)
+    assert s.props.TDew == pytest.approx(Tb, abs=0.15)

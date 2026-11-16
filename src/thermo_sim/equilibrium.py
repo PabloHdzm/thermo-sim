@@ -439,8 +439,35 @@ class EquilibriumEngine:
 
     def _sat(self, P, z, kind) -> SatResult:
         if self.k.n == 1:
+            if self.liquid_model is not None:
+                r = self._pure_Tsat_liquid_model(P)
+                if r is not None:
+                    return r
             return self.pure_Tsat(P, 0)
         return self._sat_T(P, z, kind)
+
+    def _pure_Tsat_liquid_model(self, P):
+        """Saturation temperature of a pure component with the gamma-phi liquid model: ln(phiL/phiV) = 0,
+        where phiL is the effective liquid fugacity coefficient (Psat correlation) and phiV the EOS vapor one.
+        Returns None if no crossing is found (the caller falls back to the EOS saturation)."""
+        k = self.k
+        one = np.array([1.0])
+
+        def g(T):
+            try:
+                v = float(k.phi(T, P, one, "l")[0][0] - k.phi(T, P, one, "v")[0][0])
+            except Exception:
+                return np.nan
+            return v if np.isfinite(v) else np.nan
+
+        Tc = float(k.Tc[0])
+        Ts = np.linspace(0.35 * Tc, 0.98 * Tc, 24)
+        gs = [g(T) for T in Ts]
+        for j in range(len(Ts) - 1):
+            if np.isfinite(gs[j]) and np.isfinite(gs[j + 1]) and gs[j] < 0 <= gs[j + 1]:
+                T = brentq(g, Ts[j], Ts[j + 1], xtol=1e-10, rtol=1e-13, maxiter=200)
+                return SatResult(float(T), "ok", one, K=one)
+        return None
 
     def _sat_pub(self, P, z, kind) -> SatResult:
         eng, zs, act = self._active(z)
