@@ -139,6 +139,134 @@ def test_f_factor_limits_and_consistency_with_effectiveness_ntu():
     assert r.Q_kW == pytest.approx(Q, rel=1e-9)
 
 
+# ---- phase change: pure fluid with a boiling plateau ----------------------------------------------
+
+class _Fluid:
+    """Pure fluid, constant Cp in each phase and a constant boiling temperature (any P).
+    H [kJ/kmol] from liquid at 298.15 K. State = (T, vapor fraction); inside the plateau T = T_SAT."""
+    CPL, CPV, HVAP, T_SAT, T0 = 75.3, 34.0, 40660.0, 373.15, 298.15
+    calls = 0
+
+    def __init__(self, T, P, fn, vf=None):
+        if vf is None:
+            vf = 0.0 if T < self.T_SAT else 1.0
+        self.T, self.P, self.fn, self.vf = T, P, fn, vf
+
+    @classmethod
+    def _H(cls, T, vf):
+        Hl = cls.CPL * (cls.T_SAT - cls.T0)
+        if vf >= 1.0 and T > cls.T_SAT:
+            return Hl + cls.HVAP + cls.CPV * (T - cls.T_SAT)
+        if T < cls.T_SAT:
+            return cls.CPL * (T - cls.T0)
+        return Hl + vf * cls.HVAP
+
+    @classmethod
+    def _S(cls, T, vf):
+        Sl = cls.CPL * math.log(cls.T_SAT / cls.T0)
+        if T < cls.T_SAT:
+            return cls.CPL * math.log(T / cls.T0)
+        if vf >= 1.0 and T > cls.T_SAT:
+            return Sl + cls.HVAP / cls.T_SAT + cls.CPV * math.log(T / cls.T_SAT)
+        return Sl + vf * cls.HVAP / cls.T_SAT
+
+    @property
+    def props(self):
+        phase = 'liquid' if self.T < self.T_SAT else ('vapor' if self.vf >= 1.0 else 'two_phase')
+        Cp = self.CPL if phase == 'liquid' else self.CPV
+        return SimpleNamespace(H_total_mix=self._H(self.T, self.vf), S_total_mix=self._S(self.T, self.vf),
+                               Cp_total_mix=Cp, phase=phase, V_frac=self.vf)
+
+    def at(self, T=None, P=None, V_frac=None, H_flow=None, T_guess=None):
+        type(self).calls += 1
+        P = self.P if P is None else P
+        if V_frac is not None:
+            return _Fluid(self.T_SAT, P, self.fn, V_frac)
+        if H_flow is not None:
+            H = H_flow / self.fn
+            Hl, Hv = self.CPL * (self.T_SAT - self.T0), self.CPL * (self.T_SAT - self.T0) + self.HVAP
+            if H <= Hl:
+                return _Fluid(self.T0 + H / self.CPL, P, self.fn, 0.0)
+            if H >= Hv:
+                return _Fluid(self.T_SAT + (H - Hv) / self.CPV, P, self.fn, 1.0)
+            return _Fluid(self.T_SAT, P, self.fn, (H - Hl) / self.HVAP)
+        return _Fluid(self.T if T is None else T, P, self.fn)
+
+
+def _condenser_hot():
+    return _Fluid(400.0, 1.5, 0.02)                      # superheated vapor
+
+
+def test_hot_vf_condenses_to_the_requested_vapor_fraction():
+    vf = 0.25
+    cold = _Liquid(300.0, 1.0, 0.3, CP_W)
+    r = HeatExchanger('hot_vf', vf_hot_out=vf).run(_condenser_hot(), cold)
+    Q = 0.02 * (_Fluid.CPV * (400.0 - _Fluid.T_SAT) + (1.0 - vf) * _Fluid.HVAP)
+    assert r.Q_kW == pytest.approx(Q, rel=1e-12)
+    assert r.T_hot_out == _Fluid.T_SAT and r.V_frac_hot_out == pytest.approx(vf)
+    assert r.T_cold_out == pytest.approx(300.0 + Q / (0.3 * CP_W), abs=1e-9)
+    assert r.balance_error < 1e-9
+    L = lmtd(400.0 - r.T_cold_out, _Fluid.T_SAT - 300.0)
+    assert r.UA == pytest.approx(Q / L, rel=1e-9)
+    assert any('phase' in w for w in r.warnings)
+    assert r.pinch > 0 and r.UA_profile > 0
+
+
+def test_ua_mode_reproduces_the_vapor_fraction_mode():
+    cold = _Liquid(300.0, 1.0, 0.3, CP_W)
+    ref = HeatExchanger('hot_vf', vf_hot_out=0.25).run(_condenser_hot(), cold)
+    back = HeatExchanger('ua', UA=ref.UA).run(_condenser_hot(), cold)
+    assert back.Q_kW == pytest.approx(ref.Q_kW, rel=1e-8)
+    assert back.T_cold_out == pytest.approx(ref.T_cold_out, abs=1e-6)
+    assert back.V_frac_hot_out == pytest.approx(0.25, abs=1e-6)          # PH flash inside the plateau
+
+
+def test_cold_vf_boils_the_cold_stream():
+    cold = _Fluid(300.0, 2.0, 0.05)
+    hot = _Liquid(450.0, 3.0, 0.2, CP_W)
+    r = HeatExchanger('cold_vf', vf_cold_out=0.5, dP_cold=0.1).run(hot, cold)
+    Q = 0.05 * (_Fluid.CPL * (_Fluid.T_SAT - 300.0) + 0.5 * _Fluid.HVAP)
+    assert r.Q_kW == pytest.approx(Q, rel=1e-12)
+    assert r.T_cold_out == _Fluid.T_SAT and r.V_frac_cold_out == pytest.approx(0.5)
+    assert r.T_hot_out == pytest.approx(450.0 - Q / (0.2 * CP_W), abs=1e-9)
+    assert r.P_cold_out == pytest.approx(1.9)
+    assert r.S_gen_kWK > 0 and r.balance_error < 1e-9
+    fine = HeatExchanger('cold_vf', vf_cold_out=0.5, dP_cold=0.1, n_profile=400).run(hot, cold)
+    coarse = HeatExchanger('cold_vf', vf_cold_out=0.5, dP_cold=0.1, n_profile=200).run(hot, cold)
+    assert fine.UA_profile == pytest.approx(coarse.UA_profile, rel=2e-3)
+
+
+def test_vapor_fraction_modes_reject_the_wrong_direction():
+    cold = _Liquid(300.0, 1.0, 0.3, CP_W)
+    wet = _Fluid(_Fluid.T_SAT, 1.5, 0.02, vf=0.5)                                       # half vapor already
+    with pytest.raises(ValueError, match='vapor fraction'):
+        HeatExchanger('hot_vf', vf_hot_out=0.9).run(wet, cold)                            # cooling cannot add vapor
+    with pytest.raises(ValueError, match='vapor fraction'):
+        HeatExchanger('cold_vf', vf_cold_out=0.5).run(_Liquid(500.0, 3.0, 0.2, CP_W), _Fluid(400.0, 1.0, 0.05))
+    with pytest.raises(ValueError, match='exceeds the maximum'):
+        HeatExchanger('hot_vf', vf_hot_out=0.0).run(_Fluid(380.0, 1.5, 5.0), _Liquid(370.0, 1.0, 0.001, CP_W))
+    with pytest.raises(ValueError, match=r'\[0, 1\]'):
+        HeatExchanger('hot_vf', vf_hot_out=1.5)
+    with pytest.raises(ValueError, match='vf_cold_out'):
+        HeatExchanger('cold_vf')
+
+
+def test_solver_needs_few_stream_evaluations():
+    """Each Stream.at() is a full Stream build in the real code: the cached curves keep them in the tens."""
+    class _Counting(_Liquid):
+        n = 0
+
+        def at(self, T=None, P=None):
+            _Counting.n += 1
+            return _Counting(self.T if T is None else T, self.P if P is None else P, self.fn, self.Cp, self.phase)
+    hot, cold = _Counting(400.0, 3.0, 1.0 / 18.0153, CP_W), _Counting(300.0, 1.0, 2.0 / 18.0153, CP_W)
+    HeatExchanger('ua', UA=2.5, dP_hot=0.1, dP_cold=0.05).run(hot, cold)
+    assert _Counting.n < 100                                                     # was ~330 with one brentq per outlet
+    _Fluid.calls = 0
+    HeatExchanger('ua', UA=2.0).run(_condenser_hot(), _Liquid(300.0, 1.0, 0.3, CP_W))
+    assert _Fluid.calls < 120                                                   # includes finding the plateau once
+
+
 # ---- DWSIM 10.2.12.0, Heat Exchanger Design tutorial (water, IAPWS-IF97) --------------------------
 
 @pytest.fixture(scope='module')
@@ -171,7 +299,7 @@ def test_tutorial_temperatures_and_duty(tutorial):
 def test_tutorial_efficiency_and_maximum_duty(tutorial):
     ref, r = tutorial
     d = ref['results']
-    # the database liquid Cp is 0.3 % above IF97 at 300 K, which moves the 100 K enthalpy span (observed 0.63 %)
+    # the database liquid Cp is about 0.6 % above IAPWS-IF97 over 300-400 K (observed 0.63 % on Qmax)
     assert r.Q_max_kW == pytest.approx(d['maximum_theoretical_heat_exchange_kW'], rel=1e-2)
     assert 100 * r.efficiency == pytest.approx(d['thermal_efficiency_pct'], abs=0.25)
 
@@ -182,3 +310,55 @@ def test_tutorial_pressures_and_balance(tutorial):
     assert r.P_cold_out == pytest.approx(ref['streams']['cold_out']['P_bar'], abs=1e-9)
     assert r.balance_error < 1e-6 and not r.warnings
 
+
+def test_tutorial_maximum_duty_case():
+    """DWSIM, same streams, vapor fraction mode with an unreachable fraction: it saturates at Q_max
+    (thermal efficiency 100 %). Equivalent to mode 'efficiency' with efficiency = 1."""
+    from thermo_sim import Stream, load_database
+    ref = json.loads(REF.read_text())
+    inp, d, s = ref['inputs'], ref['case_max_duty']['results'], ref['case_max_duty']['streams']
+    db = load_database()
+
+    def water(x):
+        return Stream('water', fm=x['mass_flow_kg_s'], comp_mass=None, fn=None, comp_mol={'water': 1.0}, V_frac=None,
+                      T=x['T_K'], P=x['P_bar'], Tref=298.15, Pref=1.01325, psat_factor=None, gamma=None,
+                      component_data=db, kij=None, method='PR', k_mode='gamma', emit_warnings=False)
+    r = HeatExchanger('efficiency', efficiency=1.0, dP_hot=inp['dP_hot_Pa'] / 1e5,
+                      dP_cold=inp['dP_cold_Pa'] / 1e5).run(water(inp['hot_in']), water(inp['cold_in']))
+    assert r.efficiency == pytest.approx(1.0, abs=1e-12)
+    assert r.T_hot_out == pytest.approx(d['hot_out_T_K'], abs=1e-6)                      # cooled to the cold inlet temperature
+    assert r.Q_kW == pytest.approx(d['heat_load_kW'], rel=1e-2)                          # database liquid Cp, see above
+    assert r.T_cold_out == pytest.approx(d['cold_out_T_K'], abs=0.6)
+    assert r.P_cold_out == pytest.approx(s['cold_out']['P_bar'], abs=1e-9)
+    assert r.balance_error < 1e-6
+
+
+@pytest.mark.parametrize('case', ['case_hot_vf', 'case_cold_vf'])
+def test_dwsim_vapor_fraction_modes(case):
+    """DWSIM, outlet molar vapor fraction of stream 1 (condenser) and of stream 2 (evaporator), water.
+    The gamma-phi enthalpy of vaporization comes from the database correlation (about 0.3 % above IF97 at 1 atm
+    once the PR vapor residual is included) and the liquid Cp is about 0.6 % high: Q within 1 %."""
+    from thermo_sim import Stream, load_database
+    c = json.loads(REF.read_text())[case]
+    d, inp, s = c['results'], c['inputs'], c['streams']
+    db = load_database()
+
+    def water(x):
+        return Stream('water', fm=x['mass_flow_kg_s'], comp_mass=None, fn=None, comp_mol={'water': 1.0}, V_frac=None,
+                      T=x['T_K'], P=x['P_bar'], Tref=298.15, Pref=1.01325, psat_factor=None, gamma=None,
+                      component_data=db, kij=None, method='PR', k_mode='gamma', emit_warnings=False)
+    r = HeatExchanger(c['mode'], **c['spec']).run(water(inp['hot_in']), water(inp['cold_in']))
+    spec_side = 'hot' if c['mode'] == 'hot_vf' else 'cold'
+    other_side = 'cold' if spec_side == 'hot' else 'hot'
+    assert getattr(r, f'V_frac_{spec_side}_out') == pytest.approx(next(iter(c['spec'].values())), abs=1e-9)
+    assert getattr(r, f'T_{spec_side}_out') == pytest.approx(d[f'{spec_side}_out_T_K'], abs=0.3)      # saturation temperature
+    assert getattr(r, f'T_{other_side}_out') == pytest.approx(d[f'{other_side}_out_T_K'], abs=1.0)
+    assert r.Q_kW == pytest.approx(d['heat_load_kW'], rel=1e-2)
+    assert r.Q_max_kW == pytest.approx(d['maximum_theoretical_heat_exchange_kW'], rel=1e-2)
+    assert 100 * r.efficiency == pytest.approx(d['thermal_efficiency_pct'], abs=1.0)
+    assert r.LMTD == pytest.approx(d['LMTD_K'], rel=1e-2)
+    assert r.UA == pytest.approx(d['heat_load_kW'] / d['LMTD_K'], rel=1.5e-2)
+    assert r.balance_error < 1e-6
+    assert r.P_hot_out == pytest.approx(s['hot_out']['P_bar'], abs=1e-9)
+    assert r.P_cold_out == pytest.approx(s['cold_out']['P_bar'], abs=1e-9)
+    assert any('phase' in w for w in r.warnings)
