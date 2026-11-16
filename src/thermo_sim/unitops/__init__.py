@@ -5,8 +5,10 @@ from .flash_drum import DrumResult, FlashDrum
 from .reactor import EquilibriumReactor, EquilibriumResult, ReactorResult, StoichReactor, reaction_thermo
 from .train import CompressorTrain, TrainResult
 from .valve import Valve, ValveResult
+from .heat_exchanger import HeatExchanger, HeatExchangerResult, lmtd, lmtd_correction_factor
 
 __all__ = ['Compressor', 'CompressorResult', 'Cooler', 'CoolerResult',
            'CompressorTrain', 'TrainResult', 'FlashDrum', 'DrumResult',
            'StoichReactor', 'ReactorResult', 'EquilibriumReactor', 'EquilibriumResult',
-           'reaction_thermo', 'Valve', 'ValveResult']
+           'reaction_thermo', 'Valve', 'ValveResult','HeatExchanger', 'HeatExchangerResult', 'lmtd',
+           'lmtd_correction_factor']
