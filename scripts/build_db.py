@@ -24,6 +24,7 @@ COMPONENTS = {"Water": "Water", "Methanol": "Methanol", "Ethanol": "Ethanol",
 GAS_T_LOW = 250.0     # K, lower limit of the gas transport fits (viscosity, k)
 GAS_CP_T_LOW = 200.0  # K, lower limit of the ideal-gas Cp fit (clipped to the EOS Tmin) 
 GAS_CP_DEG = 6        # degree of the ideal-gas Cp polynomial (columns A_Cp_Gas ... G_Cp_Gas)
+GAS_CP_DEG_OVERRIDE = {'Pentane': 7}   # degree 6 misses the 2 kJ/kmol ideal-gas enthalpy test for Pentane
 GAS_T_HIGH = 1000.0   # K, clipped to the EOS Tmax
 LIQ_TR_MIN = 0.42     # minimum Tr for the liquid (raised to Ttriple if that is higher)
 LIQ_TR_MAX = 0.90     # maximum Tr for liquid fits (Cp, viscosity, k, rho)
@@ -130,8 +131,9 @@ def build_component(name, fl):
     Tg_cp = (0.5 * (T_lo_cp + T_hi_cp)
              - 0.5 * (T_hi_cp - T_lo_cp) * np.cos(np.pi * (k_nodes + 0.5) / N_PTS))
     T, y = sample(lambda t: cp0_gas(fl, t), Tg_cp)
-    c = poly_fit(T, y, GAS_CP_DEG)
-    for k, L in enumerate("ABCDEFGH"[:GAS_CP_DEG + 1]): row[f"{L}_Cp_Gas"] = c[k]
+    deg = GAS_CP_DEG_OVERRIDE.get(name, GAS_CP_DEG)
+    c = poly_fit(T, y, deg)
+    for k, L in enumerate("ABCDEFGH"[:deg + 1]): row[f"{L}_Cp_Gas"] = c[k]
     row["Tmin_Cp_Gas"], row["Tmax_Cp_Gas"] = T_lo_cp, T_hi_cp     # fitted interval (nodes do not reach the ends)
     log("Cp_gas", T, np.polynomial.polynomial.polyval(T, c), y)
 
@@ -236,6 +238,8 @@ def main():
     DATA_DIR.mkdir(parents=True, exist_ok=True)
     DOCS_DIR.mkdir(exist_ok=True)
     df = pd.DataFrame(rows)
+    cp_cols = [f"{L}_Cp_Gas" for L in "ABCDEFGH" if f"{L}_Cp_Gas" in df.columns]
+    df[cp_cols] = df[cp_cols].fillna(0.0)    # components with a lower degree: higher coefficients are exactly 0
     df['n_gas_el'] = df['Component'].map(lambda c: N_GAS_EL[str(c).lower().replace(' ', '').replace('_', '')])
     df.to_csv(DATA_DIR / "properties_db.csv", index=False, encoding="utf-8")
     pd.DataFrame(quality).round(4).to_csv(DOCS_DIR / "fit_quality.csv", index=False, encoding="utf-8")
