@@ -1,0 +1,211 @@
+{
+  "description": "Natural gas dew-point control, DWSIM 10.2.12.0 Classic UI, Peng-Robinson: chiller (CH-1) from 320 K to 240 K at 70 bar, then separator (SEP-1).",
+  "tutorial": "Natural Gas Processing (DWSIM tutorial)",
+  "inputs": {
+    "feed_T_K": 320.0,
+    "feed_P_bar": 70.0,
+    "feed_molar_flow_mol_s": 100.0,
+    "composition": {
+      "methane": 0.8,
+      "ethane": 0.1,
+      "propane": 0.05,
+      "butane": 0.03,
+      "pentane": 0.02
+    },
+    "chiller_T_out_K": 240.0,
+    "chiller_dP_bar": 0.0,
+    "property_package": "Peng-Robinson"
+  },
+  "results": {
+    "chiller_duty_kW": -665.3,
+    "chilled_vapor_mole_fraction": 0.690589,
+    "sales_gas_molar_flow_mol_s": 69.0589,
+    "ngl_molar_flow_mol_s": 30.9411,
+    "c3plus_recovery_in_ngl": 0.797464,
+    "ngl_c3plus_mole_fraction": 0.257736,
+    "delta_S_feed_to_chilled_kJ_kmolK": -23.5019
+  },
+  "streams": {
+    "feed": {
+      "T_K": 320.0,
+      "P_bar": 70.0,
+      "mass_flow_kg_s": 2.12323,
+      "molar_flow_mol_s": 100.0,
+      "vapor_mole_fraction": 1.0,
+      "molar_enthalpy_kJ_kmol": -989.587,
+      "molar_entropy_kJ_kmolK": -32.0311,
+      "energy_flow_kW": -8093.05,
+      "molecular_weight": 21.2323,
+      "z": {
+        "methane": 0.8,
+        "ethane": 0.1,
+        "propane": 0.05,
+        "butane": 0.03,
+        "pentane": 0.02
+      },
+      "y": {
+        "methane": 0.8,
+        "ethane": 0.1,
+        "propane": 0.05,
+        "butane": 0.03,
+        "pentane": 0.02
+      },
+      "x": {
+        "methane": 0.796154,
+        "ethane": 0.100934,
+        "propane": 0.0510419,
+        "butane": 0.0309842,
+        "pentane": 0.0208854
+      },
+      "molar_flow_by_component_mol_s": {
+        "methane": 80.0,
+        "ethane": 10.0,
+        "propane": 5.0,
+        "butane": 3.0,
+        "pentane": 2.0
+      },
+      "bubble_T_at_P_K": 220.981,
+      "dew_T_at_P_K": 300.28,
+      "phases": "V"
+    },
+    "chilled": {
+      "T_K": 240.0,
+      "P_bar": 70.0,
+      "mass_flow_kg_s": 2.12323,
+      "molar_flow_mol_s": 100.0,
+      "vapor_mole_fraction": 0.690589,
+      "molar_enthalpy_kJ_kmol": -7642.65,
+      "molar_entropy_kJ_kmolK": -55.533,
+      "energy_flow_kW": -8758.35,
+      "molecular_weight": 21.2323,
+      "z": {
+        "methane": 0.8,
+        "ethane": 0.1,
+        "propane": 0.05,
+        "butane": 0.03,
+        "pentane": 0.02
+      },
+      "y": {
+        "methane": 0.899188,
+        "ethane": 0.0714837,
+        "propane": 0.0209502,
+        "butane": 0.00631868,
+        "pentane": 0.00205914
+      },
+      "x": {
+        "methane": 0.578617,
+        "ethane": 0.163647,
+        "propane": 0.114838,
+        "butane": 0.0828554,
+        "pentane": 0.060043
+      },
+      "molar_flow_by_component_mol_s": {
+        "methane": 80.0,
+        "ethane": 10.0,
+        "propane": 5.0,
+        "butane": 3.0,
+        "pentane": 2.0
+      },
+      "bubble_T_at_P_K": 220.981,
+      "dew_T_at_P_K": 300.28,
+      "phases": "V+L"
+    },
+    "ngl": {
+      "T_K": 240.0,
+      "P_bar": 70.0,
+      "mass_flow_kg_s": 0.879184,
+      "molar_flow_mol_s": 30.9411,
+      "vapor_mole_fraction": 0.0,
+      "molar_enthalpy_kJ_kmol": -13425.8,
+      "molar_entropy_kJ_kmolK": -68.3827,
+      "energy_flow_kW": -3141.04,
+      "molecular_weight": 28.4147,
+      "z": {
+        "methane": 0.578617,
+        "ethane": 0.163647,
+        "propane": 0.114838,
+        "butane": 0.0828554,
+        "pentane": 0.060043
+      },
+      "y": {
+        "methane": 0.0,
+        "ethane": 0.0,
+        "propane": 0.0,
+        "butane": 0.0,
+        "pentane": 0.0
+      },
+      "x": {
+        "methane": 0.578617,
+        "ethane": 0.163647,
+        "propane": 0.114838,
+        "butane": 0.0828554,
+        "pentane": 0.060043
+      },
+      "molar_flow_by_component_mol_s": {
+        "methane": 17.9031,
+        "ethane": 5.06342,
+        "propane": 3.5532,
+        "butane": 2.56364,
+        "pentane": 1.8578
+      },
+      "bubble_T_at_P_K": 240.002,
+      "dew_T_at_P_K": 345.613,
+      "phases": "L"
+    },
+    "sales_gas": {
+      "T_K": 240.0,
+      "P_bar": 70.0,
+      "mass_flow_kg_s": 1.24405,
+      "molar_flow_mol_s": 69.0589,
+      "vapor_mole_fraction": 1.0,
+      "molar_enthalpy_kJ_kmol": -5051.58,
+      "molar_entropy_kJ_kmolK": -49.7758,
+      "energy_flow_kW": -5617.31,
+      "molecular_weight": 18.0143,
+      "z": {
+        "methane": 0.899188,
+        "ethane": 0.0714837,
+        "propane": 0.0209502,
+        "butane": 0.00631868,
+        "pentane": 0.00205914
+      },
+      "y": {
+        "methane": 0.899188,
+        "ethane": 0.0714837,
+        "propane": 0.0209502,
+        "butane": 0.00631868,
+        "pentane": 0.00205914
+      },
+      "x": {
+        "methane": 0.0,
+        "ethane": 0.0,
+        "propane": 0.0,
+        "butane": 0.0,
+        "pentane": 0.0
+      },
+      "molar_flow_by_component_mol_s": {
+        "methane": 62.0969,
+        "ethane": 4.93658,
+        "propane": 1.4468,
+        "butane": 0.436361,
+        "pentane": 0.142202
+      },
+      "bubble_T_at_P_K": 0.0,
+      "dew_T_at_P_K": 240.0,
+      "phases": "V"
+    }
+  },
+  "tutorial_expected_table": {
+    "sales_gas_C1_fraction": "> 0.85",
+    "ngl_C3plus_fraction": "> 0.50",
+    "sales_gas_flow_mol_s": "70 - 90",
+    "ngl_flow_mol_s": "10 - 30",
+    "c3plus_recovery_in_ngl": "> 0.80"
+  },
+  "notes": [
+    "The tutorial expected table is only approximate: DWSIM itself gives NGL C3+ fraction 0.258 (not > 0.50), sales gas 69.06 mol/s (not 70-90), NGL 30.94 mol/s (not 10-30) and C3+ recovery 79.7 % (not > 80 %). Only the sales gas C1 fraction (0.899) meets it.",
+    "DWSIM stream enthalpy and entropy use their own reference state; only differences (duty, delta S) are compared.",
+    "Chiller duty = energy flow of Chilled minus energy flow of Wellheaded-Gas.",
+    "DWSIM bubble point at 70 bar (220.98 K) is on the low-temperature branch of the envelope; thermo-sim does not find it yet (no_crossing)."
+  ]
+}
