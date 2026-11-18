@@ -1,0 +1,95 @@
+{
+  "description": "DWSIM 10.2.12.0, Peng-Robinson: entropy and enthalpy of pure components and of C1/C2 and C1-C5 mixtures at 298.15 K and 1.01325 bar, formation terms excluded (relative to ideal gas at Tref, Pref).",
+  "conditions": {
+    "T_K": 298.15,
+    "P_bar": 1.01325,
+    "Tref_K": 298.15,
+    "Pref_bar": 1.01325,
+    "constants_and_kij": "natgas_phase_envelope.json",
+    "units": "S in kJ/(kmol K), H in kJ/kmol"
+  },
+  "pure": {
+    "methane": {
+      "S": -0.0429696,
+      "H": -18.3868
+    },
+    "ethane": {
+      "S": -0.128215,
+      "H": -59.1906
+    },
+    "propane": {
+      "S": -0.24167,
+      "H": -113.455
+    },
+    "butane": {
+      "S": -0.394702,
+      "H": -186.725
+    },
+    "pentane": {
+      "S": -85.6508,
+      "H": -26576.8,
+      "note": "liquid at this state"
+    }
+  },
+  "binary_sweep_methane_ethane": {
+    "x_methane_vs_S_dwsim": {
+      "0.1": 4.05476,
+      "0.2": 5.78628,
+      "0.3": 6.52831,
+      "0.4": 6.62988,
+      "0.5": 6.27053,
+      "0.6": 5.56212,
+      "0.7": 4.57885,
+      "0.8": 3.36478,
+      "0.9": 1.9185
+    },
+    "source": "raw DWSIM values, listed in the session"
+  },
+  "mixtures": {
+    "five_components": {
+      "composition": {
+        "methane": 0.8,
+        "ethane": 0.1,
+        "propane": 0.05,
+        "butane": 0.03,
+        "pentane": 0.02
+      },
+      "S_dwsim": 4.35953,
+      "H_dwsim": -29.7632,
+      "origin": "raw DWSIM export"
+    },
+    "methane_ethane_50_50": {
+      "composition": {
+        "methane": 0.5,
+        "ethane": 0.5
+      },
+      "S_dwsim": 6.27053,
+      "H_dwsim": -35.9774,
+      "origin": "raw DWSIM export",
+      "note": "also a point of the binary sweep"
+    },
+    "methane_ethane_90_10": {
+      "composition": {
+        "methane": 0.9,
+        "ethane": 0.1
+      },
+      "S_dwsim": 1.9185,
+      "H_dwsim": -21.4597,
+      "origin": "raw DWSIM export",
+      "note": "also a point of the binary sweep"
+    },
+    "methane_ethane_99_1": {
+      "composition": {
+        "methane": 0.99,
+        "ethane": 0.01
+      },
+      "S_dwsim": 0.245905,
+      "H_dwsim": -18.6841,
+      "origin": "raw DWSIM export"
+    }
+  },
+  "notes": [
+    "The 50/50 and 90/10 methane/ethane cases are points of the binary sweep, so they were used to choose the rule and are not independent validations.",
+    "thermo-sim runs use a database without formation terms (hf = gf = 0, n_gas_el = 1) so that S and H are relative to the reference state."
+  ]
+}

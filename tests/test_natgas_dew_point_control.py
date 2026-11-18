@@ -21,6 +21,11 @@ import pytest
 from thermo_sim import METHODS, Stream, load_database, methods
 from thermo_sim.unitops import Cooler, FlashDrum
 
+try:                                                          # tests/ may or may not be a package
+    from dwsim_conventions import split_entropy_offset_empirical
+except ImportError:
+    from tests.dwsim_conventions import split_entropy_offset_empirical
+
 DATA = Path(__file__).resolve().parent.parent / 'reference_data' / 'dwsim'
 REF = DATA / 'natgas_dew_point_control.json'
 ENV = DATA / 'natgas_phase_envelope.json'                    # DWSIM constants and kij of the same mixture
@@ -168,12 +173,22 @@ def test_entropy_change_equals_integral_of_dH_over_T(plant):
 
 # ------------------------------------------------------------------ known differences with DWSIM
 
-@pytest.mark.xfail(strict=True, reason='DWSIM dS(320 -> 240 K) = 23.50 kJ/(kmol K); thermo-sim gives 24.18, which equals '
-                                       'the integral of dH/T (test above). Origin of the DWSIM value not identified.')
-def test_entropy_change_matches_dwsim(plant):
+def test_entropy_change_matches_dwsim_with_empirical_mixing_rule(plant):
+    """DWSIM dS(320 -> 240 K) = -23.50 kJ/(kmol K); thermo-sim gives -24.18, which equals the integral of dH/T (test
+    above). The difference is explained by the empirical DWSIM mixing-entropy rule (tests/dwsim_conventions.py,
+    HYPOTHESIS fitted to DWSIM output, not checked in its source): the rule alone predicts -0.743, observed -0.675.
+    The remaining 0.07 is the ideal-gas Cp difference (the duty is 0.3 % low, 0.003 * 24.2 = 0.07).
+    The composition of the correction is taken from the DWSIM streams, so it does not depend on thermo-sim."""
     feed, chiller, _ = plant
+    ref = _ref()
+    s = ref['streams']
+    M = json.loads(ENV.read_text())['molar_mass']
+    shift = split_entropy_offset_empirical(s['feed']['z'], s['sales_gas']['y'], s['ngl']['x'],
+                                           s['chilled']['vapor_mole_fraction'], M)
+    dS_dwsim = ref['results']['delta_S_feed_to_chilled_kJ_kmolK']
     dS = chiller.outlet.props.S_total_mix - feed.props.S_total_mix
-    assert dS == pytest.approx(_ref()['results']['delta_S_feed_to_chilled_kJ_kmolK'], rel=0.01)
+    assert dS - shift == pytest.approx(dS_dwsim, abs=0.15)
+    assert abs(dS - dS_dwsim) > 0.45            # without the rule the comparison fails: the rule is not vacuous
 
 
 @pytest.mark.xfail(strict=False, reason='bubble_T finds no crossing at 70 bar for this feed (status no_crossing; same at '
