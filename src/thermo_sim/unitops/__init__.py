@@ -6,9 +6,10 @@ from .reactor import EquilibriumReactor, EquilibriumResult, ReactorResult, Stoic
 from .train import CompressorTrain, TrainResult
 from .valve import Valve, ValveResult
 from .heat_exchanger import HeatExchanger, HeatExchangerResult, lmtd, lmtd_correction_factor
+from .recycle import Recycle, RecycleResult
 
 __all__ = ['Compressor', 'CompressorResult', 'Cooler', 'CoolerResult',
            'CompressorTrain', 'TrainResult', 'FlashDrum', 'DrumResult',
            'StoichReactor', 'ReactorResult', 'EquilibriumReactor', 'EquilibriumResult',
            'reaction_thermo', 'Valve', 'ValveResult','HeatExchanger', 'HeatExchangerResult', 'lmtd',
-           'lmtd_correction_factor']
+           'lmtd_correction_factor','Recycle','RecycleResult']

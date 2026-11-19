@@ -1,0 +1,170 @@
+{
+ "description": "DWSIM Recycle Loops tutorial: fresh water is mixed with a recycle, heated, and split 70/30 into product and recycle",
+ "property_package": "Steam Tables (IAPWS-IF97)",
+ "software": "DWSIM 10.2.12.0 (Classic UI)",
+ "flowsheet": [
+  "Fresh-Feed + Recycle-Return -> MIX-1 -> Mixed",
+  "Mixed -> H-1 (outlet T 350 K) -> Heated",
+  "Heated -> SP-1 (70 % / 30 %) -> Product + Recycle",
+  "Recycle -> RC-1 -> Recycle-Return"
+ ],
+ "inputs": {
+  "fresh_T_K": 300.0,
+  "fresh_P_bar": 1.01325,
+  "fresh_mass_flow_kg_s": 1.0,
+  "heater_T_out_K": 350.0,
+  "heater_dP_bar": 0.0,
+  "splitter_product_fraction": 0.7,
+  "splitter_recycle_fraction": 0.3
+ },
+ "results": {
+  "heater_duty_kW": 209.115,
+  "mixed_T_K": 315.011,
+  "mixed_mass_flow_kg_s": 1.42858,
+  "product_mass_flow_kg_s": 1.00001,
+  "recycle_mass_flow_kg_s": 0.428575
+ },
+ "recycle_block": {
+  "modes": [
+   "legacy (default)",
+   "global convergence (Broyden)"
+  ],
+  "settings": [
+   "smoothing factor",
+   "maximum iterations"
+  ],
+  "final_errors": {
+   "temperature_K": 4.2207e-07,
+   "mass_flow_kg_s": 7.8732e-06,
+   "pressure_bar": 0.0
+  },
+  "tolerances": {
+   "temperature_K": 0.1,
+   "pressure_bar": 0.1,
+   "mass_flow_kg_s": 0.01
+  },
+  "mode_used": "legacy (default)"
+ },
+ "closed_form": {
+  "mixed_mass_flow_kg_s": "1 / 0.7 = 1.428571",
+  "recycle_mass_flow_kg_s": "0.3 / 0.7 = 0.428571"
+ },
+ "streams": {
+  "fresh_feed": {
+   "type": "Feed",
+   "T_K": 300,
+   "P_bar": 1.01325,
+   "mass_flow_kg_s": 1,
+   "molar_flow_mol_s": 55.5084,
+   "density_kg_m3": 996.558,
+   "specific_enthalpy_kJ_kg": 112.665,
+   "specific_entropy_kJ_kgK": 0.393097,
+   "molar_enthalpy_kJ_kmol": 2029.69,
+   "molar_entropy_kJ_kmolK": 7.08175,
+   "cp_kJ_kgK": 4.1811,
+   "energy_flow_kW": -13310.1,
+   "phase": "liquid",
+   "composition": {
+    "water": 1.0
+   }
+  },
+  "heated": {
+   "type": "Inner",
+   "T_K": 350,
+   "P_bar": 1.01325,
+   "mass_flow_kg_s": 1.42858,
+   "molar_flow_mol_s": 79.2984,
+   "density_kg_m3": 973.742,
+   "specific_enthalpy_kJ_kg": 321.78,
+   "specific_entropy_kJ_kgK": 1.03778,
+   "molar_enthalpy_kJ_kmol": 5796.95,
+   "molar_entropy_kJ_kmolK": 18.6958,
+   "cp_kJ_kgK": 4.19295,
+   "energy_flow_kW": -18715.8,
+   "phase": "liquid",
+   "composition": {
+    "water": 1.0
+   }
+  },
+  "mixed": {
+   "type": "Inner",
+   "T_K": 315.011,
+   "P_bar": 1.01325,
+   "mass_flow_kg_s": 1.42858,
+   "molar_flow_mol_s": 79.2984,
+   "density_kg_m3": 991.501,
+   "specific_enthalpy_kJ_kg": 175.401,
+   "specific_entropy_kJ_kgK": 0.597152,
+   "molar_enthalpy_kJ_kmol": 3159.89,
+   "molar_entropy_kJ_kmolK": 10.7579,
+   "cp_kJ_kgK": 4.17856,
+   "energy_flow_kW": -18924.9,
+   "phase": "liquid",
+   "composition": {
+    "water": 1.0
+   }
+  },
+  "product": {
+   "type": "Product",
+   "T_K": 350,
+   "P_bar": 1.01325,
+   "mass_flow_kg_s": 1.00001,
+   "molar_flow_mol_s": 55.5089,
+   "density_kg_m3": 973.742,
+   "specific_enthalpy_kJ_kg": 321.78,
+   "specific_entropy_kJ_kgK": 1.03778,
+   "molar_enthalpy_kJ_kmol": 5796.95,
+   "molar_entropy_kJ_kmolK": 18.6958,
+   "cp_kJ_kgK": 4.19295,
+   "energy_flow_kW": -13101,
+   "phase": "liquid",
+   "composition": {
+    "water": 1.0
+   }
+  },
+  "recycle": {
+   "type": "Recycle_In",
+   "T_K": 350,
+   "P_bar": 1.01325,
+   "mass_flow_kg_s": 0.428575,
+   "molar_flow_mol_s": 23.7895,
+   "density_kg_m3": 973.742,
+   "specific_enthalpy_kJ_kg": 321.78,
+   "specific_entropy_kJ_kgK": 1.03778,
+   "molar_enthalpy_kJ_kmol": 5796.95,
+   "molar_entropy_kJ_kmolK": 18.6958,
+   "cp_kJ_kgK": 4.19295,
+   "energy_flow_kW": -5614.73,
+   "phase": "liquid",
+   "composition": {
+    "water": 1.0
+   }
+  },
+  "recycle_return": {
+   "type": "Recycle_Out",
+   "T_K": 350,
+   "P_bar": 1.01325,
+   "mass_flow_kg_s": 0.428575,
+   "molar_flow_mol_s": 23.7895,
+   "density_kg_m3": 973.742,
+   "specific_enthalpy_kJ_kg": 321.78,
+   "specific_entropy_kJ_kgK": 1.03778,
+   "molar_enthalpy_kJ_kmol": 5796.95,
+   "molar_entropy_kJ_kmolK": 18.6958,
+   "cp_kJ_kgK": 4.19295,
+   "energy_flow_kW": -5614.83,
+   "phase": "liquid",
+   "composition": {
+    "water": 1.0
+   }
+  }
+ },
+ "notes": [
+  "Closed form: with a 70/30 split the product equals the fresh feed, the mixer carries 1/0.7 kg/s and the recycle 0.3/0.7 kg/s. DWSIM product 1.00001 and recycle 0.428575 differ from this by its convergence error (about 5e-6 kg/s).",
+  "Heater duty 209.115 kW (given by the user). It also equals the difference of the DWSIM energy flows, -18715.8 - (-18924.9) = 209.1 kW, and 1.42858 kg/s x (321.78 - 175.401) kJ/kg = 209.11 kW.",
+  "DWSIM energy flow and specific enthalpy use the IAPWS reference (and the energy flow includes formation terms for Steam Tables water: -13310.1 kW for 1 kg/s at 300 K). Only differences are compared.",
+  "Energy flow of Recycle-Return (-5614.83 kW) differs from Recycle (-5614.73 kW) by 0.1 kW, while the mass flow error is 7.9e-6 kg/s (0.0025 kW at 321.78 kJ/kg). The origin of the remaining difference is not known; it is not used in the tests.",
+  "Mixed temperature 315.011 K is an energy balance: 1 kg/s at 300 K plus 0.428575 kg/s at 350 K with liquid Cp of about 4.18 kJ/(kg K).",
+  "Phase: liquid in all streams (bubble temperature 373.1 K at 1.01325 bar)."
+ ]
+}
