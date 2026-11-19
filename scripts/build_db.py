@@ -19,7 +19,8 @@ COMPONENTS = {"Water": "Water", "Methanol": "Methanol", "Ethanol": "Ethanol",
               "CarbonDioxide": "CarbonDioxide", "Nitrogen": "Nitrogen",
               "Oxygen": "Oxygen", "Methane": "Methane", "Ammonia": "Ammonia",
               "Hydrogen": "Hydrogen", "Propane": "Propane",
-              "Ethane": "Ethane", "Butane": "n-Butane", "Pentane": "n-Pentane"}
+              "Ethane": "Ethane", "Butane": "n-Butane", "Pentane": "n-Pentane",
+              "CarbonMonoxide":"CarbonMonoxide"}
 
 GAS_T_LOW = 250.0     # K, lower limit of the gas transport fits (viscosity, k)
 GAS_CP_T_LOW = 200.0  # K, lower limit of the ideal-gas Cp fit (clipped to the EOS Tmin) 
@@ -43,7 +44,7 @@ COL = {
 N_GAS_EL = {'water': 1.5, 'methanol': 2.5, 'ethanol': 3.5, 'benzene': 3.0, 'toluene': 4.0,
             'acetone': 3.5, 'carbondioxide': 1.0, 'nitrogen': 1.0, 'oxygen': 1.0,
             'methane': 2.0, 'ammonia': 2.0, 'hydrogen': 1.0, 'propane': 4.0,
-            'ethane': 3.0, 'butane': 5.0, 'pentane': 6.0}
+            'ethane': 3.0, 'butane': 5.0, 'pentane': 6.0,'carbonmonoxide':0.5}
 
 # ----------------------------------------------------------------------
 # Utilities

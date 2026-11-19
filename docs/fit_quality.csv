@@ -155,3 +155,9 @@ Pentane,Visc_gas,250.0,650.0,0.0381,0.0096
 Pentane,Visc_liq,197.774,422.73,2.6917,0.8126
 Pentane,k_gas,250.0,650.0,1.9553,0.658
 Pentane,k_liq,197.774,422.73,1.3411,0.4295
+CarbonMonoxide,Cp_gas,200.1371,999.8629,0.0082,0.0028
+CarbonMonoxide,Cp_liq,68.66,119.5739,2.3153,0.509
+CarbonMonoxide,Hvap,68.66,130.2027,1.7609,0.7637
+CarbonMonoxide,Psat (Antoine),68.66,130.2027,0.0947,0.0181
+CarbonMonoxide,"Rho_liq (A,B,n)",68.66,119.5739,0.0376,0.01
+CarbonMonoxide,Rho_liq (Rackett),68.66,119.5739,1.0186,0.388

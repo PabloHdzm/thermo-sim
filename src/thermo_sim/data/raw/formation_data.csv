@@ -15,3 +15,4 @@ Propane,-104.7,-24.27,ideal gas,"NIST Chemistry WebBook (dHf, S); dGf computed",
 Ethane,-83.85,-31.96,ideal gas,"NIST Chemistry WebBook (dHf, S); dGf computed",TRUE
 Butane,-125.65,-16.43,ideal gas,"NIST Chemistry WebBook (dHf, S); dGf computed",TRUE
 Pentane,-146.82,-8.51,ideal gas,"NIST Chemistry WebBook (dHf, S); dGf computed",TRUE
+CarbonMonoxide,-110.527,-137.163,ideal gas,NIST-JANAF,TRUE
