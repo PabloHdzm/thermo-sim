@@ -1,6 +1,6 @@
 # DWSIM entropy of mixtures: empirical mixing rule
 
-Status: **empirical hypothesis**, not a verified fact about DWSIM. Last updated 2026-11-18.
+Status: **empirical hypothesis**, not a verified fact about DWSIM. Last updated 2026-11-19.
 
 ## What is observed
 
@@ -48,6 +48,7 @@ Stored data: `reference_data/dwsim/mixing_entropy_298K.json`. Tests: `tests/test
 | 5 components C1-C5 (80/10/5/3/2) | validation | raw | +0.00034 |
 | C1/C2 99/1 | validation | raw | +0.00002 |
 | Natural gas chiller 320 K to 240 K, 70 bar: vapor, liquid and feed streams | validation | raw | 0.068 in dS (note 1) |
+| Water-gas shift, 600 K, 10.1325 bar: feed and the three reactor products (CO, H2O, CO2, H2) | validation | raw | 0.017 to 0.024 on offsets of -19 to -30 (note 2) |
 
 Enthalpy of the four mixtures (5 components, C1/C2 50/50, 90/10 and 99/1) agrees with DWSIM within 0.0021 kJ/kmol
 (thermo-sim minus DWSIM between -0.0021 and -0.0010), with no mixing correction.
@@ -57,6 +58,13 @@ mixing term remains. The rule alone predicts -0.743 for dS(feed to chilled); the
 (-23.502) = -0.675. The remaining 0.068 matches the ideal-gas Cp difference: the chiller duty is 0.29 % lower than
 DWSIM, and 0.0029 x 24.2 = 0.07. The test passes with a tolerance of 0.15 and checks that the comparison fails
 without the rule (difference above 0.45).
+
+Note 2. Reaction Systems tutorial (`reference_data/dwsim/wgs_reactors.json`, `tests/test_wgs_reactors.py`). H2 with CO2,
+CO and H2O is the case with the largest molar mass contrast so far (2 to 44), and it is not made of hydrocarbons. The
+thermo-sim minus DWSIM entropy is -19.31 (feed), -30.25 (conversion), -30.26 (equilibrium) and -30.25 (Gibbs) kJ/(kmol K),
+and the rule predicts -19.33, -30.27, -30.28 and -30.27: residuals 0.017 to 0.024 (0.1 % of the offset). They equal about
+dH/T of the 0.1 % enthalpy difference of the ideal-gas Cp (8.7 kJ/kmol at 600 K gives 0.015). The test tolerance, 0.05, was
+chosen after seeing these residuals, not before. Without the rule the comparison fails by 19 to 30.
 
 Reproduction of the 9-point sweep from the stored values, with thermo-sim minus DWSIM entropy ("measured") and the
 rule offset, in kJ/(kmol K):
@@ -104,11 +112,12 @@ without a free parameter.
 
 ## Cases that would test the rule hardest
 
-The rule weights by 1 / M_i, and all cases so far are hydrocarbons with molar masses between 16 and 72.
+The rule weights by 1 / M_i. The hydrocarbon cases span molar masses between 16 and 72; the WGS case adds H2 (2) with
+CO2 (44), a non-hydrocarbon quaternary mixture, and passes (note 2). Still open:
 
-1. A mixture with a large molar mass contrast (H2 with n-pentane, N2 with H2).
-2. A ternary mixture that is not made of hydrocarbons (CO2, N2, CH4, or CO, H2, CO2).
-3. A case with a liquid phase at several compositions, since the natural gas chiller is the only one so far.
+1. A mixture with H2 and a heavy hydrocarbon (H2 with n-pentane), or N2 with H2.
+2. A case with a liquid phase at several compositions, since the natural gas chiller is the only one so far.
+3. A mixture at low temperature, to separate the rule from the ideal-gas Cp difference that the WGS residuals show.
 
 ## Wording for reports
 

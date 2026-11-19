@@ -1,0 +1,264 @@
+{
+ "description": "DWSIM Reaction Systems tutorial: water-gas shift CO + H2O <-> CO2 + H2 in three isothermal reactors (Conversion, Equilibrium, Gibbs) fed with the same stream",
+ "property_package": "Peng-Robinson",
+ "software": "DWSIM 10.2.12.0 (Classic UI)",
+ "reaction": "CO + H2O -> CO2 + H2 (WGS); equilibrium: vapor phase, basis Activity, ln(Keq) = 4577.8/T - 4.33 (T in K)",
+ "inputs": {
+  "T_K": 600.0,
+  "P_bar": 10.1325,
+  "P_note": "10 atm",
+  "molar_flow_mol_s": 10.0,
+  "mole_fraction": {
+   "water": 0.4,
+   "carbonmonoxide": 0.4,
+   "carbondioxide": 0.1,
+   "hydrogen": 0.1
+  },
+  "reactors_isothermal_at_K": 600.0,
+  "pressure_drop_Pa": 0.0,
+  "conversion_reactor_conversion_pct": 80.0,
+  "gibbs": {
+   "reactive_phase": "calculate equilibria (vapor only result)",
+   "components": "all",
+   "element_matrix_mol_s": {
+    "H": 10,
+    "O": 10,
+    "C": 5
+   },
+   "solver": "IPOPT (default)",
+   "max_iterations": 1000,
+   "tolerance": 1e-20,
+   "initialize_from_previous_solution": true
+  }
+ },
+ "constants_dwsim": {
+  "carbondioxide": {
+   "Tc": 304.21,
+   "Pc": 73.83,
+   "omega": 0.223621,
+   "Vc": 94.0,
+   "Zra": 0.270937
+  },
+  "hydrogen": {
+   "Tc": 33.19,
+   "Pc": 13.13,
+   "omega": -0.215993,
+   "Vc": 64.147,
+   "Zra": 0.3139
+  },
+  "carbonmonoxide": {
+   "Tc": 132.85,
+   "Pc": 34.94,
+   "omega": 0.045,
+   "Vc": 93.1,
+   "Zra": 0.2918
+  },
+  "water": {
+   "Tc": 647.14,
+   "Pc": 220.64,
+   "omega": 0.344,
+   "Vc": 55.95,
+   "Zra": 0.2338
+  }
+ },
+   "molar_mass": {
+    "hydrogen": 2.01588,
+    "carbondioxide": 44.0095,
+    "carbonmonoxide": 28.0101,
+    "water": 18.0153
+  },
+ "kij_pr_dwsim": {
+  "water-carbondioxide": -0.1216,
+  "water-carbonmonoxide": 0.0,
+  "water-hydrogen": 0.0,
+  "carbonmonoxide-carbondioxide": 0.0,
+  "carbonmonoxide-hydrogen": 0.0919,
+  "carbondioxide-hydrogen": -0.1622
+ },
+ "streams": {
+  "feed": {
+   "T_K": 600,
+   "P_bar": 10.1325,
+   "mass_flow_kg_s": 0.230127,
+   "molar_flow_mol_s": 10,
+   "mole_fraction": {
+    "water": 0.4,
+    "carbonmonoxide": 0.4,
+    "carbondioxide": 0.1,
+    "hydrogen": 0.1
+   },
+   "molar_flow_by_component_mol_s": {
+    "water": 4,
+    "carbonmonoxide": 4,
+    "carbondioxide": 1,
+    "hydrogen": 1
+   },
+   "molar_enthalpy_kJ_kmol": 9830.83,
+   "molar_entropy_kJ_kmolK": 32.8844,
+   "energy_flow_kW": -1704.58,
+   "density_kg_m3": 4.69433,
+   "cp_kJ_kgK": 1.50483,
+   "molecular_weight": 23.0127,
+   "phase": "vapor"
+  },
+  "conversion_product": {
+   "T_K": 600,
+   "P_bar": 10.1325,
+   "mass_flow_kg_s": 0.230127,
+   "molar_flow_mol_s": 10,
+   "mole_fraction": {
+    "water": 0.08,
+    "carbonmonoxide": 0.08,
+    "carbondioxide": 0.42,
+    "hydrogen": 0.42
+   },
+   "molar_flow_by_component_mol_s": {
+    "water": 0.8,
+    "carbonmonoxide": 0.8,
+    "carbondioxide": 4.2,
+    "hydrogen": 4.2
+   },
+   "molar_enthalpy_kJ_kmol": 10622.8,
+   "molar_entropy_kJ_kmolK": 44.9896,
+   "energy_flow_kW": -1828.39,
+   "density_kg_m3": 4.67571,
+   "cp_kJ_kgK": 1.64139,
+   "molecular_weight": 23.0127,
+   "phase": "vapor"
+  },
+  "equilibrium_product": {
+   "T_K": 600,
+   "P_bar": 10.1325,
+   "mass_flow_kg_s": 0.230127,
+   "molar_flow_mol_s": 10,
+   "mole_fraction": {
+    "water": 0.0807138,
+    "carbonmonoxide": 0.0807138,
+    "carbondioxide": 0.419286,
+    "hydrogen": 0.419286
+   },
+   "molar_flow_by_component_mol_s": {
+    "water": 0.807138,
+    "carbonmonoxide": 0.807138,
+    "carbondioxide": 4.19286,
+    "hydrogen": 4.19286
+   },
+   "molar_enthalpy_kJ_kmol": 10621.1,
+   "molar_entropy_kJ_kmolK": 45.0142,
+   "energy_flow_kW": -1828.11,
+   "density_kg_m3": 4.67574,
+   "cp_kJ_kgK": 1.64109,
+   "molecular_weight": 23.0127,
+   "phase": "vapor"
+  },
+  "gibbs_product": {
+   "T_K": 600,
+   "P_bar": 10.1325,
+   "mass_flow_kg_s": 0.230128,
+   "molar_flow_mol_s": 9.99999,
+   "mole_fraction": {
+    "water": 0.0796741,
+    "carbonmonoxide": 0.0796636,
+    "carbondioxide": 0.420336,
+    "hydrogen": 0.420327
+   },
+   "molar_flow_by_component_mol_s": {
+    "water": 0.796739,
+    "carbonmonoxide": 0.796634,
+    "carbondioxide": 4.20335,
+    "hydrogen": 4.20326
+   },
+   "molar_enthalpy_kJ_kmol": 10623.7,
+   "molar_entropy_kJ_kmolK": 44.9785,
+   "energy_flow_kW": -1828.54,
+   "density_kg_m3": 4.67572,
+   "cp_kJ_kgK": 1.64153,
+   "molecular_weight": 23.0128,
+   "phase": "vapor"
+  }
+ },
+ "blocks": {
+  "conversion": {
+   "extent_pct": 80.0,
+   "conversion_pct": {
+    "water": 80.0,
+    "carbonmonoxide": 80.0,
+    "carbondioxide": -320.0,
+    "hydrogen": -320.0
+   },
+   "energy_flow_kW": -123.811
+  },
+  "equilibrium": {
+   "extent_mol_s": 3.19286,
+   "conversion_pct": {
+    "water": 79.8215,
+    "carbonmonoxide": 79.8215,
+    "carbondioxide": -319.286,
+    "hydrogen": -319.286
+   },
+   "initial_gibbs_energy_kW": -2049.59,
+   "final_gibbs_energy_kW": -2167.62,
+   "energy_flow_kW": -123.535
+  },
+  "gibbs": {
+   "conversion_pct": {
+    "water": 80.0815,
+    "carbonmonoxide": 80.0841,
+    "carbondioxide": -320.335,
+    "hydrogen": -320.326
+   },
+   "initial_gibbs_energy_kW": -2049.59,
+   "final_gibbs_energy_kW": -2167.57,
+   "element_balance_residue": 6.89491e-11,
+   "energy_flow_kW": -123.96000000000004
+  }
+ },
+ "fugacity_coefficient_vapor_equilibrium_product": {
+  "water": 0.985714,
+  "carbonmonoxide": 1.00445,
+  "carbondioxide": 0.99742,
+  "hydrogen": 1.00373
+ },
+   "cp_ideal_gas": {
+    "form": "A + exp(B/T + C + D*T + E*T**2) [J/(kmol K)]",
+    "hydrogen": {
+      "A": 3994.32,
+      "B": -48.6901,
+      "C": 10.3621,
+      "D": -0.000340144,
+      "E": 1.96033E-07
+    },
+    "carbondioxide": {
+      "A": 28933,
+      "B": -494.28,
+      "C": 10.658,
+      "D": -2.7375e-05,
+      "E": 3.3268e-09
+    },
+    "carbonmonoxide": {
+      "A": 29100,
+      "B": -1979.75,
+      "C": 10.5827,
+      "D": -7.90406E-05,
+      "E": -1.99685E-07
+    },
+    "water": {
+      "A": 33200,
+      "B": -878.9,
+      "C": 8.43696,
+      "D": 0.00207627,
+      "E": -6.46709E-07
+    }
+  },
+ "notes": [
+  "The tutorial text expects H2 about 0.28 in the products. DWSIM gives 0.42 for the Conversion reactor: the 0.32 produced (0.4 x 0.8) is added to the 0.10 already in the feed. The CO value (0.08) agrees with the text.",
+  "DWSIM energy flow includes the formation enthalpy: feed -170458 kJ/kmol = sum(z Hf) + sensible 9830.83 = -180288.1 + 9830.83 with Hf(CO) -110525, Hf(H2O g) -241818, Hf(CO2) -393509 kJ/kmol. The 'Molar Enthalpy' rows are sensible only. Reactor duty = energy flow out - energy flow in.",
+  "Duty (energy flow of the reactor): conversion -123.811 kW, equilibrium -123.535 kW (from the block), Gibbs -123.96 kW (product minus feed energy flow).",
+  "Product streams show phases V+L with a liquid flow of about 1e-14 mol/s: numerical residue, the products are vapor. The streams 'Product-*-Liq' (second outlet) are empty, and Product-Gibbs-Liq holds meaningless values; they are not used.",
+  "Equilibrium product vs its own Keq: ln(Ky) from the product mole fractions is 3.2955, sum(nu ln phi) from the stored fugacity coefficients is +0.0111, so ln K = 3.3066 against 4577.8/600 - 4.33 = 3.2997 (difference 0.0069, origin not known: solver tolerance or a different fugacity evaluation).",
+  "The Gibbs product implies ln K = 3.3374 (mole fractions plus the same phi), 0.0377 above the Keq expression: DWSIM Gibbs uses its own thermochemistry, not the user expression.",
+  "Initial and final Gibbs energies (kW) of the blocks use DWSIM's own reference (about -2049.59 kW for 10 mol/s) and are not compared; only their ordering (final < initial) is.",
+  "Molar entropy of mixtures follows the empirical DWSIM mixing rule documented in docs/validation_dwsim_entropy_mixing.md (hypothesis, not DWSIM source). Here the offsets thermo-sim minus DWSIM are -19 to -30 kJ/(kmol K).",
+  "Mass flows differ in the sixth digit between the blocks (0.230127 and 0.230128) because of the DWSIM solver tolerance."
+ ]
+}
