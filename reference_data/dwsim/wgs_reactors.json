@@ -61,12 +61,12 @@
    "Zra": 0.2338
   }
  },
-   "molar_mass": {
-    "hydrogen": 2.01588,
-    "carbondioxide": 44.0095,
-    "carbonmonoxide": 28.0101,
-    "water": 18.0153
-  },
+  "molar_mass": {
+  "hydrogen": 2.01588,
+  "carbondioxide": 44.0095,
+  "carbonmonoxide": 28.0101,
+  "water": 18.0153
+},
  "kij_pr_dwsim": {
   "water-carbondioxide": -0.1216,
   "water-carbonmonoxide": 0.0,
@@ -219,7 +219,7 @@
   "carbondioxide": 0.99742,
   "hydrogen": 1.00373
  },
-   "cp_ideal_gas": {
+ "cp_ideal_gas": {
     "form": "A + exp(B/T + C + D*T + E*T**2) [J/(kmol K)]",
     "hydrogen": {
       "A": 3994.32,
@@ -260,5 +260,222 @@
   "Initial and final Gibbs energies (kW) of the blocks use DWSIM's own reference (about -2049.59 kW for 10 mol/s) and are not compared; only their ordering (final < initial) is.",
   "Molar entropy of mixtures follows the empirical DWSIM mixing rule documented in docs/validation_dwsim_entropy_mixing.md (hypothesis, not DWSIM source). Here the offsets thermo-sim minus DWSIM are -19 to -30 kJ/(kmol K).",
   "Mass flows differ in the sixth digit between the blocks (0.230127 and 0.230128) because of the DWSIM solver tolerance."
- ]
+ ],
+ "adiabatic": {
+  "description": "Same three reactors and feed with Calculation Mode = Adiabatic (DWSIM solves the outlet temperature, the energy flow stays at -1704.58 kW)",
+  "streams": {
+   "conversion_product": {
+    "T_K": 914.484,
+    "P_bar": 10.1325,
+    "mass_flow_kg_s": 0.230127,
+    "molar_flow_mol_s": 10,
+    "mole_fraction": {
+     "water": 0.08,
+     "carbonmonoxide": 0.08,
+     "carbondioxide": 0.42,
+     "hydrogen": 0.42
+    },
+    "molar_flow_by_component_mol_s": {
+     "water": 0.8,
+     "carbonmonoxide": 0.8,
+     "carbondioxide": 4.2,
+     "hydrogen": 4.2
+    },
+    "molar_enthalpy_kJ_kmol": 23003.9,
+    "molar_entropy_kJ_kmolK": 61.5371,
+    "energy_flow_kW": -1704.58,
+    "phase": "vapor"
+   },
+   "equilibrium_product": {
+    "T_K": 827.032,
+    "P_bar": 10.1325,
+    "mass_flow_kg_s": 0.230127,
+    "molar_flow_mol_s": 10,
+    "mole_fraction": {
+     "water": 0.177184,
+     "carbonmonoxide": 0.177184,
+     "carbondioxide": 0.322816,
+     "hydrogen": 0.322816
+    },
+    "molar_flow_by_component_mol_s": {
+     "water": 1.77184,
+     "carbonmonoxide": 1.77184,
+     "carbondioxide": 3.22816,
+     "hydrogen": 3.22816
+    },
+    "molar_enthalpy_kJ_kmol": 19002.6,
+    "molar_entropy_kJ_kmolK": 58.5386,
+    "energy_flow_kW": -1704.58,
+    "phase": "vapor"
+   },
+   "gibbs_product": {
+    "T_K": 829.224,
+    "P_bar": 10.1325,
+    "mass_flow_kg_s": 0.230128,
+    "molar_flow_mol_s": 9.99999,
+    "mole_fraction": {
+     "water": 0.17491,
+     "carbonmonoxide": 0.174901,
+     "carbondioxide": 0.325098,
+     "hydrogen": 0.32509
+    },
+    "molar_flow_by_component_mol_s": {
+     "water": 1.7491,
+     "carbonmonoxide": 1.74901,
+     "carbondioxide": 3.25098,
+     "hydrogen": 3.2509
+    },
+    "molar_enthalpy_kJ_kmol": 19099.2,
+    "molar_entropy_kJ_kmolK": 58.6612,
+    "energy_flow_kW": -1704.58,
+    "phase": "vapor"
+   }
+  },
+  "blocks": {
+   "conversion": {
+    "T_out_K": 914.484,
+    "extent_pct": 80.0
+   },
+   "equilibrium": {
+    "T_out_K": 827.032,
+    "extent_mol_s": 2.22816,
+    "conversion_pct": {
+     "water": 55.7041,
+     "carbonmonoxide": 55.7041,
+     "carbondioxide": -222.816,
+     "hydrogen": -222.816
+    },
+    "initial_gibbs_energy_kW": -2049.59,
+    "final_gibbs_energy_kW": -2370.89
+   },
+   "gibbs": {
+    "T_out_K": 829.224,
+    "conversion_pct": {
+     "water": 56.2725,
+     "carbonmonoxide": 56.2747,
+     "carbondioxide": -225.098,
+     "hydrogen": -225.09
+    },
+    "initial_gibbs_energy_kW": -2049.59,
+    "final_gibbs_energy_kW": -2373.36,
+    "element_balance_residue": 5.65729e-11
+   }
+  },
+  "notes": [
+   "The Conversion reactor keeps the 80 % specified, so its outlet (914.5 K) is far beyond the chemical equilibrium at that temperature (ln Q = 3.32 against ln K about 0.7); DWSIM does not warn.",
+   "Equilibrium and Gibbs outlets differ by 2.2 K and 0.0004 in mole fraction; as in the isothermal case this comes from the thermochemistry used by each DWSIM block (Keq expression against its own formation data).",
+   "Energy flow of every product equals the feed (-1704.58 kW): the heat of reaction (about 124 kW at 600 K) appears as the temperature rise.",
+   "Product streams labelled -Liq are empty or meaningless numerical residue, as in the isothermal case."
+  ]
+ },
+ "defined_temperature": {
+  "description": "Same reactors and feed with Calculation Mode = Defined Temperature, outlet temperature 700 K",
+  "inputs": {
+   "T_out_K": 700.0
+  },
+  "streams": {
+   "conversion_product": {
+    "T_K": 700.0,
+    "P_bar": 10.1325,
+    "mass_flow_kg_s": 0.230127,
+    "molar_flow_mol_s": 10,
+    "mole_fraction": {
+     "water": 0.08,
+     "carbonmonoxide": 0.08,
+     "carbondioxide": 0.42,
+     "hydrogen": 0.42
+    },
+    "molar_flow_by_component_mol_s": {
+     "water": 0.8,
+     "carbonmonoxide": 0.8,
+     "carbondioxide": 4.2,
+     "hydrogen": 4.2
+    },
+    "molar_enthalpy_kJ_kmol": 14456.7,
+    "molar_entropy_kJ_kmolK": 50.8973,
+    "energy_flow_kW": -1790.05,
+    "phase": "vapor"
+   },
+   "equilibrium_product": {
+    "T_K": 700.0,
+    "P_bar": 10.1325,
+    "mass_flow_kg_s": 0.230127,
+    "molar_flow_mol_s": 10,
+    "mole_fraction": {
+     "water": 0.124657,
+     "carbonmonoxide": 0.124657,
+     "carbondioxide": 0.375343,
+     "hydrogen": 0.375343
+    },
+    "molar_flow_by_component_mol_s": {
+     "water": 1.24657,
+     "carbonmonoxide": 1.24657,
+     "carbondioxide": 3.75343,
+     "hydrogen": 3.75343
+    },
+    "molar_enthalpy_kJ_kmol": 14301.4,
+    "molar_entropy_kJ_kmolK": 51.942,
+    "energy_flow_kW": -1773.22,
+    "phase": "vapor"
+   },
+   "gibbs_product": {
+    "T_K": 700.0,
+    "P_bar": 10.1325,
+    "mass_flow_kg_s": 0.230128,
+    "molar_flow_mol_s": 9.99999,
+    "mole_fraction": {
+     "water": 0.123419,
+     "carbonmonoxide": 0.123409,
+     "carbondioxide": 0.37659,
+     "hydrogen": 0.376581
+    },
+    "molar_flow_by_component_mol_s": {
+     "water": 1.23419,
+     "carbonmonoxide": 1.23409,
+     "carbondioxide": 3.7659,
+     "hydrogen": 3.76581
+    },
+    "molar_enthalpy_kJ_kmol": 14305.8,
+    "molar_entropy_kJ_kmolK": 51.9245,
+    "energy_flow_kW": -1773.71,
+    "phase": "vapor"
+   }
+  },
+  "blocks": {
+   "conversion": {
+    "extent_pct": 80.0,
+    "energy_flow_kW": -85.47000000000003
+   },
+   "equilibrium": {
+    "extent_mol_s": 2.75343,
+    "conversion_pct": {
+     "water": 68.8357,
+     "carbonmonoxide": 68.8357,
+     "carbondioxide": -275.343,
+     "hydrogen": -275.343
+    },
+    "initial_gibbs_energy_kW": -2049.59,
+    "final_gibbs_energy_kW": -2250.96,
+    "energy_flow_kW": -68.6400000000001
+   },
+   "gibbs": {
+    "conversion_pct": {
+     "water": 69.1453,
+     "carbonmonoxide": 69.1477,
+     "carbondioxide": -276.59,
+     "hydrogen": -276.581
+    },
+    "initial_gibbs_energy_kW": -2129.16,
+    "final_gibbs_energy_kW": -2250.97,
+    "element_balance_residue": 6.32614e-11,
+    "energy_flow_kW": -69.13000000000011
+   }
+  },
+  "notes": [
+   "Duty = energy flow out minus feed (-1704.58 kW): conversion -85.47 kW, equilibrium -68.64 kW, Gibbs -69.13 kW.",
+   "At 700 K the 80 % conversion is beyond the chemical equilibrium (68.8 %), so the Conversion reactor product is not an equilibrium state (thermo-sim warns, DWSIM does not).",
+   "The DWSIM Gibbs block reports an initial Gibbs energy of -2129.16 kW in this run against -2049.59 kW in the 600 K runs, for the same feed; it is not used.",
+   "DWSIM's Equilibrium and Gibbs final Gibbs energies agree within 0.01 kW (-2250.96 and -2250.97), although their compositions differ by 3e-4 (the Gibbs block uses its own thermochemistry)."
+  ]
+ }
 }

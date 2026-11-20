@@ -7,12 +7,19 @@ component or the extent of reaction; no chemical equilibrium is evaluated. The o
 added to the stream, fn_out * H_out - fn_in * H_in [kW], so formation enthalpies are part of H
 and the heat of reaction appears in the duty (negative for an exothermic reaction).
 
+Calculation modes (all reactors), as in DWSIM: mode='isothermal' (outlet at the inlet temperature), mode='defined'
+(outlet at the given `T_out`; the default when `T_out` is given) and mode='adiabatic'. In adiabatic mode T_out is the
+unknown and the duty is zero; T_out solves the energy
+balance fn_out * H_out(T_out) = fn_in * H_in, with the heat of reaction appearing as a temperature
+change. `T_out` cannot be given in that mode.
+
 Units: T [K], P [bar], flows [kmol/s], H [kJ/kmol], duty [kW].
 `inlet` must provide `.at(T=..., P=..., fn=..., comp_mol=...)`, `.fn`, `.comp_mol` (active
 components) and `.database` (all components, so products absent from the feed can be created).
 """
 from __future__ import annotations
 
+import warnings
 from dataclasses import dataclass
 
 import numpy as np
@@ -38,10 +45,11 @@ class ReactorResult:
     duty_kW: float                 # heat added (negative = heat removed)
     outlet: object
     label: str = 'Stoichiometric reactor'
+    mode: str = 'isothermal'
 
     def report(self) -> str:
         sep = '-' * 60
-        L = [sep, f"{self.label}: T {self.T_out:.2f} K, P {self.P_out:.3f} bar, "
+        L = [sep, f"{self.label} ({self.mode}): T {self.T_out:.2f} K, P {self.P_out:.3f} bar, "
                   f"conversion {self.conversion:.5f}", sep,
              f"extent               : {self.extent:.6e} kmol/s"]
         for c in self.n_in:
@@ -89,14 +97,64 @@ def _check_stoich(stoich: dict, comp: list) -> dict:
     return stoich
 
 
-def _outlet(inlet, comp, stoich, xi, n_in, T_out, P_out):
-    """Outlet stream and moles for extent xi [kmol/s]."""
+def _check_mode(mode, T_out) -> str:
+    """Resolve the calculation mode as in DWSIM: 'isothermal' (outlet at the inlet temperature), 'defined' (outlet
+    at T_out) or 'adiabatic' (T_out is solved). mode=None picks 'defined' if T_out is given, else 'isothermal'."""
+    if mode is None:
+        mode = 'defined' if T_out is not None else 'isothermal'
+    mode = str(mode).lower()
+    if mode in ('defined_temperature', 'defined temperature', 'temperature'):
+        mode = 'defined'
+    if mode not in ('isothermal', 'defined', 'adiabatic'):
+        raise ValueError("mode must be 'isothermal', 'defined' or 'adiabatic'.")
+    if mode == 'adiabatic' and T_out is not None:
+        raise ValueError("T_out cannot be given in adiabatic mode (it is the unknown).")
+    if mode == 'isothermal' and T_out is not None:
+        raise ValueError("T_out is given: use mode='defined' (isothermal keeps the inlet temperature).")
+    if mode == 'defined' and T_out is None:
+        raise ValueError("mode='defined' needs T_out.")
+    return mode
+
+
+def _solve_adiabatic_T(f, T0: float, dT0: float = 50.0, T_min: float = 150.0, T_max: float = 3000.0) -> float:
+    """Root of the energy-balance residual f(T) = fn_out H_out(T) - fn_in H_in [kW], increasing in T.
+    Brackets by doubling steps from T0 (towards lower T when f(T0) > 0), then brentq. f may return NaN where
+    the model fails (e.g. a second phase), which ends the search with an error."""
+    a, fa = float(T0), f(T0)
+    if not np.isfinite(fa):
+        raise ValueError(f"The energy balance cannot be evaluated at the inlet temperature {T0:.2f} K.")
+    if fa == 0.0:
+        return a
+    d, step = (1.0 if fa < 0 else -1.0), float(dT0)
+    for _ in range(12):
+        b = min(max(a + d * step, T_min), T_max)
+        if b == a:
+            break
+        fb = f(b)
+        if not np.isfinite(fb):
+            raise ValueError(f"The adiabatic outlet temperature is outside the range of the model "
+                             f"(no valid state at {b:.1f} K).")
+        if fa * fb <= 0.0:
+            return float(brentq(f, min(a, b), max(a, b), xtol=1e-10, rtol=1e-13, maxiter=200))
+        a, fa = b, fb
+        step *= 2.0
+    raise ValueError("Could not bracket the adiabatic outlet temperature (energy balance never changes sign "
+                     f"between {T_min:.0f} and {T_max:.0f} K).")
+
+
+def _outlet(inlet, comp, stoich, xi, n_in, T_out, P_out, H_flow=None):
+    """Outlet stream and moles for extent xi [kmol/s]. With H_flow [kW] instead of T_out the outlet T is solved
+    (PH flash)."""
     n_out = {c: n_in[c] + stoich.get(c, 0.0) * xi for c in comp}
     if min(n_out.values()) < -1e-15:
         raise ValueError("Extent consumes more than the available reactant.")
     n_out = {c: max(v, 0.0) for c, v in n_out.items()}
     fn_out = sum(n_out.values())
-    out = inlet.at(T=T_out, P=P_out, fn=fn_out, comp_mol={c: v / fn_out for c, v in n_out.items()})
+    cm = {c: v / fn_out for c, v in n_out.items()}
+    if H_flow is None:
+        out = inlet.at(T=T_out, P=P_out, fn=fn_out, comp_mol=cm)
+    else:
+        out = inlet.at(P=P_out, fn=fn_out, comp_mol=cm, H_flow=H_flow, T_guess=float(inlet.T))
     return out, n_out, fn_out
 
 
@@ -112,7 +170,8 @@ class StoichReactor:
     Give exactly one of `conversion` (of `key`) or `extent` [kmol/s]."""
 
     def __init__(self, stoich: dict, conversion: float | None = None, key: str | None = None,
-                 extent: float | None = None, T_out: float | None = None, dP: float = 0.0):
+                 extent: float | None = None, T_out: float | None = None, dP: float = 0.0,
+                 mode: str | None = None):
         if (conversion is None) == (extent is None):
             raise ValueError("Give exactly one of conversion or extent.")
         if conversion is not None:
@@ -124,6 +183,7 @@ class StoichReactor:
             raise ValueError("dP must be >= 0.")
         self.stoich, self.conversion, self.key = dict(stoich), conversion, key
         self.extent, self.T_out, self.dP = extent, T_out, float(dP)
+        self.mode = _check_mode(mode, T_out)
 
     def run(self, inlet) -> ReactorResult:
         comp = _names(inlet)
@@ -134,14 +194,20 @@ class StoichReactor:
             xi = self.conversion * n_in[key] / -stoich[key]
         else:
             xi = float(self.extent)
-        T_out = float(inlet.T) if self.T_out is None else float(self.T_out)
         P_out = _out_pressure(inlet, self.dP)
-        out, n_out, fn_out = _outlet(inlet, comp, stoich, xi, n_in, T_out, P_out)
-        dH_flow = fn_out * out.props.H_total_mix - float(inlet.fn) * inlet.props.H_total_mix
+        H_in = float(inlet.fn) * inlet.props.H_total_mix
+        if self.mode == 'adiabatic':          # composition is fixed by xi: one PH flash gives T_out
+            out, n_out, fn_out = _outlet(inlet, comp, stoich, xi, n_in, None, P_out, H_flow=H_in)
+            T_out = float(out.T)
+        else:
+            T_out = float(inlet.T) if self.T_out is None else float(self.T_out)
+            out, n_out, fn_out = _outlet(inlet, comp, stoich, xi, n_in, T_out, P_out)
+        dH_flow = fn_out * out.props.H_total_mix - H_in
+        _warn_beyond_equilibrium(inlet, stoich, n_out, fn_out, T_out, P_out)
         conv = (xi * -stoich[key] / n_in[key]) if key else float('nan')
         return ReactorResult(extent=xi, conversion=conv, T_in=float(inlet.T), T_out=T_out,
                              P_in=float(inlet.P), P_out=P_out, n_in=n_in, n_out=n_out,
-                             dH_flow_kW=dH_flow, duty_kW=dH_flow, outlet=out)
+                             dH_flow_kW=dH_flow, duty_kW=dH_flow, outlet=out, mode=self.mode)
 
 
 def reaction_thermo(database, stoich: dict, T: float, R: float, Tref: float = T_STD) -> dict:
@@ -168,6 +234,26 @@ def reaction_thermo(database, stoich: dict, T: float, R: float, Tref: float = T_
     return dict(dH0=dH, dS0=dS, dG0=dG, ln_K=-dG / (R * T))
 
 
+def _warn_beyond_equilibrium(inlet, stoich, n_out, fn_out, T, P_out, margin: float = 0.01) -> None:
+    """Warn when the outlet composition lies beyond chemical equilibrium at T_out, i.e. the specified extent
+    would make the reaction run backwards. Ideal-gas test (phi = 1) with K(T) from the formation data."""
+    try:
+        if any(n_out[c] <= 0.0 for c in stoich):
+            return
+        R = float(inlet._eos.R)
+        lnK = reaction_thermo(inlet.database, stoich, T, R)['ln_K']
+        lnQ = sum(v * np.log(n_out[c] / fn_out) for c, v in stoich.items()) \
+            + sum(stoich.values()) * np.log(P_out / P_STD)
+        if not (np.isfinite(lnK) and np.isfinite(lnQ)):
+            return
+    except Exception:                                     # missing formation data: nothing to compare
+        return
+    if lnQ > lnK + margin:
+        warnings.warn(f"The specified conversion lies beyond chemical equilibrium at T_out = {T:.1f} K "
+                      f"(ln Q = {lnQ:.3f} > ln K = {lnK:.3f}, ideal-gas test): the reaction would run backwards.",
+                      UserWarning, stacklevel=3)
+
+
 class EquilibriumReactor:
     """Chemical equilibrium of one reaction in a single vapor phase.
 
@@ -177,6 +263,8 @@ class EquilibriumReactor:
     the outlet composition (successive substitution on phi). The reaction can run backwards if
     the inlet contains products. The outlet is at `T_out` (inlet T if omitted) and P_in - dP.
     The duty is fn_out H_out - fn_in H_in, as in `StoichReactor`.
+    mode='adiabatic': T_out solves fn_out H_out(T_out) = fn_in H_in (K(T), phi and the extent are re-solved
+    at every trial T); the equilibrium of an exothermic reaction shifts back as T rises, so the root is unique.
 
     Options (to reproduce other simulators or user-supplied equilibrium data):
       lnK       callable T[K] -> ln K, replaces the K(T) computed from the formation data.
@@ -190,9 +278,10 @@ class EquilibriumReactor:
 
     def __init__(self, stoich: dict, T_out: float | None = None, dP: float = 0.0,
                  tol: float = 1e-12, max_iter: int = 100, lnK=None, P_ref: float = P_STD,
-                 fugacity: bool = True):
+                 fugacity: bool = True, mode: str | None = None):
         if P_ref <= 0:
             raise ValueError("P_ref must be positive.")
+        self.mode = _check_mode(mode, T_out)
         self.lnK, self.P_ref, self.fugacity = lnK, float(P_ref), bool(fugacity)
         if dP < 0:
             raise ValueError("dP must be >= 0.")
@@ -225,16 +314,10 @@ class EquilibriumReactor:
         return brentq(h, lo + d, hi - d, xtol=1e-16 * (hi - lo), rtol=4 * np.finfo(float).eps,
                       maxiter=500)
 
-    def run(self, inlet) -> EquilibriumResult:
-        comp = _names(inlet)
-        stoich = _check_stoich(self.stoich, comp)
-        stoich = {c: v for c, v in stoich.items() if v != 0.0}
-        n_in = _inlet_moles(inlet, comp)
-        fn_in = float(inlet.fn)
-        T_out = float(inlet.T) if self.T_out is None else float(self.T_out)
-        P_out = _out_pressure(inlet, self.dP)
-        R = float(inlet._eos.R)
-
+    def _at_T(self, inlet, ctx, T_out):
+        """Equilibrium at fixed T_out: extent, outlet stream and the quantities of the result."""
+        stoich, n_in, fn_in, comp, P_out, R, lo, hi = (ctx[k] for k in
+                                                       ('stoich', 'n_in', 'fn_in', 'comp', 'P_out', 'R', 'lo', 'hi'))
         if self.lnK is None:
             th = reaction_thermo(inlet.database, stoich, T_out, R)
         else:
@@ -242,7 +325,6 @@ class EquilibriumReactor:
                       ln_K=float(self.lnK(T_out)))
         lnK = th['ln_K']
         lnPratio = float(np.log(P_out / self.P_ref))
-        lo, hi = self._bracket(stoich, n_in)
 
         lnphi = {c: 0.0 for c in stoich}                  # ideal-gas start
         xi_old, out, it = None, None, 0
@@ -264,16 +346,43 @@ class EquilibriumReactor:
             xi_old = xi
         else:
             raise RuntimeError(f"Reaction equilibrium did not converge in {self.max_iter} iterations.")
+        return dict(xi=xi, out=out, n_out=n_out, fn_out=fn_out, th=th, lnK=lnK, lnphi=lnphi, it=it,
+                    lnPratio=lnPratio)
 
+    def run(self, inlet) -> EquilibriumResult:
+        comp = _names(inlet)
+        stoich = _check_stoich(self.stoich, comp)
+        stoich = {c: v for c, v in stoich.items() if v != 0.0}
+        n_in = _inlet_moles(inlet, comp)
+        fn_in = float(inlet.fn)
+        P_out = _out_pressure(inlet, self.dP)
+        R = float(inlet._eos.R)
+        lo, hi = self._bracket(stoich, n_in)
+        ctx = dict(stoich=stoich, n_in=n_in, fn_in=fn_in, comp=comp, P_out=P_out, R=R, lo=lo, hi=hi)
+        H_in = fn_in * inlet.props.H_total_mix
+
+        if self.mode == 'adiabatic':
+            def f(T):
+                try:
+                    st = self._at_T(inlet, ctx, T)
+                except (ValueError, RuntimeError, FloatingPointError):
+                    return float('nan')
+                return st['fn_out'] * st['out'].props.H_total_mix - H_in
+            T_out = _solve_adiabatic_T(f, float(inlet.T))
+        else:
+            T_out = float(inlet.T) if self.T_out is None else float(self.T_out)
+        st = self._at_T(inlet, ctx, T_out)
+        xi, out, n_out, fn_out = st['xi'], st['out'], st['n_out'], st['fn_out']
         y = {c: n_out[c] / fn_out for c in stoich}
         ln_Ky = sum(v * np.log(y[c]) for c, v in stoich.items())
-        ln_Kphi = sum(v * lnphi[c] for c, v in stoich.items())
+        ln_Kphi = sum(v * st['lnphi'][c] for c, v in stoich.items())
         dnu = sum(stoich.values())
-        dH_flow = fn_out * out.props.H_total_mix - fn_in * inlet.props.H_total_mix
+        dH_flow = fn_out * out.props.H_total_mix - H_in
         key = min(stoich, key=lambda c: stoich[c])        # most negative coefficient: reported conversion
         conv = (xi * -stoich[key] / n_in[key]) if n_in[key] > 0 else float('nan')
+        th = st['th']
         return EquilibriumResult(
             extent=xi, conversion=conv, T_in=float(inlet.T), T_out=T_out, P_in=float(inlet.P),
             P_out=P_out, n_in=n_in, n_out=n_out, dH_flow_kW=dH_flow, duty_kW=dH_flow, outlet=out,
-            dG0_J_mol=th['dG0'], dH0_J_mol=th['dH0'], ln_K=lnK, ln_K_phi=ln_Kphi,
-            ln_K_y=ln_Ky + dnu * lnPratio, iterations=it)
+            dG0_J_mol=th['dG0'], dH0_J_mol=th['dH0'], ln_K=st['lnK'], ln_K_phi=ln_Kphi,
+            ln_K_y=ln_Ky + dnu * st['lnPratio'], iterations=st['it'], mode=self.mode)

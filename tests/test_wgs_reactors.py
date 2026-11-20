@@ -309,3 +309,192 @@ def test_entropy_against_dwsim_with_empirical_mixing_rule(database, dwsim_method
     assert abs(offset) > 15.0                                     # the rule is doing real work here
     assert ours.props.S_total_mix - offset == pytest.approx(s['molar_entropy_kJ_kmolK'], abs=0.05)
     assert ours.props.H_total_mix == pytest.approx(s['molar_enthalpy_kJ_kmol'], abs=15.0)    # sensible, 0.15 %
+
+
+# ------------------------------------------------------------------ adiabatic mode (DWSIM Calculation Mode = Adiabatic)
+
+def _adi():
+    return _ref()['adiabatic']
+
+
+@pytest.fixture(scope='module')
+def conv_ad(feed):
+    with pytest.warns(UserWarning, match='beyond chemical equilibrium'):
+        return StoichReactor(STOICH, conversion=0.8, key='carbonmonoxide', mode='adiabatic').run(feed)
+
+
+@pytest.fixture(scope='module')
+def equil_ad(feed):
+    return EquilibriumReactor(STOICH, lnK=lnK_dwsim, mode='adiabatic').run(feed)
+
+
+@pytest.fixture(scope='module')
+def gibbs_ad(feed):
+    return GibbsReactor(mode='adiabatic').run(feed)
+
+
+def test_adiabatic_conversion_temperature(conv_ad):
+    assert conv_ad.T_out == pytest.approx(_adi()['blocks']['conversion']['T_out_K'], abs=0.1)
+    assert _y(conv_ad)['hydrogen'] == pytest.approx(0.42, abs=1e-12)          # composition fixed by the 80 %
+
+
+def test_adiabatic_equilibrium_against_dwsim(equil_ad):
+    b = _adi()['blocks']['equilibrium']
+    assert equil_ad.T_out == pytest.approx(b['T_out_K'], abs=0.2)
+    assert equil_ad.extent * 1000.0 == pytest.approx(b['extent_mol_s'], abs=0.02)
+    ref = _adi()['streams']['equilibrium_product']['mole_fraction']
+    for n in NAMES:
+        assert _y(equil_ad)[n] == pytest.approx(ref[n], abs=5e-4), n
+
+
+def test_adiabatic_gibbs_against_dwsim(gibbs_ad):
+    """DWSIM Gibbs uses its own thermochemistry (as in the isothermal case): temperature within 0.5 K, mole
+    fractions within 1e-3."""
+    assert gibbs_ad.T_out == pytest.approx(_adi()['blocks']['gibbs']['T_out_K'], abs=0.5)
+    ref = _adi()['streams']['gibbs_product']['mole_fraction']
+    for n in NAMES:
+        assert _y(gibbs_ad)[n] == pytest.approx(ref[n], abs=1e-3), n
+
+
+@pytest.mark.parametrize('name', ['conv_ad', 'equil_ad', 'gibbs_ad'])
+def test_adiabatic_energy_balance_closes(request, feed, name):
+    r = request.getfixturevalue(name)
+    assert r.mode == 'adiabatic'
+    assert r.duty_kW == pytest.approx(0.0, abs=1e-6)
+    assert r.outlet.fn * r.outlet.props.H_total_mix == pytest.approx(feed.fn * feed.props.H_total_mix, abs=1e-6)
+    assert r.outlet.fn * r.outlet.props.H_total_mix == pytest.approx(_adi()['streams']['conversion_product']['energy_flow_kW'], abs=0.3)
+
+
+def test_adiabatic_exothermic_reaction_heats_the_stream(conv_ad, equil_ad, gibbs_ad):
+    for r in (conv_ad, equil_ad, gibbs_ad):
+        assert r.T_out > r.T_in
+
+
+def test_isothermal_at_the_adiabatic_temperature_has_zero_duty(feed, equil_ad, gibbs_ad):
+    """Independent check of the root: the isothermal reactors at T_ad exchange no heat."""
+    assert EquilibriumReactor(STOICH, lnK=lnK_dwsim, T_out=equil_ad.T_out).run(feed).duty_kW == pytest.approx(0.0, abs=1e-6)
+    assert GibbsReactor(T_out=gibbs_ad.T_out).run(feed).duty_kW == pytest.approx(0.0, abs=1e-6)
+
+
+def test_adiabatic_gibbs_equals_adiabatic_equilibrium_with_the_same_thermochemistry(feed, gibbs_ad):
+    e = EquilibriumReactor(STOICH, mode='adiabatic').run(feed)               # K(T) from the formation data
+    assert gibbs_ad.T_out == pytest.approx(e.T_out, abs=1e-6)
+    for n in NAMES:
+        assert gibbs_ad.n_out[n] == pytest.approx(e.n_out[n], rel=1e-7, abs=1e-14), n
+
+
+def test_adiabatic_equilibrium_conversion_is_lower_than_isothermal(equil, equil_ad, conv_ad):
+    """Higher T shifts the exothermic equilibrium back: 55.7 % against 79.8 % (DWSIM)."""
+    assert equil_ad.conversion < equil.conversion - 0.2
+    assert 100.0 * equil_ad.conversion == pytest.approx(_adi()['blocks']['equilibrium']['conversion_pct']['carbonmonoxide'], abs=0.3)
+
+
+def test_adiabatic_conversion_beyond_equilibrium_warns(feed):
+    with pytest.warns(UserWarning, match='beyond chemical equilibrium'):
+        StoichReactor(STOICH, conversion=0.8, key='carbonmonoxide', mode='adiabatic').run(feed)
+
+
+def test_isothermal_conversion_below_equilibrium_does_not_warn(feed, recwarn):
+    StoichReactor(STOICH, conversion=0.8, key='carbonmonoxide').run(feed)       # 80 % < 80.3 % at 600 K
+    assert not [w for w in recwarn if 'beyond chemical equilibrium' in str(w.message)]
+
+
+@pytest.mark.parametrize('cls,kw', [(StoichReactor, dict(conversion=0.5, key='carbonmonoxide')),
+                                    (EquilibriumReactor, {}), (GibbsReactor, {})])
+def test_mode_validation(cls, kw):
+    args = (STOICH,) if cls is not GibbsReactor else ()
+    with pytest.raises(ValueError, match='mode'):
+        cls(*args, mode='polytropic', **kw)
+    with pytest.raises(ValueError, match='adiabatic'):
+        cls(*args, mode='adiabatic', T_out=700.0, **kw)
+
+
+def test_adiabatic_endothermic_direction(feed):
+    """The reverse shift (CO2 + H2 feed) is endothermic: the adiabatic outlet is colder than the inlet."""
+    x = {'carbondioxide': 0.5, 'hydrogen': 0.5}
+    f = _stream(load_database(), feed.method, x, 0.01, 800.0, 10.1325)
+    r = GibbsReactor(components=NAMES, mode='adiabatic').run(f)
+    assert r.T_out < 800.0 and r.duty_kW == pytest.approx(0.0, abs=1e-6)
+
+
+# ------------------------------------------------------------------ defined outlet temperature (DWSIM "Defined Temperature", 700 K)
+
+def _dt():
+    return _ref()['defined_temperature']
+
+
+@pytest.fixture(scope='module')
+def conv_dt(feed):
+    with pytest.warns(UserWarning, match='beyond chemical equilibrium'):
+        return StoichReactor(STOICH, conversion=0.8, key='carbonmonoxide', T_out=700.0).run(feed)
+
+
+@pytest.fixture(scope='module')
+def equil_dt(feed):
+    return EquilibriumReactor(STOICH, lnK=lnK_dwsim, mode='defined', T_out=700.0).run(feed)
+
+
+@pytest.fixture(scope='module')
+def gibbs_dt(feed):
+    return GibbsReactor(T_out=700.0).run(feed)
+
+
+def test_defined_temperature_is_the_default_when_t_out_is_given(conv_dt, equil_dt, gibbs_dt):
+    assert (conv_dt.mode, equil_dt.mode, gibbs_dt.mode) == ('defined', 'defined', 'defined')
+    for r in (conv_dt, equil_dt, gibbs_dt):
+        assert r.T_out == 700.0 and r.T_in == 600.0
+
+
+def test_defined_conversion_against_dwsim(conv_dt):
+    s = _dt()['streams']['conversion_product']['molar_flow_by_component_mol_s']
+    for n in NAMES:
+        assert _mol_s(conv_dt, n) == pytest.approx(s[n], abs=1e-9), n
+    assert conv_dt.duty_kW == pytest.approx(_dt()['blocks']['conversion']['energy_flow_kW'], rel=2e-3)
+
+
+def test_defined_equilibrium_against_dwsim(equil_dt):
+    b = _dt()['blocks']['equilibrium']
+    assert equil_dt.extent * 1000.0 == pytest.approx(b['extent_mol_s'], abs=0.01)
+    ref = _dt()['streams']['equilibrium_product']['mole_fraction']
+    for n in NAMES:
+        assert _y(equil_dt)[n] == pytest.approx(ref[n], abs=5e-4), n
+    assert equil_dt.duty_kW == pytest.approx(b['energy_flow_kW'], rel=3e-3)
+
+
+def test_defined_gibbs_against_dwsim(gibbs_dt):
+    """Composition within 1e-3 (DWSIM Gibbs thermochemistry differs from the formation data used here); duty
+    within 0.5 %."""
+    ref = _dt()['streams']['gibbs_product']['mole_fraction']
+    for n in NAMES:
+        assert _y(gibbs_dt)[n] == pytest.approx(ref[n], abs=1e-3), n
+    assert gibbs_dt.duty_kW == pytest.approx(_dt()['blocks']['gibbs']['energy_flow_kW'], rel=5e-3)
+    assert gibbs_dt.element_residue < 1e-12
+
+
+def test_defined_energy_flows_against_dwsim(conv_dt, equil_dt, gibbs_dt):
+    for r, k in ((conv_dt, 'conversion_product'), (equil_dt, 'equilibrium_product'), (gibbs_dt, 'gibbs_product')):
+        assert r.outlet.fn * r.outlet.props.H_total_mix == pytest.approx(_dt()['streams'][k]['energy_flow_kW'], abs=0.5)
+
+
+def test_defined_temperature_orders_the_reactors_like_the_isothermal_case(equil, equil_dt, equil_ad):
+    """Exothermic equilibrium: conversion falls as T_out rises (600 K 79.8 %, 700 K 68.8 %, 827 K adiabatic 55.7 %)."""
+    assert equil.conversion > equil_dt.conversion > equil_ad.conversion
+    assert 100.0 * equil_dt.conversion == pytest.approx(_dt()['blocks']['equilibrium']['conversion_pct']['carbonmonoxide'], abs=0.2)
+
+
+def test_defined_at_the_inlet_temperature_equals_isothermal(feed, equil):
+    e = EquilibriumReactor(STOICH, lnK=lnK_dwsim, mode='defined', T_out=feed.T).run(feed)
+    assert e.n_out == pytest.approx(equil.n_out, rel=1e-12, abs=1e-18)
+    assert e.duty_kW == pytest.approx(equil.duty_kW, rel=1e-12)
+
+
+def test_isothermal_and_defined_mode_rules(feed):
+    iso = EquilibriumReactor(STOICH, lnK=lnK_dwsim, mode='isothermal').run(feed)
+    assert iso.mode == 'isothermal' and iso.T_out == feed.T
+    for cls, args in ((StoichReactor, (STOICH,)), (EquilibriumReactor, (STOICH,)), (GibbsReactor, ())):
+        kw = dict(conversion=0.5, key='carbonmonoxide') if cls is StoichReactor else {}
+        with pytest.raises(ValueError, match="mode='defined'"):
+            cls(*args, mode='isothermal', T_out=700.0, **kw)
+        with pytest.raises(ValueError, match='needs T_out'):
+            cls(*args, mode='defined', **kw)
+        assert cls(*args, mode='defined_temperature', T_out=700.0, **kw).mode == 'defined'

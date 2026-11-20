@@ -12,6 +12,10 @@ Gibbs energy built from the formation data and the ideal-gas Cp of the database,
 from the true Gibbs energy of formation by terms linear in the atom counts, which do not change the minimum because
 the atoms are conserved.
 
+Modes as in the other reactors: 'isothermal', 'defined' (T_out given, the default then) and 'adiabatic'.
+mode='adiabatic': T_out solves fn_out H_out = fn_in H_in; the minimization is repeated at every trial T, started from
+the previous solution. T_out cannot be given in that mode.
+
 Limitations: one vapor phase (the outlet must be a vapor), no solids, no liquid. Units as in `reactor.py`.
 """
 from __future__ import annotations
@@ -20,7 +24,8 @@ from dataclasses import dataclass, field
 
 import numpy as np
 
-from .reactor import (ReactorResult, _inlet_moles, _names, _out_pressure, P_STD, reaction_thermo)
+from .reactor import (ReactorResult, _check_mode, _inlet_moles, _names, _out_pressure, _solve_adiabatic_T, P_STD,
+                      reaction_thermo)
 
 # Atom counts of the species of the database (lower-case names, as used by Stream.comp_mol)
 FORMULAS = {
@@ -52,9 +57,10 @@ class GibbsReactor:
 
     def __init__(self, T_out: float | None = None, dP: float = 0.0, components: list | None = None,
                  elements: dict | None = None, tol: float = 1e-12, max_iter: int = 200,
-                 phi_tol: float = 1e-12, fugacity: bool = True):
+                 phi_tol: float = 1e-12, fugacity: bool = True, mode: str | None = None):
         if dP < 0:
             raise ValueError("dP must be >= 0.")
+        self.mode = _check_mode(mode, T_out)
         self.T_out, self.dP = T_out, float(dP)
         self.components = None if components is None else [str(c).lower() for c in components]
         self.formulas = dict(FORMULAS)
@@ -102,36 +108,12 @@ class GibbsReactor:
         raise RuntimeError(f"Gibbs minimization did not converge in {self.max_iter} iterations.")
 
     # ---------------------------------------------------------------- run
-    def run(self, inlet) -> GibbsResult:
-        comp = _names(inlet)
-        n_all = _inlet_moles(inlet, comp)
-        fn_in = float(inlet.fn)
-        species = self.components or [c for c in comp if n_all[c] > 0.0]
-        unknown = [c for c in species if c not in comp]
-        if unknown:
-            raise ValueError(f"Components not in the database: {unknown}.")
-        missing = [c for c in species if c not in self.formulas]
-        if missing:
-            raise ValueError(f"No formula for {missing}: pass `elements={{name: {{'C': 1, ...}}}}`.")
-        if any(n_all[c] > 0.0 and c not in species for c in comp):
-            raise ValueError("The feed contains components that are not in `components`.")
-        els = sorted({e for c in species for e in self.formulas[c]})
-        A = np.array([[self.formulas[c].get(e, 0.0) for c in species] for e in els], float)
-        n_in = np.array([n_all[c] for c in species], float)
-        b = A @ n_in
-        T_out = float(inlet.T) if self.T_out is None else float(self.T_out)
-        P_out = _out_pressure(inlet, self.dP)
-        R = float(inlet._eos.R)
-        db = inlet.database
-        g0 = np.array([reaction_thermo(db, {c: 1.0}, T_out, R)['dG0'] for c in species]) / (R * T_out)
-        lnPr = float(np.log(P_out / P_STD))
-        N = self._nullspace(A)
-
-        n = np.maximum(n_in, 1e-9 * n_in.sum())                      # interior start on the element balance
-        n = n + A.T @ np.linalg.lstsq(A @ A.T, b - A @ n, rcond=None)[0]
-        if n.min() <= 0.0:
-            raise ValueError("The element balance has no interior point with these species (a species that contains an element absent from the feed cannot be formed).")
-
+    def _at_T(self, inlet, ctx, T_out, n_start):
+        """Minimization at fixed T_out (outer loop on the fugacity coefficients). Returns n, outlet stream, iterations."""
+        species, A, b, N = ctx['species'], ctx['A'], ctx['b'], ctx['N']
+        P_out, R, lnPr, fn_in = ctx['P_out'], ctx['R'], ctx['lnPr'], ctx['fn_in']
+        g0 = np.array([reaction_thermo(inlet.database, {c: 1.0}, T_out, R)['dG0'] for c in species]) / (R * T_out)
+        n = n_start.copy()
         lnphi, n_old, out, it_tot = np.zeros(len(species)), None, None, 0
         for outer in range(1, self.max_iter + 1):
             n, k = self._minimize(g0, lnphi, lnPr, A, b, n, N)
@@ -152,13 +134,59 @@ class GibbsReactor:
             n_old = n.copy()
         else:
             raise RuntimeError("The fugacity coefficients did not converge.")
+        return n, out, it_tot
+
+    def run(self, inlet) -> GibbsResult:
+        comp = _names(inlet)
+        n_all = _inlet_moles(inlet, comp)
+        fn_in = float(inlet.fn)
+        species = self.components or [c for c in comp if n_all[c] > 0.0]
+        unknown = [c for c in species if c not in comp]
+        if unknown:
+            raise ValueError(f"Components not in the database: {unknown}.")
+        missing = [c for c in species if c not in self.formulas]
+        if missing:
+            raise ValueError(f"No formula for {missing}: pass `elements={{name: {{'C': 1, ...}}}}`.")
+        if any(n_all[c] > 0.0 and c not in species for c in comp):
+            raise ValueError("The feed contains components that are not in `components`.")
+        els = sorted({e for c in species for e in self.formulas[c]})
+        A = np.array([[self.formulas[c].get(e, 0.0) for c in species] for e in els], float)
+        n_in = np.array([n_all[c] for c in species], float)
+        b = A @ n_in
+        P_out = _out_pressure(inlet, self.dP)
+        R = float(inlet._eos.R)
+        ctx = dict(species=species, A=A, b=b, N=self._nullspace(A), P_out=P_out, R=R,
+                   lnPr=float(np.log(P_out / P_STD)), fn_in=fn_in)
+
+        n0 = np.maximum(n_in, 1e-9 * n_in.sum())                     # interior start on the element balance
+        n0 = n0 + A.T @ np.linalg.lstsq(A @ A.T, b - A @ n0, rcond=None)[0]
+        if n0.min() <= 0.0:
+            raise ValueError("The element balance has no interior point with these species (a species that "
+                             "contains an element absent from the feed cannot be formed).")
+
+        H_in = fn_in * inlet.props.H_total_mix
+        if self.mode == 'adiabatic':
+            warm = {'n': n0}
+
+            def f(T):
+                try:
+                    n, out, _ = self._at_T(inlet, ctx, T, warm['n'])
+                except (ValueError, RuntimeError, FloatingPointError, np.linalg.LinAlgError):
+                    return float('nan')
+                warm['n'] = n                                      # start of the next trial T (element balance holds)
+                return float(n.sum()) * out.props.H_total_mix - H_in
+            T_out = _solve_adiabatic_T(f, float(inlet.T))
+        else:
+            T_out = float(inlet.T) if self.T_out is None else float(self.T_out)
+        n, out, it_tot = self._at_T(inlet, ctx, T_out, n0)
+        fn_out = float(n.sum())
 
         n_out = {c: n_all[c] for c in comp}
         n_out.update({c: float(v) for c, v in zip(species, n)})
         conv = {c: (1.0 - n_out[c] / n_all[c]) if n_all[c] > 0 else float('nan') for c in species}
-        dH = fn_out * out.props.H_total_mix - fn_in * inlet.props.H_total_mix
+        dH = fn_out * out.props.H_total_mix - H_in
         return GibbsResult(extent=float('nan'), conversion=float('nan'), T_in=float(inlet.T), T_out=T_out,
                            P_in=float(inlet.P), P_out=P_out, n_in=n_all, n_out=n_out, dH_flow_kW=dH,
                            duty_kW=dH, outlet=out, conversions=conv,
                            element_residue=float(np.max(np.abs(A @ n - b)) / fn_in),
-                           elements_in=dict(zip(els, b)), iterations=it_tot)
+                           elements_in=dict(zip(els, b)), iterations=it_tot, mode=self.mode)
