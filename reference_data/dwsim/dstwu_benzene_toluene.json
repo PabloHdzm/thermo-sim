@@ -1,0 +1,295 @@
+{
+ "description": "DWSIM Shortcut Column (DSTWU) on benzene/toluene, preceded by a heater that sets the feed condition.",
+ "software": "DWSIM 10.2.12.0 (Classic UI)",
+ "property_package": "Peng-Robinson",
+ "constants_dwsim": {
+  "benzene": {
+   "Tc": 562.05,
+   "Pc": 48.95,
+   "Vc": 256.0,
+   "omega": 0.209,
+   "Zra": 0.2696
+  },
+  "toluene": {
+   "Tc": 591.75,
+   "Pc": 41.08,
+   "Vc": 316.0,
+   "omega": 0.264,
+   "Zra": 0.2646
+  }
+ },
+ "kij_pr_dwsim": "all zero",
+ "inputs": {
+  "feed": {
+   "T_K": 300.0,
+   "P_bar": 1.01325,
+   "molar_flow_mol_s": 100.0,
+   "mole_fraction": {
+    "benzene": 0.5,
+    "toluene": 0.5
+   }
+  },
+  "heater": {
+   "calculation_mode": "OutletTemperature",
+   "T_out_K": 370.0,
+   "efficiency_pct": 100,
+   "dP_Pa": 0
+  },
+  "column": {
+   "condenser": "TotalCond",
+   "reflux_ratio": 3.0,
+   "light_key": "Benzene (the report prints it empty)",
+   "x_LK_bottoms": 0.05,
+   "heavy_key": "Toluene",
+   "x_HK_distillate": 0.05,
+   "P_condenser_bar": 1.01325,
+   "P_reboiler_bar": 1.01325,
+   "stage_height_m": 0.5
+  }
+ },
+ "heater": {
+  "duty_kW": 3292.35,
+  "outlet_vapor_mole_fraction": 0.721625
+ },
+ "column_results": {
+  "R_min": 1.8413,
+  "N_min": 6.76391,
+  "N_actual": 11.4903,
+  "optimum_feed_stage": 5.74513,
+  "condenser_duty_kW": 6125.74,
+  "reboiler_duty_kW": 3836.37,
+  "stripping_liquid_mol_s": 177.837,
+  "rectifying_liquid_mol_s": 150.0,
+  "stripping_vapor_mol_s": 127.837,
+  "rectifying_vapor_mol_s": 200.0,
+  "estimated_height_m": 6.74513,
+  "estimated_diameter_m": 3.11389
+ },
+ "streams": {
+  "feed": {
+   "T_K": 300.0,
+   "P_bar": 1.01325,
+   "molar_flow_mol_s": 100.0,
+   "mass_flow_kg_s": 8.51251,
+   "mole_fraction": {
+    "benzene": 0.5,
+    "toluene": 0.5
+   },
+   "molar_enthalpy_kJ_kmol": -34609.9,
+   "molar_entropy_kJ_kmolK": -88.5251,
+   "energy_flow_kW": 3191.51,
+   "phase": "liquid"
+  },
+  "hot": {
+   "T_K": 370.0,
+   "P_bar": 1.01325,
+   "molar_flow_mol_s": 100.0,
+   "mass_flow_kg_s": 8.51251,
+   "mole_fraction": {
+    "benzene": 0.5,
+    "toluene": 0.5
+   },
+   "vapor_mole_fraction": 0.721625,
+   "vapor_composition": {
+    "benzene": 0.559098,
+    "toluene": 0.440902
+   },
+   "liquid_composition": {
+    "benzene": 0.346801,
+    "toluene": 0.653199
+   },
+   "molar_enthalpy_kJ_kmol": -1686.38,
+   "molar_entropy_kJ_kmolK": 3.75587,
+   "energy_flow_kW": 6483.86,
+   "phase": "two_phase"
+  },
+  "distillate": {
+   "T_K": 353.857,
+   "P_bar": 1.01325,
+   "molar_flow_mol_s": 50.0,
+   "mass_flow_kg_s": 3.94066,
+   "mole_fraction": {
+    "benzene": 0.95,
+    "toluene": 0.05
+   },
+   "molar_enthalpy_kJ_kmol": -25563.0,
+   "molar_entropy_kJ_kmolK": -69.1532,
+   "energy_flow_kW": 2784.08,
+   "vapor_mole_fraction": 2.55273e-06
+  },
+  "bottoms": {
+   "T_K": 381.532,
+   "P_bar": 1.01325,
+   "molar_flow_mol_s": 50.0,
+   "mass_flow_kg_s": 4.57186,
+   "mole_fraction": {
+    "benzene": 0.05,
+    "toluene": 0.95
+   },
+   "molar_enthalpy_kJ_kmol": -23597.2,
+   "molar_entropy_kJ_kmolK": -56.3675,
+   "energy_flow_kW": 1410.42,
+   "vapor_mole_fraction": 0.000134018
+  }
+ },
+ "notes": [
+  "Algorithm recovered from the numbers (all reproduced by thermo-sim, see tests/test_dstwu.py): DWSIM evaluates alpha = K_LK / K_HK once, at the state of the feed stream (370 K, 1.01325 bar, two phases), and uses it in both Fenske (ln[(xD_LK/xD_HK)(xB_HK/xB_LK)] / ln alpha = 6.76392) and Underwood (theta = 1.61215, Rmin = 1.84130). The mean of the values at the top and bottom would give 6.7007 (arithmetic) and 1.8225.",
+  "Gilliland: the Eduljee form Y = 0.75 (1 - X^0.5668) with X = (R - Rmin)/(R + 1) and Y = (N - Nmin)/(N + 1) gives N = 11.49027 (DWSIM 11.4903). The Molokanov form gives 11.699.",
+  "Optimum feed stage 5.74513 is N/2. The cases 70/30 and 90/10 (additional_cases) show the rule: DWSIM reports N * n_S / (n_R + n_S) with n_R = ln[(xD_LK/xD_HK)(z_HK/z_LK)] and n_S = ln[(z_LK/z_HK)(xB_HK/xB_LK)] (Fenske minimum stages of each section with one alpha), that is the number of stages BELOW the feed (counted from the bottom): 70/30 gives 6.2662 of 9.732 (0.6438), 90/10 gives 7.3362 of 8.403 (0.873). Kirkbride (exponent 0.206) gives 0.41 / 0.26 of the stages above the feed and does not fit. With 50/50 the ratio is 1, so that case alone could not tell.",
+  "Internal flows: L = R D = 150, V = (R + 1) D = 200, L' = L + q F with q = 0.278375 (liquid fraction of the feed) = 177.8375, V' = V - (1 - q) F = 127.8375 mol/s.",
+  "Condenser duty = V (H_dew - H_bubble) of the distillate composition: 6125.98 kW with thermo-sim (DWSIM 6125.74). Reboiler duty follows from the overall energy balance (3836.09 against 3836.37).",
+  "The DWSIM input 'heavy key mole fraction' 0.05 is the HK in the DISTILLATE (distillate 0.95/0.05, bottoms 0.05/0.95). The description of the task says 'HK in bottoms'; the stream table settles it. The report prints the light key empty.",
+  "Estimated column height = 0.5 * (N + 2) in the three cases (6.74513, 5.20128, 5.86603 m, N = 11.4903, 8.40256, 9.73205); with tray height 0.5 m tray_height * N + 1 m is the same formula, so another stage height is needed to tell them apart. Diameter not implemented: D / sqrt(V_rect[mol/s]) = 0.22018, 0.22020, 0.22019 in the three cases (V_rect = 200, 377.776, 288.888 mol/s), so D scales with sqrt(V); the proportionality constant (0.7439 m/s of superficial vapor velocity at the distillate density 2.782 kg/m3) is unknown.",
+  "Product streams leave at the bubble point (distillate 353.857 K, bottoms 381.532 K, the tiny vapor fractions are the numerical tolerance of DWSIM). thermo-sim bubble temperatures: 353.857 and 381.532 K.",
+  "Liquid enthalpies of thermo-sim are 0.1 to 0.3 % more negative than DWSIM (distillate -25604 against -25563, bottoms -23670 against -23597 kJ/kmol, sensible values), which is the 0.5 % difference in the bottoms energy flow and 0.15 % in the heater duty.",
+  "Feed K for a single-phase feed: DWSIM evaluates K = phi_L / phi_V with the incipient phase of a stability trial. For the 70/30 vapor feed at 370 K the 'liquid' composition in its stream table (0.494523 / 0.505477) is the fixed point x = z / K normalized (thermo-sim 0.494526 / 0.505474) and the fugacity coefficients of that liquid reproduce its table; alpha = 2.38499 (DWSIM Nmin implies 2.3853).",
+  "Subcooled liquid feed (additional_cases.feed_90_10_subcooled): the trial-vapor symmetry of the vapor-feed rule is confirmed (alpha 3.2851 from the stream fugacity coefficients, 3.2851 in thermo-sim), and Nmin, Rmin, N and feed stage agree to 0.03 %. The height 0.5 (N + 2) = 3.74275 m is a fourth data point."
+ ],
+ "additional_cases": {
+  "description": "Same heater (300 K to 370 K), column (R = 3, x_LK,B = x_HK,D = 0.05, 1.01325 bar, total condenser, stage height 0.5 m) and feed flow 100 mol/s, with another feed composition. At 370 K both feeds are 100 % vapor.",
+  "feed_70_30": {
+   "mole_fraction": {
+    "benzene": 0.7,
+    "toluene": 0.3
+   },
+   "hot_stream": {
+    "vapor_mole_fraction": 1.0,
+    "trial_liquid_composition": {
+     "benzene": 0.494523,
+     "toluene": 0.505477
+    },
+    "fugacity_coefficient_liquid": {
+     "benzene": 1.57005e-05,
+     "toluene": 6.51622e-06
+    },
+    "fugacity_coefficient_vapor": {
+     "benzene": 9.74748e-06,
+     "toluene": 9.64851e-06
+    }
+   },
+   "column_results": {
+    "R_min": 1.21675,
+    "N_min": 6.77495,
+    "N_actual": 9.73205,
+    "optimum_feed_stage": 6.26621,
+    "condenser_duty_kW": 8848.51,
+    "reboiler_duty_kW": 5645.98,
+    "stripping_liquid_mol_s": 216.666,
+    "rectifying_liquid_mol_s": 216.666,
+    "stripping_vapor_mol_s": 188.886,
+    "rectifying_vapor_mol_s": 288.888,
+    "estimated_height_m": 5.86603,
+    "estimated_diameter_m": 3.74247
+   },
+   "streams": {
+    "distillate": {
+     "molar_flow_mol_s": 72.222,
+     "T_K": 353.857,
+     "mole_fraction": {
+      "benzene": 0.950028,
+      "toluene": 0.05
+     }
+    },
+    "bottoms": {
+     "molar_flow_mol_s": 27.78,
+     "T_K": 381.532,
+     "mole_fraction": {
+      "benzene": 0.05,
+      "toluene": 0.949928
+     }
+    }
+   }
+  },
+  "feed_90_10": {
+   "mole_fraction": {
+    "benzene": 0.9,
+    "toluene": 0.1
+   },
+   "column_results": {
+    "R_min": 0.459312,
+    "N_min": 6.80303,
+    "N_actual": 8.40256,
+    "optimum_feed_stage": 7.33621,
+    "condenser_duty_kW": 11571.3,
+    "reboiler_duty_kW": 8357.67,
+    "stripping_liquid_mol_s": 283.332,
+    "rectifying_liquid_mol_s": 283.332,
+    "stripping_vapor_mol_s": 277.772,
+    "rectifying_vapor_mol_s": 377.776,
+    "estimated_height_m": 5.20128,
+    "estimated_diameter_m": 4.27989
+   },
+   "hot_stream": {
+    "vapor_mole_fraction": 1.0,
+    "trial_liquid_composition": {
+     "benzene": 0.791122,
+     "toluene": 0.208878
+    },
+    "fugacity_coefficient_liquid": {
+     "benzene": 1.5678e-05,
+     "toluene": 6.53349e-06
+    },
+    "fugacity_coefficient_vapor": {
+     "benzene": 9.74672e-06,
+     "toluene": 9.65152e-06
+    }
+   },
+   "streams": {
+    "distillate": {
+     "molar_flow_mol_s": 94.444,
+     "T_K": 353.857,
+     "mole_fraction": {
+      "benzene": 0.950042,
+      "toluene": 0.05
+     }
+    },
+    "bottoms": {
+     "molar_flow_mol_s": 5.56,
+     "T_K": 381.531,
+     "mole_fraction": {
+      "benzene": 0.05,
+      "toluene": 0.949281
+     }
+    }
+   },
+   "note": "DWSIM rounds the bottoms flow to 5.56 mol/s (exact 5.5556), which moves its bottoms toluene fraction to 0.949281 instead of 0.95."
+  },
+  "feed_90_10_subcooled": {
+   "description": "Same column and 90/10 feed, but the feed enters the column directly at 300 K as subcooled liquid (no heater, vapor fraction 8.9e-16, q = 1).",
+   "mole_fraction": {
+    "benzene": 0.9,
+    "toluene": 0.1
+   },
+   "feed_T_K": 300.0,
+   "feed_stream": {
+    "trial_vapor_composition": {
+     "benzene": 0.967284,
+     "toluene": 0.0327165
+    },
+    "fugacity_coefficient_liquid": {
+     "benzene": 1.45946e-06,
+     "toluene": 4.36723e-07
+    },
+    "fugacity_coefficient_vapor": {
+     "benzene": 9.56522e-06,
+     "toluene": 9.40284e-06
+    }
+   },
+   "column_results": {
+    "R_min": -0.256813,
+    "N_min": 4.95058,
+    "N_actual": 5.4855,
+    "optimum_feed_stage": 4.78935,
+    "condenser_duty_kW": 11571.3,
+    "reboiler_duty_kW": 12306.0,
+    "stripping_liquid_mol_s": 383.332,
+    "rectifying_liquid_mol_s": 283.332,
+    "stripping_vapor_mol_s": 377.772,
+    "rectifying_vapor_mol_s": 377.776,
+    "estimated_height_m": 3.74275,
+    "estimated_diameter_m": 3.98938
+   },
+   "note": "Rmin is negative (Underwood with q = 1 and a large alpha); DWSIM still runs with R = 3 and thermo-sim reproduces it. For a liquid feed K = phi_L(z) / phi_V(y*) with y* the trial vapor, which is the 'vapor' composition of the DWSIM stream table (0.967284 / 0.032717)."
+  }
+ }
+}
