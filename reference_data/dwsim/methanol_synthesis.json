@@ -1,0 +1,78 @@
+{
+  "description": "DWSIM 'Methanol Synthesis' tutorial, single pass (no recycle): compressor, heater, equilibrium reactor, cooler, gas/liquid separator.",
+  "software": "DWSIM 10.2.12.0 (Classic UI)",
+  "property_package": "Peng-Robinson",
+  "reaction": {
+    "equation": "CO + 2 H2 <-> CH3OH",
+    "type": "Equilibrium (vapor phase, activity basis, base compound methanol)",
+    "ln_Keq": "11833/T - 29.07",
+    "T_K": 525.0,
+    "P_bar": 80.0
+  },
+  "inputs": {
+    "syngas": {"T_K": 300.0, "P_bar": 30.0, "molar_flow_mol_s": 3.0, "mole_fraction": {"hydrogen": 0.666667, "carbonmonoxide": 0.333333, "methanol": 0.0}},
+    "compressor_C1": {"P_out_bar": 80.0, "calculation": "adiabatic efficiency 75 %"},
+    "heater_H1": {"T_out_K": 525.0},
+    "reactor_R1": {"mode": "isothermal", "T_K": 525.0, "P_bar": 80.0},
+    "cooler_CL1": {"T_out_K": 308.0},
+    "separator_SEP1": {"note": "T and P of the feed"}
+  },
+  "constants_dwsim": {
+    "hydrogen": {"Tc": 33.19, "Pc": 13.13, "omega": -0.215993, "Vc": 64.147, "Zra": 0.3139},
+    "carbonmonoxide": {"Tc": 132.85, "Pc": 34.94, "omega": 0.045, "Vc": 93.1, "Zra": 0.2918},
+    "methanol": {"Tc": 512.64, "Pc": 80.97, "omega": 0.565, "Vc": 118.0, "Zra": 0.0,
+                 "note": "DWSIM has no Zra for methanol (reported 0). The tests use the database Z_RA instead; Zra only enters the Rackett liquid volume and changes none of the quantities compared here (checked: identical results with 0 and with 0.2332)."}
+  },
+  "kij_pr_dwsim": {"hydrogen-carbonmonoxide": 0.0919, "other_pairs": 0.0},
+  "streams": {
+    "syngas": {"T_K": 300.0, "P_bar": 30.0, "mass_flow_kg_s": 0.0320419, "molar_flow_mol_s": 3.0,
+               "mole_fraction": {"hydrogen": 0.666667, "carbonmonoxide": 0.333333, "methanol": 0.0},
+               "molar_enthalpy_kJ_kmol": -4.36847, "molar_entropy_kJ_kmolK": -15.1489, "energy_flow_kW": -110.543, "phase": "vapor"},
+    "comp_out": {"T_K": 430.072, "P_bar": 80.0, "molar_flow_mol_s": 3.0,
+                 "mole_fraction": {"hydrogen": 0.666667, "carbonmonoxide": 0.333333, "methanol": 0.0},
+                 "molar_enthalpy_kJ_kmol": 3818.79, "molar_entropy_kJ_kmolK": -12.8398, "energy_flow_kW": -99.0736, "phase": "vapor"},
+    "hot": {"T_K": 525.0, "P_bar": 80.0, "molar_flow_mol_s": 3.0,
+            "mole_fraction": {"hydrogen": 0.666667, "carbonmonoxide": 0.333333, "methanol": 0.0},
+            "molar_enthalpy_kJ_kmol": 6661.09, "molar_entropy_kJ_kmolK": -6.8684, "energy_flow_kW": -90.5467, "phase": "vapor"},
+    "reactor_out": {"T_K": 525.0, "P_bar": 80.0, "molar_flow_mol_s": 1.64726,
+                    "mole_fraction": {"hydrogen": 0.39293, "carbonmonoxide": 0.196465, "methanol": 0.410605},
+                    "molar_flow_by_component_mol_s": {"hydrogen": 0.647256, "carbonmonoxide": 0.323628, "methanol": 0.676372},
+                    "molar_enthalpy_kJ_kmol": 7620.3, "molar_entropy_kJ_kmolK": 16.7841, "energy_flow_kW": -159.128, "phase": "vapor"},
+    "cooled": {"T_K": 308.0, "P_bar": 80.0, "molar_flow_mol_s": 1.64726,
+               "mole_fraction": {"hydrogen": 0.39293, "carbonmonoxide": 0.196465, "methanol": 0.410605},
+               "vapor_mole_fraction": 0.588684,
+               "molar_enthalpy_kJ_kmol": -15860.0, "molar_entropy_kJ_kmolK": -59.5859, "energy_flow_kW": -197.806, "phase": "two_phase"},
+    "recycle_gas": {"T_K": 308.0, "P_bar": 80.0, "molar_flow_mol_s": 0.969714, "mass_flow_kg_s": 0.0104565,
+                    "mole_fraction": {"hydrogen": 0.663615, "carbonmonoxide": 0.330657, "methanol": 0.00572833},
+                    "molar_flow_by_component_mol_s": {"hydrogen": 0.643517, "carbonmonoxide": 0.320642, "methanol": 0.00555484},
+                    "molar_enthalpy_kJ_kmol": 144.968, "molar_entropy_kJ_kmolK": -22.5883, "energy_flow_kW": -36.4162, "phase": "vapor"},
+    "crude_methanol": {"T_K": 308.0, "P_bar": 80.0, "molar_flow_mol_s": 0.677542, "mass_flow_kg_s": 0.0215854,
+                       "mole_fraction": {"hydrogen": 0.00551889, "carbonmonoxide": 0.00440654, "methanol": 0.990075},
+                       "molar_flow_by_component_mol_s": {"hydrogen": 0.00373928, "carbonmonoxide": 0.00298562, "methanol": 0.670817},
+                       "molar_enthalpy_kJ_kmol": -38766.7, "molar_entropy_kJ_kmolK": -112.538, "energy_flow_kW": -161.39, "phase": "liquid"}
+  },
+  "blocks": {
+    "compressor_C1": {"power_kW": 11.4695, "T_out_K": 430.072, "adiabatic_coefficient": 1.44549, "polytropic_efficiency_pct": 78.1366},
+    "heater_H1": {"duty_kW": 8.52689, "T_out_K": 525.0},
+    "reactor_R1": {"duty_kW": -68.5815, "extent_mol_s": 0.676372, "conversion_pct": {"hydrogen": 67.6372, "carbonmonoxide": 67.6372},
+                   "initial_gibbs_energy_kW": -132.737, "final_gibbs_energy_kW": -147.152},
+    "cooler_CL1": {"duty_kW": -38.6781, "vapor_mole_fraction": 0.588684},
+    "separator_SEP1": {"vapor_molar_flow_mol_s": 0.969714, "liquid_molar_flow_mol_s": 0.677542,
+                       "report_mass_flows_kg_s": {"labelled_vapor": 0.0215854, "labelled_liquid": 0.0104565}}
+  },
+  "tutorial_text": {
+    "q_reactor_kW": 69, "q_cooler_kW": 39, "w_compressor_kW": 11.5, "co_conversion_pct": 68,
+    "crude_methanol_purity": 0.99, "recycle_h2_to_co": 2.0
+  },
+  "fugacity_coefficients_dwsim": {
+  "reactor_out": {"hydrogen": 1.08069, "carbonmonoxide": 1.06591, "methanol": 0.791023},
+  "hot":         {"hydrogen": 1.02189, "carbonmonoxide": 1.02783}
+},
+  "notes": [
+    "The separator report of DWSIM swaps the labels of the mass flows: 0.0215854 kg/s belongs to the liquid (crude methanol, 0.677542 mol/s of mostly methanol) and 0.0104565 kg/s to the vapor (recycle gas). The stream table is consistent and is what is stored in 'streams'.",
+    "Molar enthalpy and entropy of the DWSIM stream table are sensible values. The energy flow includes the formation enthalpy (as H_total_mix in thermo-sim does), so duties and energy flows are compared directly.",
+    "The tutorial text says the recycle gas has H2/CO = 2.0. DWSIM gives 0.663615/0.330657 = 2.007: CO is slightly more soluble in the liquid than H2.",
+    "The equilibrium reactor expression is evaluated on fugacities relative to 1 atm according to the tutorial text. Whether P_ref is 1.0 or 1.01325 bar matters here (delta nu = -2); the tests compare both against the DWSIM extent.",
+    "As in the WGS case, the DWSIM product does not satisfy its own expression exactly: evaluated with the thermo-sim fugacity coefficients at the DWSIM outlet, ln Q is -6.584 (P_ref 1.01325 bar) or -6.610 (1.0 bar) against ln K = -6.531."
+  ]
+}

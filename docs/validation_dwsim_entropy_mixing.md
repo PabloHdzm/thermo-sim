@@ -1,6 +1,6 @@
 # DWSIM entropy of mixtures: empirical mixing rule
 
-Status: **empirical hypothesis**, not a verified fact about DWSIM. Last updated 2026-11-19.
+Status: **empirical hypothesis**, not a verified fact about DWSIM. Last updated 2026-11-19 (methanol synthesis added).
 
 ## What is observed
 
@@ -49,6 +49,8 @@ Stored data: `reference_data/dwsim/mixing_entropy_298K.json`. Tests: `tests/test
 | C1/C2 99/1 | validation | raw | +0.00002 |
 | Natural gas chiller 320 K to 240 K, 70 bar: vapor, liquid and feed streams | validation | raw | 0.068 in dS (note 1) |
 | Water-gas shift, 600 K, 10.1325 bar: feed and the three reactor products (CO, H2O, CO2, H2) | validation | raw | 0.017 to 0.024 on offsets of -19 to -30 (note 2) |
+| Methanol synthesis, H2/CO/CH3OH, 300 to 525 K, 30 to 80 bar: 4 single-phase vapor streams, 1 liquid (99 % methanol) | validation | raw | 0.001 to 0.074 on offsets of -3.6 to -24.7 (note 3) |
+| Methanol synthesis, two-phase stream at 308 K, 80 bar (V = 0.5887), predicted phase by phase | validation (prediction fixed beforehand) | raw | -0.0095 on an offset of -6.06 (note 3) |
 
 Enthalpy of the four mixtures (5 components, C1/C2 50/50, 90/10 and 99/1) agrees with DWSIM within 0.0021 kJ/kmol
 (thermo-sim minus DWSIM between -0.0021 and -0.0010), with no mixing correction.
@@ -65,6 +67,29 @@ thermo-sim minus DWSIM entropy is -19.31 (feed), -30.25 (conversion), -30.26 (eq
 and the rule predicts -19.33, -30.27, -30.28 and -30.27: residuals 0.017 to 0.024 (0.1 % of the offset). They equal about
 dH/T of the 0.1 % enthalpy difference of the ideal-gas Cp (8.7 kJ/kmol at 600 K gives 0.015). The test tolerance, 0.05, was
 chosen after seeing these residuals, not before. Without the rule the comparison fails by 19 to 30.
+
+Note 3. Methanol Synthesis tutorial (`reference_data/dwsim/methanol_synthesis.json`, `tests/test_methanol_synthesis.py`).
+H2/CO/CH3OH (molar masses 2, 28, 32), at 80 bar, with the first liquid and the first two-phase stream of the evidence.
+All streams are built at the DWSIM composition, T and P (not from the thermo-sim flowsheet, whose extent differs by
+1.1 %). Residuals, thermo-sim minus rule minus DWSIM, in kJ/(kmol K):
+
+| Stream | State | Offset (rule) | Residual |
+|---|---|---|---|
+| Syngas | 300 K, 30 bar, vapor, 2/3 H2 | -7.78 | -0.0008 |
+| Comp-Out | 430 K, 80 bar, vapor | -7.78 | -0.0006 |
+| Hot | 525 K, 80 bar, vapor | -7.78 | -0.0126 |
+| Reactor-Out | 525 K, 80 bar, vapor, 0.39/0.20/0.41 | -24.39 | -0.0738 |
+| Recycle-Gas | 308 K, 80 bar, vapor | -7.80 | -0.0009 |
+| Crude-Methanol | 308 K, 80 bar, liquid, 99 % methanol | -3.56 | -0.0237 |
+| Cooled | 308 K, 80 bar, two-phase | -6.06 | -0.0095 |
+
+The two-phase prediction, V off(y) + (1 - V) off(x) with the DWSIM V and phase compositions, was written down before
+looking at the result: it is the natural extension (each phase mixes on its own) and it was not adjusted. The offset of the
+overall composition as a single mixture would be -24.39, and the comparison then fails by 18, so the test rules that
+alternative out. The tolerance, 0.1, was chosen after seeing the residuals, not before. The largest residual (Reactor-Out,
+0.074) goes with an enthalpy difference of 26 kJ/kmol (0.35 %) of the ideal-gas Cp at 525 K, about 0.05 in dH/T. Two
+consistency observations that are not about the rule: at the DWSIM composition thermo-sim reproduces the DWSIM vapor
+fraction (0.58868 against 0.588684) and the phase compositions to 6 digits.
 
 Reproduction of the 9-point sweep from the stored values, with thermo-sim minus DWSIM entropy ("measured") and the
 rule offset, in kJ/(kmol K):
@@ -113,11 +138,14 @@ without a free parameter.
 ## Cases that would test the rule hardest
 
 The rule weights by 1 / M_i. The hydrocarbon cases span molar masses between 16 and 72; the WGS case adds H2 (2) with
-CO2 (44), a non-hydrocarbon quaternary mixture, and passes (note 2). Still open:
+CO2 (44) and passes (note 2); methanol synthesis adds H2/CO/CH3OH with a liquid and a two-phase stream and passes
+(note 3). Still open:
 
 1. A mixture with H2 and a heavy hydrocarbon (H2 with n-pentane), or N2 with H2.
-2. A case with a liquid phase at several compositions, since the natural gas chiller is the only one so far.
-3. A mixture at low temperature, to separate the rule from the ideal-gas Cp difference that the WGS residuals show.
+2. A liquid phase at several compositions (so far: the natural gas chiller liquid and the 99 % methanol liquid), in
+   particular a liquid with comparable amounts of two components of different molar mass.
+3. A mixture at low temperature, to separate the rule from the ideal-gas Cp difference that the WGS and methanol
+   residuals show (the residual grows with the enthalpy difference, not with the offset).
 
 ## Wording for reports
 
