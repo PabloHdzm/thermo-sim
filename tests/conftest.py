@@ -35,3 +35,27 @@ def feed_with_argon(h2_n2_nh3):
     ar = pd.DataFrame({'Component': ['argon'], 'Tc (K)': [150.687], 'Pc (bar)': [48.63],
                        'w': [-0.002], 'frac_mol': [0.0]})
     return pd.concat([h2_n2_nh3, ar], ignore_index=True)
+
+_ROWS = []
+
+@pytest.fixture
+def cmp(request):
+    """Compares vs expected, then asserts."""
+    def _cmp(label, got, ref, abs=None, rel=None):
+        tol = max(abs or 0.0, (rel or 0.0) * __builtins__['abs'](ref)) if (abs or rel) else 1e-6 * __builtins__['abs'](ref)
+        diff = got - ref
+        _ROWS.append((request.node.name, label, got, ref, diff,
+                      100 * diff / ref if ref else float('nan'), tol))
+        assert got == pytest.approx(ref, abs=abs, rel=rel), f"{label}: {got} vs {ref}"
+    return _cmp
+
+
+def pytest_terminal_summary(terminalreporter):
+    if not _ROWS:
+        return
+    tr = terminalreporter
+    tr.section("Obtained vs DWSIM")
+    tr.write_line(f"{'test':45s} {'variable':22s} {'thermo-sim':>12s} {'DWSIM':>12s} {'dif':>10s} {'%':>8s} {'tol':>9s} {'tol':>8s}")
+    for t, l, g, r, d, p, tol in _ROWS:
+        uso = f"{100*__builtins__['abs'](d)/tol:5.0f}%" if tol else "-"
+        tr.write_line(f"{t[:45]:45s} {l[:22]:22s} {g:12.5g} {r:12.5g} {d:10.3g} {p:8.3f} {tol:9.2g} {uso:>8s}")
