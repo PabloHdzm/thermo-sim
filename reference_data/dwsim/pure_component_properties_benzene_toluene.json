@@ -1,0 +1,355 @@
+{
+ "description": "Pure benzene and toluene at 1.01325 bar, 300 to 400 K: DWSIM 10.2.12.0 (Peng-Robinson with the DWSIM constants of dstwu_benzene_toluene.json), sensitivity analysis of a pure-component stream.",
+ "software": "DWSIM 10.2.12.0",
+ "P_bar": 1.01325,
+ "benzene": [
+  {
+   "T_K": 300.0,
+   "molar_enthalpy_kJ_kmol": -32356.0,
+   "molar_entropy_kJ_kmol_K": -91.8499,
+   "density_kg_m3": 893.363,
+   "cp_kJ_kg_K": 1.44836,
+   "phase": "liquid"
+  },
+  {
+   "T_K": 305.263,
+   "molar_enthalpy_kJ_kmol": -31722.8,
+   "molar_entropy_kJ_kmol_K": -89.7574,
+   "density_kg_m3": 888.641,
+   "cp_kJ_kg_K": 1.47187,
+   "phase": "liquid"
+  },
+  {
+   "T_K": 310.526,
+   "molar_enthalpy_kJ_kmol": -31079.9,
+   "molar_entropy_kJ_kmol_K": -87.6695,
+   "density_kg_m3": 883.815,
+   "cp_kJ_kg_K": 1.49558,
+   "phase": "liquid"
+  },
+  {
+   "T_K": 315.789,
+   "molar_enthalpy_kJ_kmol": -30427.5,
+   "molar_entropy_kJ_kmol_K": -85.586,
+   "density_kg_m3": 878.884,
+   "cp_kJ_kg_K": 1.51949,
+   "phase": "liquid"
+  },
+  {
+   "T_K": 321.053,
+   "molar_enthalpy_kJ_kmol": -29765.3,
+   "molar_entropy_kJ_kmol_K": -83.5064,
+   "density_kg_m3": 873.842,
+   "cp_kJ_kg_K": 1.54359,
+   "phase": "liquid"
+  },
+  {
+   "T_K": 326.316,
+   "molar_enthalpy_kJ_kmol": -29093.3,
+   "molar_entropy_kJ_kmol_K": -81.4303,
+   "density_kg_m3": 868.687,
+   "cp_kJ_kg_K": 1.56788,
+   "phase": "liquid"
+  },
+  {
+   "T_K": 331.579,
+   "molar_enthalpy_kJ_kmol": -28411.4,
+   "molar_entropy_kJ_kmol_K": -79.3573,
+   "density_kg_m3": 863.413,
+   "cp_kJ_kg_K": 1.59238,
+   "phase": "liquid"
+  },
+  {
+   "T_K": 336.842,
+   "molar_enthalpy_kJ_kmol": -27719.6,
+   "molar_entropy_kJ_kmol_K": -77.2873,
+   "density_kg_m3": 858.017,
+   "cp_kJ_kg_K": 1.61709,
+   "phase": "liquid"
+  },
+  {
+   "T_K": 342.105,
+   "molar_enthalpy_kJ_kmol": -27017.7,
+   "molar_entropy_kJ_kmol_K": -75.2197,
+   "density_kg_m3": 852.493,
+   "cp_kJ_kg_K": 1.64201,
+   "phase": "liquid"
+  },
+  {
+   "T_K": 347.368,
+   "molar_enthalpy_kJ_kmol": -26305.7,
+   "molar_entropy_kJ_kmol_K": -73.1543,
+   "density_kg_m3": 846.837,
+   "cp_kJ_kg_K": 1.66717,
+   "phase": "liquid"
+  },
+  {
+   "T_K": 352.632,
+   "molar_enthalpy_kJ_kmol": -25583.4,
+   "molar_entropy_kJ_kmol_K": -71.0908,
+   "density_kg_m3": 841.043,
+   "cp_kJ_kg_K": 1.69259,
+   "phase": "liquid"
+  },
+  {
+   "T_K": 357.895,
+   "molar_enthalpy_kJ_kmol": 5264.81,
+   "molar_entropy_kJ_kmol_K": 16.3352,
+   "density_kg_m3": 2.73757,
+   "cp_kJ_kg_K": 1.30266,
+   "phase": "vapor"
+  },
+  {
+   "T_K": 363.158,
+   "molar_enthalpy_kJ_kmol": 5804.53,
+   "molar_entropy_kJ_kmol_K": 17.8322,
+   "density_kg_m3": 2.69486,
+   "cp_kJ_kg_K": 1.32216,
+   "phase": "vapor"
+  },
+  {
+   "T_K": 368.421,
+   "molar_enthalpy_kJ_kmol": 6352.24,
+   "molar_entropy_kJ_kmol_K": 19.3296,
+   "density_kg_m3": 2.65353,
+   "cp_kJ_kg_K": 1.34154,
+   "phase": "vapor"
+  },
+  {
+   "T_K": 373.684,
+   "molar_enthalpy_kJ_kmol": 6907.9,
+   "molar_entropy_kJ_kmol_K": 20.8271,
+   "density_kg_m3": 2.61351,
+   "cp_kJ_kg_K": 1.36079,
+   "phase": "vapor"
+  },
+  {
+   "T_K": 378.947,
+   "molar_enthalpy_kJ_kmol": 7471.43,
+   "molar_entropy_kJ_kmol_K": 22.3246,
+   "density_kg_m3": 2.57473,
+   "cp_kJ_kg_K": 1.37991,
+   "phase": "vapor"
+  },
+  {
+   "T_K": 384.211,
+   "molar_enthalpy_kJ_kmol": 8042.8,
+   "molar_entropy_kJ_kmol_K": 23.822,
+   "density_kg_m3": 2.53713,
+   "cp_kJ_kg_K": 1.39888,
+   "phase": "vapor"
+  },
+  {
+   "T_K": 389.474,
+   "molar_enthalpy_kJ_kmol": 8621.95,
+   "molar_entropy_kJ_kmol_K": 25.3191,
+   "density_kg_m3": 2.50066,
+   "cp_kJ_kg_K": 1.41771,
+   "phase": "vapor"
+  },
+  {
+   "T_K": 394.737,
+   "molar_enthalpy_kJ_kmol": 9208.8,
+   "molar_entropy_kJ_kmol_K": 26.8158,
+   "density_kg_m3": 2.46527,
+   "cp_kJ_kg_K": 1.4364,
+   "phase": "vapor"
+  },
+  {
+   "T_K": 400.0,
+   "molar_enthalpy_kJ_kmol": 9803.3,
+   "molar_entropy_kJ_kmol_K": 28.312,
+   "density_kg_m3": 2.43091,
+   "cp_kJ_kg_K": 1.45493,
+   "phase": "vapor"
+  }
+ ],
+ "toluene": [
+  {
+   "T_K": 300.0,
+   "molar_enthalpy_kJ_kmol": -36910.2,
+   "molar_entropy_kJ_kmol_K": -96.9049,
+   "density_kg_m3": 857.937,
+   "cp_kJ_kg_K": 1.49676,
+   "phase": "liquid"
+  },
+  {
+   "T_K": 305.263,
+   "molar_enthalpy_kJ_kmol": -36137.4,
+   "molar_entropy_kJ_kmol_K": -94.3513,
+   "density_kg_m3": 854.061,
+   "cp_kJ_kg_K": 1.51882,
+   "phase": "liquid"
+  },
+  {
+   "T_K": 310.526,
+   "molar_enthalpy_kJ_kmol": -35354.0,
+   "molar_entropy_kJ_kmol_K": -91.807,
+   "density_kg_m3": 850.104,
+   "cp_kJ_kg_K": 1.54102,
+   "phase": "liquid"
+  },
+  {
+   "T_K": 315.789,
+   "molar_enthalpy_kJ_kmol": -34560.0,
+   "molar_entropy_kJ_kmol_K": -89.2715,
+   "density_kg_m3": 846.064,
+   "cp_kJ_kg_K": 1.56336,
+   "phase": "liquid"
+  },
+  {
+   "T_K": 321.053,
+   "molar_enthalpy_kJ_kmol": -33755.3,
+   "molar_entropy_kJ_kmol_K": -86.7442,
+   "density_kg_m3": 841.938,
+   "cp_kJ_kg_K": 1.58583,
+   "phase": "liquid"
+  },
+  {
+   "T_K": 326.316,
+   "molar_enthalpy_kJ_kmol": -32939.8,
+   "molar_entropy_kJ_kmol_K": -84.2248,
+   "density_kg_m3": 837.724,
+   "cp_kJ_kg_K": 1.60843,
+   "phase": "liquid"
+  },
+  {
+   "T_K": 331.579,
+   "molar_enthalpy_kJ_kmol": -32113.5,
+   "molar_entropy_kJ_kmol_K": -81.7128,
+   "density_kg_m3": 833.42,
+   "cp_kJ_kg_K": 1.63115,
+   "phase": "liquid"
+  },
+  {
+   "T_K": 336.842,
+   "molar_enthalpy_kJ_kmol": -31276.3,
+   "molar_entropy_kJ_kmol_K": -79.2077,
+   "density_kg_m3": 829.021,
+   "cp_kJ_kg_K": 1.65401,
+   "phase": "liquid"
+  },
+  {
+   "T_K": 342.105,
+   "molar_enthalpy_kJ_kmol": -30428.1,
+   "molar_entropy_kJ_kmol_K": -76.7093,
+   "density_kg_m3": 824.525,
+   "cp_kJ_kg_K": 1.677,
+   "phase": "liquid"
+  },
+  {
+   "T_K": 347.368,
+   "molar_enthalpy_kJ_kmol": -29569.0,
+   "molar_entropy_kJ_kmol_K": -74.217,
+   "density_kg_m3": 819.929,
+   "cp_kJ_kg_K": 1.70012,
+   "phase": "liquid"
+  },
+  {
+   "T_K": 352.632,
+   "molar_enthalpy_kJ_kmol": -28698.7,
+   "molar_entropy_kJ_kmol_K": -71.7307,
+   "density_kg_m3": 815.229,
+   "cp_kJ_kg_K": 1.72338,
+   "phase": "liquid"
+  },
+  {
+   "T_K": 357.895,
+   "molar_enthalpy_kJ_kmol": -27817.4,
+   "molar_entropy_kJ_kmol_K": -69.2498,
+   "density_kg_m3": 810.421,
+   "cp_kJ_kg_K": 1.74679,
+   "phase": "liquid"
+  },
+  {
+   "T_K": 363.158,
+   "molar_enthalpy_kJ_kmol": -26924.8,
+   "molar_entropy_kJ_kmol_K": -66.774,
+   "density_kg_m3": 805.501,
+   "cp_kJ_kg_K": 1.77036,
+   "phase": "liquid"
+  },
+  {
+   "T_K": 368.421,
+   "molar_enthalpy_kJ_kmol": -26020.9,
+   "molar_entropy_kJ_kmol_K": -64.303,
+   "density_kg_m3": 800.464,
+   "cp_kJ_kg_K": 1.7941,
+   "phase": "liquid"
+  },
+  {
+   "T_K": 373.684,
+   "molar_enthalpy_kJ_kmol": -25105.7,
+   "molar_entropy_kJ_kmol_K": -61.8365,
+   "density_kg_m3": 795.307,
+   "cp_kJ_kg_K": 1.81802,
+   "phase": "liquid"
+  },
+  {
+   "T_K": 378.947,
+   "molar_enthalpy_kJ_kmol": -24179.1,
+   "molar_entropy_kJ_kmol_K": -59.374,
+   "density_kg_m3": 790.024,
+   "cp_kJ_kg_K": 1.84215,
+   "phase": "liquid"
+  },
+  {
+   "T_K": 384.211,
+   "molar_enthalpy_kJ_kmol": 10045.5,
+   "molar_entropy_kJ_kmol_K": 29.8084,
+   "density_kg_m3": 3.023,
+   "cp_kJ_kg_K": 1.47674,
+   "phase": "vapor"
+  },
+  {
+   "T_K": 389.474,
+   "molar_enthalpy_kJ_kmol": 10766.5,
+   "molar_entropy_kJ_kmol_K": 31.672,
+   "density_kg_m3": 2.97837,
+   "cp_kJ_kg_K": 1.49545,
+   "phase": "vapor"
+  },
+  {
+   "T_K": 394.737,
+   "molar_enthalpy_kJ_kmol": 11496.4,
+   "molar_entropy_kJ_kmol_K": 33.5336,
+   "density_kg_m3": 2.93511,
+   "cp_kJ_kg_K": 1.51403,
+   "phase": "vapor"
+  },
+  {
+   "T_K": 400.0,
+   "molar_enthalpy_kJ_kmol": 12235.4,
+   "molar_entropy_kJ_kmol_K": 35.3932,
+   "density_kg_m3": 2.89317,
+   "cp_kJ_kg_K": 1.53248,
+   "phase": "vapor"
+  }
+ ],
+ "notes": [
+  "DWSIM molar enthalpy and entropy exclude the formation terms: thermo-sim minus DWSIM is a constant per component and phase (benzene H +82.86 kJ/mol, S -157.2 kJ/kmol/K; toluene H +50.03 kJ/mol, S -242.1 kJ/kmol/K), so the tests compare differences.",
+  "Vapor: the benzene offset is constant to 4 J/mol over 100 K (Cp ideal gas agrees to 0.3 %); toluene vapor drifts 10 J/mol over 16 K (Cp 0.35 % below DWSIM, 1.527 against 1.5325 kJ/kg/K at 400 K). Phase change: the offset is the same on both sides, so the heat of vaporization agrees (the difference across the change is below 2 J/mol of a 30 kJ/mol latent heat).",
+  "Liquid: the heat capacity implied by the DWSIM enthalpy differences is 0.4 to 0.8 % above thermo-sim, so the liquid enthalpy difference between 300 K and the boiling point is 0.5 % larger in DWSIM (benzene 36.7 J/mol in 52 K, toluene 64.3 J/mol in 79 K). CAUSE IDENTIFIED: the ideal gas heat capacity. Integrating the DWSIM polynomial (ideal_gas_cp_dwsim) against the thermo-sim one (database polynomial) gives 36.9 J/mol (benzene, 300 to 352.6 K) and 64.4 J/mol (toluene, 300 to 378.9 K), the same differences. The DWSIM ideal gas Cp is 1.2 % (benzene) and 0.8 % (toluene) above thermo-sim at 300 K and 0.3 % below / 0.4 % above at 400 K. The departure (EOS residual) terms agree. The vapor differences are small because the two polynomials cross near 370 K (benzene).",
+  "The 'Heat Capacity (Liquid)' column printed by DWSIM (1.448 kJ/kg/K for benzene at 300 K) is 6 % below dH/dT of its own enthalpy (120.3 J/mol/K = 1.54 kJ/kg/K), so it is not a consistent reference for the liquid Cp: use the enthalpy differences.",
+  "Density: liquid 0.006 %, vapor 0.01 %."
+ ],
+ "ideal_gas_cp_dwsim": {
+  "form": "Cp [J/kmol/K] = A + exp(B / T + C + D T + E T^2), T in K",
+  "coefficients": {
+   "benzene": {
+    "A": 34010.2,
+    "B": -588.098,
+    "C": 12.8178,
+    "D": -0.000197306,
+    "E": 5.1429e-08
+   },
+   "toluene": {
+    "A": 47225.0,
+    "B": -565.85,
+    "C": 12.856,
+    "D": 5.535e-06,
+    "E": -1.998e-08
+   }
+  }
+ }
+}
