@@ -41,9 +41,19 @@ sections, using the liquid phase of the feed: N_above / N = N_R,min / (N_R,min +
 ill-conditioned when K of the heavy key is nearly equal at both ends of a section, a warning is issued). Only the
 defaults have been compared with DWSIM.
 
-Limitation of the Gilliland correlations: they do not diverge at R = Rmin. With the Eduljee form N tends to
+Limitation of the Gilliland correlations: the Eduljee form does not diverge at R = Rmin. N tends to
 (0.75 + Nmin) / 0.25 = 4 Nmin + 3, so a number of stages above that value cannot be reached with ``n_stages``
-(an error is raised) and the stage count near Rmin is underestimated.
+(an error is raised) and the stage count near Rmin is underestimated. The Molokanov form does diverge
+(Y -> 1 and N -> infinity as X -> 0).
+
+Assumptions and limits of the Fenske-Underwood-Gilliland method: constant relative volatility (the value at the feed
+can differ a lot from the mean of the column, see ``alpha_mode``), constant molar overflow, components other than the
+keys do not distribute (lighter ones leave in the distillate, heavier ones in the bottoms). For strongly non-ideal
+mixtures or distributing components the results are a starting point for a rigorous column, not a design. The numbers
+of stages are real (not rounded up) to match DWSIM.
+
+q: ``q_mode='dwsim'`` takes q = 1 - vapor fraction, so a subcooled liquid gives q = 1 and a superheated vapor q = 0
+(DWSIM does the same and it is the validated default). The thermal condition (q > 1 or q < 0) is ``q_mode='enthalpy'``.
 
 Not implemented: partial condenser with vapor and liquid distillate (needs the distillate vapor fraction as an
 input and a reference to compare with), column diameter. The height is an estimate with one DWSIM data point (see
@@ -88,8 +98,8 @@ def gilliland_X(Y: float, correlation: str = 'eduljee') -> float:
     """Inverse of `gilliland_Y` (0 < Y < Y(0+))."""
     if correlation == 'eduljee':
         if not 0.0 < Y < 0.75:
-            raise ValueError(f"With Eduljee, Y must be in (0, 0.75), got {Y}. The number of stages is too close to "
-                             "the minimum or too large for the correlation.")
+            raise ValueError(f"With Eduljee, Y must be in (0, 0.75), got {Y}. Y >= 0.75 means N >= 4 Nmin + 3, "
+                             "which the Eduljee correlation cannot reach (it does not diverge at Rmin).")
         return (1.0 - Y / 0.75) ** (1.0 / EDULJEE_EXPONENT)
     if correlation == 'molokanov':
         if not 0.0 < Y < 1.0:
@@ -148,7 +158,6 @@ class ShortcutResult:
     P_top: float
     P_bottom: float
     tray_height: float
-    energy_error_kW: float         # |Qr - Qc - (H_D + H_B - H_F)|, zero by construction (kept as a check)
 
     @property
     def height(self) -> float:
@@ -310,34 +319,43 @@ class ShortcutColumn:
             vapor = feed.props.phase == 'vapor'
             lz = lambda x: k.phi(T, P, x, 'l')[0]
             vz = lambda x: k.phi_eos(T, P, x, 'v')[0]
-            if vapor:
-                lv, w = vz(zs), zs.copy()
-                for _ in range(200):
-                    K = np.exp(lz(w) - lv)
-                    wn = zs / K
-                    wn /= wn.sum()
+            ref = vz(zs) if vapor else lz(zs)                       # the feed phase; the trial phase is the other one
+            K_w = np.asarray(sub._wilson(T, P), float)
+
+            def trial(w):
+                for _ in range(300):
+                    K = np.exp((lz(w) - ref) if vapor else (ref - vz(w)))
+                    wn = zs / K if vapor else zs * K
+                    wn = wn / wn.sum()
                     done = float(np.max(np.abs(wn - w))) < 1e-13
                     w = wn
                     if done:
                         break
-                K = np.exp(lz(w) - lv)
-            else:
-                ll, w = lz(zs), zs.copy()
-                for _ in range(200):
-                    K = np.exp(ll - vz(w))
-                    wn = zs * K
-                    wn /= wn.sum()
-                    done = float(np.max(np.abs(wn - w))) < 1e-13
-                    w = wn
-                    if done:
-                        break
-                K = np.exp(ll - vz(w))
-            if not np.all(np.isfinite(K)) or float(np.max(np.abs(np.log(K)))) < 1e-9:
-                return self._K(feed, order, names)                  # no second root: the K of the stream
-            active = [n for n in names if feed.comp_mol.get(n, 0.0) > 0]
-            return {n: float(K[active.index(n)]) for n in order}
-        except Exception:
+                lnphi_w = lz(w) if vapor else vz(w)
+                K = np.exp((lnphi_w - ref) if vapor else (ref - lnphi_w))
+                tpd = float(np.sum(w * (np.log(w) + lnphi_w - np.log(zs) - ref)))     # tangent plane distance
+                return K, tpd
+
+            starts = [zs.copy()]                                    # the feed itself and a Wilson-based estimate
+            w0 = zs / K_w if vapor else zs * K_w
+            starts.append(w0 / w0.sum())
+            best = None
+            for w0 in starts:
+                K, tpd = trial(w0)
+                if np.all(np.isfinite(K)) and float(np.max(np.abs(np.log(K)))) > 1e-9:      # not the trivial solution
+                    if best is None or tpd < best[1]:
+                        best = (K, tpd)
+        except (AttributeError, KeyError, IndexError, ValueError, FloatingPointError, np.linalg.LinAlgError) as e:
+            import warnings
+            warnings.warn(f"K of the single-phase feed from the stability trial failed ({type(e).__name__}: {e}); "
+                          "using the K of the stream instead (alpha can differ from DWSIM by a few tenths of a percent).",
+                          RuntimeWarning, stacklevel=3)
             return self._K(feed, order, names)
+        if best is None:                                            # only the trivial solution: no second root
+            return self._K(feed, order, names)
+        K = best[0]
+        active = [n for n in names if feed.comp_mol.get(n, 0.0) > 0]
+        return {n: float(K[active.index(n)]) for n in order}
 
     def _winn_section(self, K1: dict, K2: dict, x1: dict, x2: dict) -> float:
         """Winn minimum number of stages between two ends of a section (K at both ends, liquid compositions)."""
@@ -423,8 +441,15 @@ class ShortcutColumn:
             N_min = math.log(ratio) / math.log(a[self.LK])
         else:
             lnK = lambda K, n: math.log(K[n])
-            theta_w = (lnK(K_top, self.LK) - lnK(K_bot, self.LK)) / (lnK(K_top, self.HK) - lnK(K_bot, self.HK))
+            dHK = lnK(K_top, self.HK) - lnK(K_bot, self.HK)
+            if abs(dHK) < 1e-12:
+                raise ValueError("Winn minimum stages: K of the heavy key is the same at the top and at the bottom "
+                                 "(isothermal column), the parameter theta is undefined. Use nmin_method='fenske'.")
+            theta_w = (lnK(K_top, self.LK) - lnK(K_bot, self.LK)) / dHK
             beta = math.exp(lnK(K_top, self.LK) - theta_w * lnK(K_top, self.HK))
+            if not beta > 1.0:
+                raise ValueError(f"Winn minimum stages: beta = {beta:.4g} must exceed 1 (the light key is not more "
+                                 "volatile than the heavy key at the column conditions).")
             N_min = math.log((xD[self.LK] / xB[self.LK]) * (xB[self.HK] / xD[self.HK]) ** theta_w) / math.log(beta)
 
         # Underwood
@@ -504,7 +529,7 @@ class ShortcutColumn:
             R_min=R_min, R=R, N_min=N_min, N=N, N_rectifying=N_R, N_stripping=N - N_R, feed_stage=N - N_R,
             L_rect=L_r, V_rect=V_r, L_strip=L_s, V_strip=V_s, Qc_kW=Qc, Qr_kW=Qr,
             T_top=float(dist.T), T_bottom=float(bott.T), P_top=self.P_top, P_bottom=self.P_bottom,
-            tray_height=self.tray_height, energy_error_kW=abs(Qr - Qc - (E_d + E_b - E_f)))
+            tray_height=self.tray_height)
 
 
 DSTWU = ShortcutColumn

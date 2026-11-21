@@ -288,7 +288,6 @@ def test_mass_and_energy_balances(res, hot):
     for n in ('benzene', 'toluene'):
         assert res.D * res.x_D[n] + res.B * res.x_B[n] == pytest.approx(F * 0.5, rel=1e-12)
     assert res.Qr_kW - res.Qc_kW == pytest.approx(_kW(res.distillate) + _kW(res.bottoms) - _kW(hot), abs=1e-9)
-    assert res.energy_error_kW < 1e-9
 
 
 def test_flows_from_q(res):
@@ -385,7 +384,7 @@ def test_light_component_goes_to_the_distillate(three):
     a = r.alpha_used
     z = {'pentane': 0.2, 'benzene': 0.4, 'toluene': 0.4}
     assert sum(a[n] * z[n] / (a[n] - r.theta) for n in z) == pytest.approx(1.0 - r.q, abs=1e-10)
-    assert r.energy_error_kW < 1e-9 and r.N > r.N_min and r.R_min > 0
+    assert r.N > r.N_min and r.R_min > 0
 
 
 # ------------------------------------------------------------------ input checks
@@ -423,3 +422,41 @@ def test_run_errors(hot):
         ShortcutColumn('benzene', 'ethanol', P, x_LK_bottoms=0.05, x_HK_distillate=0.05, reflux_ratio=3.0).run(hot)
     with pytest.raises(ValueError, match='infeasible'):
         _col(x_LK_bottoms=0.6, x_HK_distillate=0.6).run(hot)
+
+
+
+# ------------------------------------------------------------------ guards and messages
+
+def test_eduljee_inverse_error_message_names_the_real_limit():
+    with pytest.raises(ValueError, match='4 Nmin'):
+        gilliland_X(0.8, 'eduljee')
+
+
+def test_molokanov_diverges_at_the_minimum_reflux():
+    ys = [gilliland_Y(X, 'molokanov') for X in (1e-1, 1e-2, 1e-3)]
+    assert ys[0] < ys[1] < ys[2] and ys[2] > 0.9                                    # Y -> 1: N -> infinity
+    assert gilliland_Y(1e-12, 'eduljee') == pytest.approx(0.75, abs=1e-3)           # bounded: N -> 4 Nmin + 3
+
+
+def test_winn_isothermal_column_is_refused(hot):
+    from thermo_sim.unitops import dstwu as mod
+    col = _col(nmin_method='winn')
+    real = col._K
+    top = {}
+
+    def same_K(stream, order, names):           # identical K at top and bottom
+        return top.setdefault('K', real(stream, order, names))
+
+    col._K = same_K
+    col._K_feed = real
+    with pytest.raises(ValueError, match='isothermal|Winn|alpha|volatile'):
+        col.run(hot)
+
+
+def test_failure_of_the_stability_trial_warns_and_falls_back(database, dwsim_method):
+    h = _case_feed(database, dwsim_method, 'feed_70_30')
+    import types
+    broken = types.SimpleNamespace(props=h.props, comp_mol=h.comp_mol, component_data=h.component_data, T=h.T, P=h.P)
+    with pytest.warns(RuntimeWarning, match='stability trial'):                     # no engine: AttributeError
+        K = _col()._K_feed(broken, ['benzene', 'toluene'], ['benzene', 'toluene'])
+    assert K['benzene'] > K['toluene']
