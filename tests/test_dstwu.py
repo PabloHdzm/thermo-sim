@@ -297,6 +297,31 @@ def test_condenser_pressure_above_reboiler_pressure_is_refused(hot):
         ShortcutColumn('benzene', 'toluene', 1.5, 1.2, x_LK_bottoms=0.05, x_HK_distillate=0.05, reflux_ratio=3.0)
 
 
+# ------------------------------------------------------------------ other reflux ratios
+
+@pytest.mark.parametrize('key', ['reflux_2', 'reflux_10'])
+def test_other_reflux_ratios_against_dwsim(hot, key):
+    c = _ref()['additional_cases'][key]
+    d = c['column_results']
+    r = _col(reflux_ratio=c['reflux_ratio']).run(hot)
+    assert r.R_min == pytest.approx(d['R_min'], abs=1e-4) and r.N_min == pytest.approx(d['N_min'], abs=1e-4)
+    assert r.N == pytest.approx(d['N_actual'], rel=5e-5)                      # Eduljee, close to and far from Rmin
+    assert r.feed_stage == pytest.approx(d['optimum_feed_stage'], rel=5e-5)
+    assert r.L_rect * 1000 == pytest.approx(d['rectifying_liquid_mol_s'], abs=1e-9)
+    assert r.V_rect * 1000 == pytest.approx(d['rectifying_vapor_mol_s'], abs=1e-9)
+    assert r.L_strip * 1000 == pytest.approx(d['stripping_liquid_mol_s'], abs=5e-3)
+    assert r.V_strip * 1000 == pytest.approx(d['stripping_vapor_mol_s'], abs=5e-3)
+    assert r.Qc_kW == pytest.approx(d['condenser_duty_kW'], rel=2e-4)
+    assert r.Qr_kW == pytest.approx(d['reboiler_duty_kW'], rel=3e-4)
+    assert r.height == pytest.approx(d['estimated_height_m'], rel=1e-4)       # hypothesis 0.5 (N + 2)
+
+
+def test_reflux_below_the_minimum_is_refused(hot):
+    """DWSIM raises an error at R = 1.5 (Rmin = 1.8413)."""
+    with pytest.raises(ValueError, match='must exceed the minimum'):
+        _col(reflux_ratio=1.5).run(hot)
+
+
 # ------------------------------------------------------------------ internal consistency
 
 def test_underwood_equations_hold(res, hot):

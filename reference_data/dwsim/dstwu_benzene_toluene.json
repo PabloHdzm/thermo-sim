@@ -144,7 +144,8 @@
   "Liquid enthalpies of thermo-sim are 0.1 to 0.3 % more negative than DWSIM (distillate -25604 against -25563, bottoms -23670 against -23597 kJ/kmol, sensible values), which is the 0.5 % difference in the bottoms energy flow and 0.15 % in the heater duty.",
   "Feed K for a single-phase feed: DWSIM evaluates K = phi_L / phi_V with the incipient phase of a stability trial. For the 70/30 vapor feed at 370 K the 'liquid' composition in its stream table (0.494523 / 0.505477) is the fixed point x = z / K normalized (thermo-sim 0.494526 / 0.505474) and the fugacity coefficients of that liquid reproduce its table; alpha = 2.38499 (DWSIM Nmin implies 2.3853).",
   "Subcooled liquid feed (additional_cases.feed_90_10_subcooled): the trial-vapor symmetry of the vapor-feed rule is confirmed (alpha 3.2851 from the stream fugacity coefficients, 3.2851 in thermo-sim), and Nmin, Rmin, N and feed stage agree to 0.03 %. The height 0.5 (N + 2) = 3.74275 m is a fourth data point.",
-  "Column pressure: Rmin, Nmin, N, feed stage and the internal flows do not change with the column pressure because alpha is evaluated at the feed (still at 1.01325 bar, 370 K). Only the product temperatures and the duties change: 2 bar gives Tdist 378.143 K, Tbott 407.442 K, Qc 5891.87 kW, Qr 4014.62 kW; 1.01325 / 1.2 bar gives Qc 6125.74 kW (unchanged, the top is at the same pressure) and Qr 3890.65 kW."
+  "Column pressure: Rmin, Nmin, N, feed stage and the internal flows do not change with the column pressure because alpha is evaluated at the feed (still at 1.01325 bar, 370 K). Only the product temperatures and the duties change: 2 bar gives Tdist 378.143 K, Tbott 407.442 K, Qc 5891.87 kW, Qr 4014.62 kW; 1.01325 / 1.2 bar gives Qc 6125.74 kW (unchanged, the top is at the same pressure) and Qr 3890.65 kW.",
+  "Reflux ratio: R = 2, 3 and 10 give N = 18.8186, 11.4903, 7.79116 (Eduljee, reproduced to 0.001 %), so the Eduljee form holds close to and far from Rmin. The feed stage follows N n_S / (n_R + n_S) = N / 2 in all of them (9.40931, 5.74513, 3.89558 for the stages counted by DWSIM). Height 0.5 (N + 2) and D / sqrt(V_rect) = 0.22018 are also constant (R = 2: 10.4093 m, 2.6967 m; R = 10: 4.89558 m, 5.1638 m)."
  ],
  "additional_cases": {
   "description": "Same heater (300 K to 370 K), column (R = 3, x_LK,B = x_HK,D = 0.05, 1.01325 bar, total condenser, stage height 0.5 m) and feed flow 100 mol/s, with another feed composition. At 370 K both feeds are 100 % vapor.",
@@ -402,6 +403,42 @@
      },
      "energy_flow_kW": 1464.7
     }
+   }
+  },
+  "reflux_2": {
+   "description": "Base 50/50 case with R = 2 (close to Rmin = 1.8413). R = 1.5 is below Rmin and DWSIM raises an error.",
+   "reflux_ratio": 2.0,
+   "column_results": {
+    "R_min": 1.8413,
+    "N_min": 6.76391,
+    "N_actual": 18.8186,
+    "optimum_feed_stage": 9.40931,
+    "condenser_duty_kW": 4594.3,
+    "reboiler_duty_kW": 2304.94,
+    "stripping_liquid_mol_s": 127.837,
+    "rectifying_liquid_mol_s": 100.0,
+    "stripping_vapor_mol_s": 77.8375,
+    "rectifying_vapor_mol_s": 150.0,
+    "estimated_height_m": 10.4093,
+    "estimated_diameter_m": 2.6967
+   }
+  },
+  "reflux_10": {
+   "description": "Base 50/50 case with R = 10.",
+   "reflux_ratio": 10.0,
+   "column_results": {
+    "R_min": 1.8413,
+    "N_min": 6.76391,
+    "N_actual": 7.79116,
+    "optimum_feed_stage": 3.89558,
+    "condenser_duty_kW": 16845.8,
+    "reboiler_duty_kW": 14556.4,
+    "stripping_liquid_mol_s": 527.837,
+    "rectifying_liquid_mol_s": 500.0,
+    "stripping_vapor_mol_s": 477.837,
+    "rectifying_vapor_mol_s": 550.0,
+    "estimated_height_m": 4.89558,
+    "estimated_diameter_m": 5.1638
    }
   }
  }
