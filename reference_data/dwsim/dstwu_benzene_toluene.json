@@ -143,7 +143,8 @@
   "Product streams leave at the bubble point (distillate 353.857 K, bottoms 381.532 K, the tiny vapor fractions are the numerical tolerance of DWSIM). thermo-sim bubble temperatures: 353.857 and 381.532 K.",
   "Liquid enthalpies of thermo-sim are 0.1 to 0.3 % more negative than DWSIM (distillate -25604 against -25563, bottoms -23670 against -23597 kJ/kmol, sensible values), which is the 0.5 % difference in the bottoms energy flow and 0.15 % in the heater duty.",
   "Feed K for a single-phase feed: DWSIM evaluates K = phi_L / phi_V with the incipient phase of a stability trial. For the 70/30 vapor feed at 370 K the 'liquid' composition in its stream table (0.494523 / 0.505477) is the fixed point x = z / K normalized (thermo-sim 0.494526 / 0.505474) and the fugacity coefficients of that liquid reproduce its table; alpha = 2.38499 (DWSIM Nmin implies 2.3853).",
-  "Subcooled liquid feed (additional_cases.feed_90_10_subcooled): the trial-vapor symmetry of the vapor-feed rule is confirmed (alpha 3.2851 from the stream fugacity coefficients, 3.2851 in thermo-sim), and Nmin, Rmin, N and feed stage agree to 0.03 %. The height 0.5 (N + 2) = 3.74275 m is a fourth data point."
+  "Subcooled liquid feed (additional_cases.feed_90_10_subcooled): the trial-vapor symmetry of the vapor-feed rule is confirmed (alpha 3.2851 from the stream fugacity coefficients, 3.2851 in thermo-sim), and Nmin, Rmin, N and feed stage agree to 0.03 %. The height 0.5 (N + 2) = 3.74275 m is a fourth data point.",
+  "Column pressure: Rmin, Nmin, N, feed stage and the internal flows do not change with the column pressure because alpha is evaluated at the feed (still at 1.01325 bar, 370 K). Only the product temperatures and the duties change: 2 bar gives Tdist 378.143 K, Tbott 407.442 K, Qc 5891.87 kW, Qr 4014.62 kW; 1.01325 / 1.2 bar gives Qc 6125.74 kW (unchanged, the top is at the same pressure) and Qr 3890.65 kW."
  ],
  "additional_cases": {
   "description": "Same heater (300 K to 370 K), column (R = 3, x_LK,B = x_HK,D = 0.05, 1.01325 bar, total condenser, stage height 0.5 m) and feed flow 100 mol/s, with another feed composition. At 370 K both feeds are 100 % vapor.",
@@ -328,6 +329,80 @@
     }
    },
    "note": "The separation, Rmin, Nmin, N, feed stage, internal flows and reboiler duty are identical to the total condenser case. The distillate is saturated vapor at its dew point (355.311 K) and Qc = L * (H_dew - H_bubble) = 150 mol/s * 30.63 kJ/mol = 4594.3 kW (the total condenser removes V of that: 6125.74 kW)."
+  },
+  "pressure_2_bar": {
+   "description": "Base 50/50 case (heater, total condenser, R = 3) with condenser and reboiler at 2 bar; the feed stays at 1.01325 bar.",
+   "P_condenser_bar": 2.0,
+   "P_reboiler_bar": 2.0,
+   "column_results": {
+    "R_min": 1.8413,
+    "N_min": 6.76391,
+    "N_actual": 11.4903,
+    "optimum_feed_stage": 5.74513,
+    "stripping_liquid_mol_s": 177.837,
+    "rectifying_liquid_mol_s": 150.0,
+    "stripping_vapor_mol_s": 127.837,
+    "rectifying_vapor_mol_s": 200.0,
+    "condenser_duty_kW": 5891.87,
+    "reboiler_duty_kW": 4014.62
+   },
+   "streams": {
+    "distillate": {
+     "T_K": 378.143,
+     "P_bar": 2.0,
+     "mole_fraction": {
+      "benzene": 0.95,
+      "toluene": 0.05
+     },
+     "energy_flow_kW": 2959.99
+    },
+    "bottoms": {
+     "T_K": 407.442,
+     "P_bar": 2.0,
+     "mole_fraction": {
+      "benzene": 0.05,
+      "toluene": 0.95
+     },
+     "energy_flow_kW": 1646.63
+    }
+   }
+  },
+  "pressure_1_01325_top_1_2_bottom": {
+   "description": "Base case with condenser at 1.01325 bar and reboiler at 1.2 bar.",
+   "P_condenser_bar": 1.01325,
+   "P_reboiler_bar": 1.2,
+   "column_results": {
+    "R_min": 1.8413,
+    "N_min": 6.76391,
+    "N_actual": 11.4903,
+    "optimum_feed_stage": 5.74513,
+    "stripping_liquid_mol_s": 177.837,
+    "rectifying_liquid_mol_s": 150.0,
+    "stripping_vapor_mol_s": 127.837,
+    "rectifying_vapor_mol_s": 200.0,
+    "condenser_duty_kW": 6125.74,
+    "reboiler_duty_kW": 3890.65
+   },
+   "streams": {
+    "distillate": {
+     "T_K": 353.857,
+     "P_bar": 1.01325,
+     "mole_fraction": {
+      "benzene": 0.95,
+      "toluene": 0.05
+     },
+     "energy_flow_kW": 2784.08
+    },
+    "bottoms": {
+     "T_K": 387.629,
+     "P_bar": 1.2,
+     "mole_fraction": {
+      "benzene": 0.05,
+      "toluene": 0.95
+     },
+     "energy_flow_kW": 1464.7
+    }
+   }
   }
  }
 }

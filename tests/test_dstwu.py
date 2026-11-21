@@ -267,6 +267,36 @@ def test_liquid_feed_alpha_uses_the_trial_vapor_phase(database, dwsim_method):
     assert _col().run(f).alpha_feed['benzene'] == pytest.approx(a_dwsim, rel=1e-4)
 
 
+# ------------------------------------------------------------------ column pressure different from the feed
+
+PRESSURE_CASES = ['pressure_2_bar', 'pressure_1_01325_top_1_2_bottom']
+
+
+@pytest.mark.parametrize('key', PRESSURE_CASES)
+def test_column_pressure_against_dwsim(hot, key):
+    c = _ref()['additional_cases'][key]
+    d, s = c['column_results'], c['streams']
+    r = ShortcutColumn('benzene', 'toluene', c['P_condenser_bar'], c['P_reboiler_bar'], x_LK_bottoms=0.05,
+                       x_HK_distillate=0.05, reflux_ratio=3.0).run(hot)
+    assert r.R_min == pytest.approx(d['R_min'], abs=1e-4) and r.N_min == pytest.approx(d['N_min'], abs=1e-4)
+    assert r.N == pytest.approx(d['N_actual'], abs=1e-3) and r.feed_stage == pytest.approx(d['optimum_feed_stage'], abs=1e-3)
+    assert r.L_strip * 1000 == pytest.approx(d['stripping_liquid_mol_s'], abs=5e-3)
+    assert r.V_strip * 1000 == pytest.approx(d['stripping_vapor_mol_s'], abs=5e-3)
+    assert r.Qc_kW == pytest.approx(d['condenser_duty_kW'], rel=2e-4)
+    assert r.Qr_kW == pytest.approx(d['reboiler_duty_kW'], rel=3e-4)
+    for name, st in (('distillate', r.distillate), ('bottoms', r.bottoms)):
+        assert st.T == pytest.approx(s[name]['T_K'], abs=0.01), name
+        assert st.P == pytest.approx(s[name]['P_bar'])
+        assert st.props.phase == 'liquid'
+    assert _kW(r.distillate) == pytest.approx(s['distillate']['energy_flow_kW'], rel=2e-3)
+    assert _kW(r.bottoms) == pytest.approx(s['bottoms']['energy_flow_kW'], rel=1e-2)       # liquid enthalpy
+
+
+def test_condenser_pressure_above_reboiler_pressure_is_refused(hot):
+    with pytest.raises(ValueError, match='P_top <= P_bottom'):
+        ShortcutColumn('benzene', 'toluene', 1.5, 1.2, x_LK_bottoms=0.05, x_HK_distillate=0.05, reflux_ratio=3.0)
+
+
 # ------------------------------------------------------------------ internal consistency
 
 def test_underwood_equations_hold(res, hot):
