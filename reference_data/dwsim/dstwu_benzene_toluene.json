@@ -290,6 +290,44 @@
     "estimated_diameter_m": 3.98938
    },
    "note": "Rmin is negative (Underwood with q = 1 and a large alpha); DWSIM still runs with R = 3 and thermo-sim reproduces it. For a liquid feed K = phi_L(z) / phi_V(y*) with y* the trial vapor, which is the 'vapor' composition of the DWSIM stream table (0.967284 / 0.032717)."
+  },
+  "partial_condenser_50_50": {
+   "description": "Same 50/50 feed, heater and specification as the base case but with a partial condenser (vapor distillate).",
+   "column_results": {
+    "R_min": 1.8413,
+    "N_min": 6.76391,
+    "N_actual": 11.4903,
+    "optimum_feed_stage": 5.74513,
+    "condenser_duty_kW": 4594.3,
+    "reboiler_duty_kW": 3836.37,
+    "stripping_liquid_mol_s": 177.837,
+    "rectifying_liquid_mol_s": 150.0,
+    "stripping_vapor_mol_s": 127.837,
+    "rectifying_vapor_mol_s": 200.0,
+    "estimated_height_m": 6.74513,
+    "estimated_diameter_m": 3.11389
+   },
+   "streams": {
+    "distillate": {
+     "molar_flow_mol_s": 50.0,
+     "T_K": 355.311,
+     "vapor_mole_fraction": 1.0,
+     "mole_fraction": {
+      "benzene": 0.95,
+      "toluene": 0.05
+     },
+     "energy_flow_kW": 4315.51
+    },
+    "bottoms": {
+     "molar_flow_mol_s": 50.0,
+     "T_K": 381.532,
+     "mole_fraction": {
+      "benzene": 0.05,
+      "toluene": 0.95
+     }
+    }
+   },
+   "note": "The separation, Rmin, Nmin, N, feed stage, internal flows and reboiler duty are identical to the total condenser case. The distillate is saturated vapor at its dew point (355.311 K) and Qc = L * (H_dew - H_bubble) = 150 mol/s * 30.63 kJ/mol = 4594.3 kW (the total condenser removes V of that: 6125.74 kW)."
   }
  }
 }

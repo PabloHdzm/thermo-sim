@@ -57,8 +57,9 @@ q: ``q_mode='dwsim'`` takes q = 1 - vapor fraction, so a subcooled liquid gives 
 
 Not implemented: partial condenser with vapor and liquid distillate (needs the distillate vapor fraction as an
 input and a reference to compare with), column diameter. The height is an estimate with one DWSIM data point (see
-`ShortcutResult.height`). The partial condenser (vapor distillate) is implemented with an approximate duty that has
-not been compared with any simulator.
+`ShortcutResult.height`). Partial condenser with a vapor distillate (``condenser='partial'``): the distillate leaves
+as saturated vapor at its dew point, Qc = L (H_dew - H_bubble) of the distillate composition (only the reflux
+condenses) and Qr from the overall balance; validated against DWSIM (benzene/toluene, R = 3).
 
 Units: T [K], P [bar], flows [kmol/s] (mole flows in the report in mol/s), duties [kW], height [m].
 """
@@ -511,7 +512,7 @@ class ShortcutColumn:
             dew = feed.at(P=self.P_top, fn=D, comp_mol=xD, V_frac=1.0, T_guess=feed.T)
             lam = dew.props.H_total_mix - dist.props.H_total_mix
             Qc = V_r * lam
-        else:                                           # vapor distillate; approximation, see the module docstring
+        else:                                           # vapor distillate: only the reflux condenses (DWSIM)
             bub = feed.at(P=self.P_top, fn=D, comp_mol=xD, V_frac=0.0, T_guess=feed.T)
             lam = dist.props.H_total_mix - bub.props.H_total_mix
             Qc = L_r * lam

@@ -8,7 +8,7 @@ DWSIM values reproduced here: Rmin, Nmin, N, feed stage, internal flows, duties,
 (alpha at the feed state in Fenske and Underwood, with phi_L / phi_V of the stability trial phase for a single-phase
 feed; Eduljee form of Gilliland; Fenske minimum stages of each section for the feed stage) was recovered from those
 numbers; the tests of the options that DWSIM does not have (Winn, averaged alpha, Molokanov, n_stages as input,
-partial condenser, several components) check internal consistency, not agreement with a simulator.
+several components) check internal consistency, not agreement with a simulator.
 """
 import json
 import math
@@ -357,6 +357,25 @@ def test_partial_condenser_vapor_distillate(hot, res):
     assert r.distillate.props.V_frac == pytest.approx(1.0, abs=1e-6)
     assert r.T_top > res.T_top and r.Qc_kW < res.Qc_kW
     assert r.Qr_kW - r.Qc_kW == pytest.approx(_kW(r.distillate) + _kW(r.bottoms) - _kW(hot), abs=1e-9)
+
+
+def test_partial_condenser_against_dwsim(hot):
+    c = _ref()['additional_cases']['partial_condenser_50_50']
+    d, s = c['column_results'], c['streams']
+    r = _col(condenser='partial').run(hot)
+    assert r.R_min == pytest.approx(d['R_min'], abs=1e-4) and r.N_min == pytest.approx(d['N_min'], abs=1e-4)
+    assert r.N == pytest.approx(d['N_actual'], abs=1e-3) and r.feed_stage == pytest.approx(d['optimum_feed_stage'], abs=1e-3)
+    assert r.L_rect * 1000 == pytest.approx(d['rectifying_liquid_mol_s'], abs=1e-9)
+    assert r.V_rect * 1000 == pytest.approx(d['rectifying_vapor_mol_s'], abs=1e-9)
+    assert r.L_strip * 1000 == pytest.approx(d['stripping_liquid_mol_s'], abs=5e-3)
+    assert r.V_strip * 1000 == pytest.approx(d['stripping_vapor_mol_s'], abs=5e-3)
+    assert r.Qc_kW == pytest.approx(d['condenser_duty_kW'], rel=2e-4)          # L (H_dew - H_bubble)
+    assert r.Qr_kW == pytest.approx(d['reboiler_duty_kW'], rel=3e-4)
+    assert r.distillate.T == pytest.approx(s['distillate']['T_K'], abs=0.01)
+    assert r.distillate.props.V_frac == pytest.approx(1.0, abs=1e-6)
+    assert _kW(r.distillate) == pytest.approx(s['distillate']['energy_flow_kW'], rel=1e-3)
+    for n, v in s['distillate']['mole_fraction'].items():
+        assert r.distillate.comp_mol[n] == pytest.approx(v, abs=1e-9)
 
 
 def test_dstwu_alias_and_report(hot):
