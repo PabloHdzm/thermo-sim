@@ -2984,5 +2984,76 @@
    "S_kJ_kmol_K": 33.2387,
    "density_kg_m3": 5.31584
   }
- ]
+ ],
+ "ph_ps_roundtrip": {
+  "description": "DWSIM PH and PS flash run on seven states of pt_flash_points, with the mass enthalpy (PH) and the mass entropy (PS) of that state as input. In all seven cases DWSIM returns the temperature of the PT table (to the 6 printed digits) and a vapor fraction equal to the lever rule, for both specifications. They show that the PT table is also the DWSIM answer to the PH and PS flash.",
+  "notes": [
+   "Mass enthalpy and entropy use the DWSIM molar masses 78.1118 and 92.1384."
+  ],
+  "cases": [
+   {
+    "z_benzene": 0.5,
+    "P_bar": 1.01325,
+    "T_K": 360.263,
+    "H_kJ_kg": -304.789,
+    "dwsim_T_K": 360.263,
+    "dwsim_vapor_fraction": 0.0,
+    "dwsim_S_kJ_kg_K": -0.731497
+   },
+   {
+    "z_benzene": 0.5,
+    "P_bar": 1.01325,
+    "T_K": 368.158,
+    "H_kJ_kg": -124.249,
+    "dwsim_T_K": 368.158,
+    "dwsim_vapor_fraction": 0.451195,
+    "dwsim_S_kJ_kg_K": -0.238796
+   },
+   {
+    "z_benzene": 0.5,
+    "P_bar": 1.01325,
+    "T_K": 378.684,
+    "H_kJ_kg": 98.359,
+    "dwsim_T_K": 378.684,
+    "dwsim_vapor_fraction": 1.0,
+    "dwsim_S_kJ_kg_K": 0.362472
+   },
+   {
+    "z_benzene": 0.1,
+    "P_bar": 1.01325,
+    "T_K": 380.526,
+    "H_kJ_kg": -138.234,
+    "dwsim_T_K": 380.526,
+    "dwsim_vapor_fraction": 0.33905,
+    "dwsim_S_kJ_kg_K": -0.292403
+   },
+   {
+    "z_benzene": 0.9,
+    "P_bar": 1.01325,
+    "T_K": 355.526,
+    "H_kJ_kg": -180.048,
+    "dwsim_T_K": 355.526,
+    "dwsim_vapor_fraction": 0.366678,
+    "dwsim_S_kJ_kg_K": -0.453946
+   },
+   {
+    "z_benzene": 0.5,
+    "P_bar": 2.0,
+    "T_K": 393.158,
+    "H_kJ_kg": -87.838,
+    "dwsim_T_K": 393.158,
+    "dwsim_vapor_fraction": 0.436701,
+    "dwsim_S_kJ_kg_K": -0.171652
+   },
+   {
+    "z_benzene": 0.5,
+    "P_bar": 2.0,
+    "T_K": 380.0,
+    "H_kJ_kg": -267.832,
+    "dwsim_T_K": 380.0,
+    "dwsim_vapor_fraction": 0.0,
+    "dwsim_S_kJ_kg_K": -0.631976
+   }
+  ]
+ }
 }

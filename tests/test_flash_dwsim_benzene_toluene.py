@@ -269,3 +269,75 @@ def test_uncorrected_enthalpy_is_below_dwsim_by_the_cp_bias(pt_points, correctio
         z = {'benzene': r['z_benzene'], 'toluene': 1.0 - r['z_benzene']}
         d = s.props.H_total_mix - sum(z[n] * off[n][0] for n in NAMES) - r['H_kJ_kmol']
         assert -100.0 < d < -20.0, (r, reg, d)
+
+
+# ---------------------------------------------------------------------------------------------------------------------
+# Group 3: PH and PS flash
+# ---------------------------------------------------------------------------------------------------------------------
+# DWSIM returns, for a PH or PS flash entered with the H or S of a PT point, the temperature and vapor fraction of that
+# point (ph_ps_roundtrip in the JSON). The PT table is therefore also the DWSIM answer to the PH and PS flashes, and the
+# thermo-sim temperature solved from the DWSIM enthalpy or entropy shows the effect of the ideal gas Cp difference.
+
+def _case_point(case):
+    pts = [q for q in _flash()['pt_flash_points']
+           if q['z_benzene'] == case['z_benzene'] and q['P_bar'] == case['P_bar'] and abs(q['T_K'] - case['T_K']) < 2e-3]
+    assert len(pts) == 1
+    return pts[0]
+
+
+def _vapor_fraction(r):
+    x, y = r['x'], r['y']
+    z = r['z_benzene']
+    return min(max((z - x[0]) / (y[0] - x[0]), 0.0), 1.0) if abs(y[0] - x[0]) > 1e-12 else 0.0
+
+
+def test_dwsim_ph_ps_roundtrip_matches_the_pt_table():
+    for c in _flash()['ph_ps_roundtrip']['cases']:
+        r = _case_point(c)
+        mm = c['z_benzene'] * MM['benzene'] + (1.0 - c['z_benzene']) * MM['toluene']
+        assert c['dwsim_T_K'] == pytest.approx(r['T_K'], abs=1e-3)
+        assert c['dwsim_vapor_fraction'] == pytest.approx(_vapor_fraction(r), abs=1e-4)
+        assert c['H_kJ_kg'] == pytest.approx(r['H_kJ_kmol'] / mm, abs=0.011)
+        assert c['dwsim_S_kJ_kg_K'] == pytest.approx(r['S_kJ_kmol_K'] / mm, abs=2e-5)
+
+
+def _solve_T(database, method, z_b, P, T0, target, what):
+    from scipy.optimize import brentq
+
+    def f(T):
+        p = _stream(database, method, z_b, T, P).props
+        return (p.H_total_mix if what == 'H' else p.S_total_mix) - target
+    T = brentq(f, T0 - 3.0, T0 + 3.0, xtol=1e-8)
+    return T, float(_stream(database, method, z_b, T, P).props.V_frac)
+
+
+@pytest.mark.parametrize('what', ['H', 'S'])
+def test_ph_ps_flash_from_dwsim_state(database, dwsim_method, corrections, what):
+    """thermo-sim solves T from the DWSIM H or S. Formation terms and the mixing-entropy rule removed only: T comes out
+    0.25 to 0.5 K high in a single phase (the ideal gas Cp polynomial) and the vapor fraction 0.1 to 0.2 % high in the
+    two-phase window. With the Cp polynomial removed as well the state is recovered."""
+    off, _ = corrections
+    for c in _flash()['ph_ps_roundtrip']['cases']:
+        r = _case_point(c)
+        z_b, P, T0 = r['z_benzene'], r['P_bar'], r['T_K']
+        V = _vapor_fraction(r)
+        zd = {'benzene': z_b, 'toluene': 1.0 - z_b}
+        full_H, full_S = _offsets(corrections, z_b, T0, y=r['y'], x=r['x'], V=V)
+        raw_H = sum(zd[n] * off[n][0] for n in NAMES)
+        # raw offsets: the same formation and mixing terms without the Cp polynomial
+        bias_S = sum(zd[n] * corrections[1](n, T0, True) for n in NAMES)
+        raw_S = full_S + bias_S
+        value = r['H_kJ_kmol'] if what == 'H' else r['S_kJ_kmol_K']
+        raw_target = value + (raw_H if what == 'H' else raw_S)
+        full_target = value + (full_H if what == 'H' else full_S)
+
+        T_raw, V_raw = _solve_T(database, dwsim_method, z_b, P, T0, raw_target, what)
+        T_full, V_full = _solve_T(database, dwsim_method, z_b, P, T0, full_target, what)
+        two_phase = 0.0 < V < 1.0
+        if two_phase:
+            assert 0.0 < T_raw - T0 < 0.02, (c, T_raw - T0)
+            assert 8e-4 < V_raw - V < 3e-3, (c, V_raw - V)
+            assert abs(V_full - V) < 6e-4, (c, V_full - V)
+        else:
+            assert 0.2 < T_raw - T0 < 0.65, (c, T_raw - T0)
+            assert abs(T_full - T0) < 0.03, (c, T_full - T0)
