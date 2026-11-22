@@ -3,6 +3,7 @@
 and R_GAS only where it is a default."""
 import re
 from pathlib import Path
+import subprocess
 
 ROOT = Path(__file__).resolve().parents[1]
 SRC = ROOT / 'src' / 'thermo_sim'
@@ -15,6 +16,15 @@ SUFFIXES = {'.py', '.md', '.toml', '.txt', '.csv', '.yml', '.yaml', '.cfg', '.in
 # Temporary: shrinks to empty as these files are cleaned or moved to the private repo.
 PENDING = ()
 
+def _candidate_files():
+    """Files git would publish: tracked plus untracked but not ignored.
+    Falls back to a filesystem walk when git is not available (for example in an sdist)."""
+    try:
+        out = subprocess.run(['git', 'ls-files', '--cached', '--others', '--exclude-standard', '-z'],
+                             cwd=ROOT, capture_output=True, check=True).stdout.decode('utf-8')
+        return [ROOT / name for name in out.split('\0') if name]
+    except (OSError, subprocess.CalledProcessError):
+        return list(ROOT.rglob('*'))
 
 def _skip(p: Path) -> bool:
     parts = p.relative_to(ROOT).parts
@@ -23,7 +33,7 @@ def _skip(p: Path) -> bool:
 
 def test_no_private_reference_mentions_in_public_files():
     bad = {}
-    for p in sorted(ROOT.rglob('*')):
+    for p in sorted(set(_candidate_files())):
         if not p.is_file() or p.suffix.lower() not in SUFFIXES or _skip(p):
             continue
         rel = p.relative_to(ROOT).as_posix()
@@ -43,3 +53,5 @@ def test_r_gas_is_only_referenced_where_it_is_a_default():
                  if p.name not in allowed and not _skip(p)
                  and re.search(r'\bR_GAS\b', p.read_text(encoding='utf-8', errors='ignore'))]
     assert not offenders, f"R_GAS referenced outside default files: {offenders}"
+
+
