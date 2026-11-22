@@ -1,0 +1,2988 @@
+{
+ "description": "Benzene/toluene flash data from DWSIM 10.2.12.0, Peng-Robinson with the DWSIM constants of dstwu_benzene_toluene.json, Inside-Out flash. (1) saturation_points: bubble and dew temperatures from P-VF sensitivity analyses (VF 0 and VF 1), 5 compositions x 10 pressures. (2) pt_flash_points: T sweeps at fixed P and z through the two-phase window.",
+ "software": "DWSIM 10.2.12.0",
+ "units": {
+  "H": "kJ/kmol (sensible, no formation term)",
+  "S": "kJ/(kmol K)",
+  "phi": "dimensionless: the DWSIM column labelled 'Fugacity Coefficient (bar)' is phi x 1e-5 and is multiplied by 1e5 here"
+ },
+ "notes": [
+  "In pt_flash_points the columns y and x are DWSIM's: in a single-phase stream they are the stability-trial phase (vapor trial for a liquid stream, liquid trial for a vapor stream), not a real phase.",
+  "phi_liquid is evaluated at x and phi_vapor at y of the same row (trial composition outside the two-phase region).",
+  "Vapor fraction is not reported by DWSIM here; it follows from the lever rule V = (z - x)/(y - x), clipped to [0, 1]."
+ ],
+ "saturation_points": [
+  {
+   "z_benzene": 0.9,
+   "P_bar": 0.5,
+   "T_bubble_K": 333.032,
+   "T_dew_K": 335.87,
+   "y_benzene_at_bubble": 0.961612,
+   "phi_liquid_at_bubble": [
+    1.05087,
+    0.375195
+   ],
+   "phi_vapor_at_bubble": [
+    0.983535,
+    0.977377
+   ],
+   "H_bubble_kJ_kmol": -28581.4,
+   "S_bubble_kJ_kmol_K": -76.5296,
+   "density_bubble_kg_m3": 858.074,
+   "H_dew_kJ_kmol": 3300.98,
+   "S_dew_kJ_kmol_K": 18.9003,
+   "density_dew_kg_m3": 1.44834
+  },
+  {
+   "z_benzene": 0.9,
+   "P_bar": 1.0,
+   "T_bubble_K": 354.503,
+   "T_dew_K": 357.186,
+   "y_benzene_at_bubble": 0.957748,
+   "phi_liquid_at_bubble": [
+    1.0344,
+    0.40630199999999994
+   ],
+   "phi_vapor_at_bubble": [
+    0.9720270000000001,
+    0.961617
+   ],
+   "H_bubble_kJ_kmol": -25621.5,
+   "S_bubble_kJ_kmol_K": -67.9328,
+   "density_bubble_kg_m3": 835.664,
+   "H_dew_kJ_kmol": 5326.23,
+   "S_dew_kJ_kmol_K": 19.1125,
+   "density_dew_kg_m3": 2.75816
+  },
+  {
+   "z_benzene": 0.9,
+   "P_bar": 1.5,
+   "T_bubble_K": 368.573,
+   "T_dew_K": 371.158,
+   "y_benzene_at_bubble": 0.955261,
+   "phi_liquid_at_bubble": [
+    1.02123,
+    0.42418300000000003
+   ],
+   "phi_vapor_at_bubble": [
+    0.9621540000000001,
+    0.948122
+   ],
+   "H_bubble_kJ_kmol": -23587.5,
+   "S_bubble_kJ_kmol_K": -62.32,
+   "density_bubble_kg_m3": 819.776,
+   "H_dew_kJ_kmol": 6698.15,
+   "S_dew_kJ_kmol_K": 19.6246,
+   "density_dew_kg_m3": 4.02602
+  },
+  {
+   "z_benzene": 0.9,
+   "P_bar": 2.0,
+   "T_bubble_K": 379.336,
+   "T_dew_K": 381.846,
+   "y_benzene_at_bubble": 0.953374,
+   "phi_liquid_at_bubble": [
+    1.00982,
+    0.436424
+   ],
+   "phi_vapor_at_bubble": [
+    0.9532849999999999,
+    0.936019
+   ],
+   "H_bubble_kJ_kmol": -21979.9,
+   "S_bubble_kJ_kmol_K": -58.034,
+   "density_bubble_kg_m3": 806.91,
+   "H_dew_kJ_kmol": 7766.92,
+   "S_dew_kJ_kmol_K": 20.1785,
+   "density_dew_kg_m3": 5.27177
+  },
+  {
+   "z_benzene": 0.9,
+   "P_bar": 2.5,
+   "T_bubble_K": 388.173,
+   "T_dew_K": 390.622,
+   "y_benzene_at_bubble": 0.951831,
+   "phi_liquid_at_bubble": [
+    0.999563,
+    0.445515
+   ],
+   "phi_vapor_at_bubble": [
+    0.945132,
+    0.924909
+   ],
+   "H_bubble_kJ_kmol": -20625.3,
+   "S_bubble_kJ_kmol_K": -54.5171,
+   "density_bubble_kg_m3": 795.842,
+   "H_dew_kJ_kmol": 8654.9,
+   "S_dew_kJ_kmol_K": 20.7231,
+   "density_dew_kg_m3": 6.50462
+  },
+  {
+   "z_benzene": 0.9,
+   "P_bar": 3.0,
+   "T_bubble_K": 395.736,
+   "T_dew_K": 398.132,
+   "y_benzene_at_bubble": 0.950513,
+   "phi_liquid_at_bubble": [
+    0.9901519999999999,
+    0.452595
+   ],
+   "phi_vapor_at_bubble": [
+    0.9375330000000001,
+    0.914564
+   ],
+   "H_bubble_kJ_kmol": -19440.9,
+   "S_bubble_kJ_kmol_K": -51.5082,
+   "density_bubble_kg_m3": 785.985,
+   "H_dew_kJ_kmol": 9420.75,
+   "S_dew_kJ_kmol_K": 21.2451,
+   "density_dew_kg_m3": 7.72992
+  },
+  {
+   "z_benzene": 0.9,
+   "P_bar": 3.5,
+   "T_bubble_K": 402.385,
+   "T_dew_K": 404.733,
+   "y_benzene_at_bubble": 0.949352,
+   "phi_liquid_at_bubble": [
+    0.9813970000000001,
+    0.45828
+   ],
+   "phi_vapor_at_bubble": [
+    0.930379,
+    0.904836
+   ],
+   "H_bubble_kJ_kmol": -18380.1,
+   "S_bubble_kJ_kmol_K": -48.8625,
+   "density_bubble_kg_m3": 777.008,
+   "H_dew_kJ_kmol": 10097.6,
+   "S_dew_kJ_kmol_K": 21.7416,
+   "density_dew_kg_m3": 8.95115
+  },
+  {
+   "z_benzene": 0.9,
+   "P_bar": 4.0,
+   "T_bubble_K": 408.342,
+   "T_dew_K": 410.648,
+   "y_benzene_at_bubble": 0.94831,
+   "phi_liquid_at_bubble": [
+    0.9731759999999999,
+    0.462946
+   ],
+   "phi_vapor_at_bubble": [
+    0.9235990000000001,
+    0.895624
+   ],
+   "H_bubble_kJ_kmol": -17413.7,
+   "S_bubble_kJ_kmol_K": -46.4912,
+   "density_bubble_kg_m3": 768.701,
+   "H_dew_kJ_kmol": 10706.3,
+   "S_dew_kJ_kmol_K": 22.2132,
+   "density_dew_kg_m3": 10.1708
+  },
+  {
+   "z_benzene": 0.9,
+   "P_bar": 4.5,
+   "T_bubble_K": 413.756,
+   "T_dew_K": 416.023,
+   "y_benzene_at_bubble": 0.94736,
+   "phi_liquid_at_bubble": [
+    0.965399,
+    0.466835
+   ],
+   "phi_vapor_at_bubble": [
+    0.917137,
+    0.886852
+   ],
+   "H_bubble_kJ_kmol": -16522.0,
+   "S_bubble_kJ_kmol_K": -44.3347,
+   "density_bubble_kg_m3": 760.926,
+   "H_dew_kJ_kmol": 11260.6,
+   "S_dew_kJ_kmol_K": 22.6612,
+   "density_dew_kg_m3": 11.3907
+  },
+  {
+   "z_benzene": 0.9,
+   "P_bar": 5.0,
+   "T_bubble_K": 418.731,
+   "T_dew_K": 420.962,
+   "y_benzene_at_bubble": 0.946484,
+   "phi_liquid_at_bubble": [
+    0.958003,
+    0.470115
+   ],
+   "phi_vapor_at_bubble": [
+    0.910953,
+    0.8784620000000001
+   ],
+   "H_bubble_kJ_kmol": -15691.4,
+   "S_bubble_kJ_kmol_K": -42.3518,
+   "density_bubble_kg_m3": 753.584,
+   "H_dew_kJ_kmol": 11770.6,
+   "S_dew_kJ_kmol_K": 23.0875,
+   "density_dew_kg_m3": 12.6123
+  },
+  {
+   "z_benzene": 0.7,
+   "P_bar": 0.5,
+   "T_bubble_K": 337.365,
+   "T_dew_K": 343.427,
+   "y_benzene_at_bubble": 0.864742,
+   "phi_liquid_at_bubble": [
+    1.21568,
+    0.440949
+   ],
+   "phi_vapor_at_bubble": [
+    0.984084,
+    0.978018
+   ],
+   "H_bubble_kJ_kmol": -28695.8,
+   "S_bubble_kJ_kmol_K": -72.7256,
+   "density_bubble_kg_m3": 846.961,
+   "H_dew_kJ_kmol": 4245.17,
+   "S_dew_kJ_kmol_K": 24.1431,
+   "density_dew_kg_m3": 1.46681
+  },
+  {
+   "z_benzene": 0.7,
+   "P_bar": 1.0,
+   "T_bubble_K": 359.221,
+   "T_dew_K": 365.003,
+   "y_benzene_at_bubble": 0.852651,
+   "phi_liquid_at_bubble": [
+    1.1851800000000001,
+    0.472861
+   ],
+   "phi_vapor_at_bubble": [
+    0.972997,
+    0.962734
+   ],
+   "H_bubble_kJ_kmol": -25523.7,
+   "S_bubble_kJ_kmol_K": -63.6317,
+   "density_bubble_kg_m3": 824.679,
+   "H_dew_kJ_kmol": 6449.75,
+   "S_dew_kJ_kmol_K": 24.7367,
+   "density_dew_kg_m3": 2.7956
+  },
+  {
+   "z_benzene": 0.7,
+   "P_bar": 1.5,
+   "T_bubble_K": 373.545,
+   "T_dew_K": 379.141,
+   "y_benzene_at_bubble": 0.845,
+   "phi_liquid_at_bubble": [
+    1.1630800000000001,
+    0.49065600000000004
+   ],
+   "phi_vapor_at_bubble": [
+    0.9634980000000001,
+    0.949657
+   ],
+   "H_bubble_kJ_kmol": -23344.7,
+   "S_bubble_kJ_kmol_K": -57.6982,
+   "density_bubble_kg_m3": 808.86,
+   "H_dew_kJ_kmol": 7940.93,
+   "S_dew_kJ_kmol_K": 25.4911,
+   "density_dew_kg_m3": 4.08297
+  },
+  {
+   "z_benzene": 0.7,
+   "P_bar": 2.0,
+   "T_bubble_K": 384.502,
+   "T_dew_K": 389.953,
+   "y_benzene_at_bubble": 0.839265,
+   "phi_liquid_at_bubble": [
+    1.14497,
+    0.502528
+   ],
+   "phi_vapor_at_bubble": [
+    0.9549749999999999,
+    0.937933
+   ],
+   "H_bubble_kJ_kmol": -21623.1,
+   "S_bubble_kJ_kmol_K": -53.1693,
+   "density_bubble_kg_m3": 796.038,
+   "H_dew_kJ_kmol": 9101.56,
+   "S_dew_kJ_kmol_K": 26.2262,
+   "density_dew_kg_m3": 5.34878
+  },
+  {
+   "z_benzene": 0.7,
+   "P_bar": 2.5,
+   "T_bubble_K": 393.5,
+   "T_dew_K": 398.83,
+   "y_benzene_at_bubble": 0.834617,
+   "phi_liquid_at_bubble": [
+    1.12929,
+    0.51113
+   ],
+   "phi_vapor_at_bubble": [
+    0.9471470000000001,
+    0.927176
+   ],
+   "H_bubble_kJ_kmol": -20172.7,
+   "S_bubble_kJ_kmol_K": -49.4543,
+   "density_bubble_kg_m3": 784.998,
+   "H_dew_kJ_kmol": 10065.2,
+   "S_dew_kJ_kmol_K": 26.9167,
+   "density_dew_kg_m3": 6.60225
+  },
+  {
+   "z_benzene": 0.7,
+   "P_bar": 3.0,
+   "T_bubble_K": 401.2,
+   "T_dew_K": 406.424,
+   "y_benzene_at_bubble": 0.830674,
+   "phi_liquid_at_bubble": [
+    1.1153,
+    0.517666
+   ],
+   "phi_vapor_at_bubble": [
+    0.939855,
+    0.917162
+   ],
+   "H_bubble_kJ_kmol": -18904.8,
+   "S_bubble_kJ_kmol_K": -46.2767,
+   "density_bubble_kg_m3": 775.16,
+   "H_dew_kJ_kmol": 10895.8,
+   "S_dew_kJ_kmol_K": 27.5614,
+   "density_dew_kg_m3": 7.84874
+  },
+  {
+   "z_benzene": 0.7,
+   "P_bar": 3.5,
+   "T_bubble_K": 407.97,
+   "T_dew_K": 413.1,
+   "y_benzene_at_bubble": 0.827227,
+   "phi_liquid_at_bubble": [
+    1.10257,
+    0.522782
+   ],
+   "phi_vapor_at_bubble": [
+    0.932997,
+    0.9077479999999999
+   ],
+   "H_bubble_kJ_kmol": -17769.4,
+   "S_bubble_kJ_kmol_K": -43.4835,
+   "density_bubble_kg_m3": 766.193,
+   "H_dew_kJ_kmol": 11629.7,
+   "S_dew_kJ_kmol_K": 28.1643,
+   "density_dew_kg_m3": 9.09176
+  },
+  {
+   "z_benzene": 0.7,
+   "P_bar": 4.0,
+   "T_bubble_K": 414.037,
+   "T_dew_K": 419.079,
+   "y_benzene_at_bubble": 0.82415,
+   "phi_liquid_at_bubble": [
+    1.09082,
+    0.526868
+   ],
+   "phi_vapor_at_bubble": [
+    0.9265009999999999,
+    0.898835
+   ],
+   "H_bubble_kJ_kmol": -16735.1,
+   "S_bubble_kJ_kmol_K": -40.9802,
+   "density_bubble_kg_m3": 757.892,
+   "H_dew_kJ_kmol": 12289.3,
+   "S_dew_kJ_kmol_K": 28.7296,
+   "density_dew_kg_m3": 10.3338
+  },
+  {
+   "z_benzene": 0.7,
+   "P_bar": 4.5,
+   "T_bubble_K": 419.551,
+   "T_dew_K": 424.512,
+   "y_benzene_at_bubble": 0.821359,
+   "phi_liquid_at_bubble": [
+    1.07987,
+    0.530177
+   ],
+   "phi_vapor_at_bubble": [
+    0.920314,
+    0.8903500000000001
+   ],
+   "H_bubble_kJ_kmol": -15781.0,
+   "S_bubble_kJ_kmol_K": -38.704,
+   "density_bubble_kg_m3": 750.117,
+   "H_dew_kJ_kmol": 12889.8,
+   "S_dew_kJ_kmol_K": 29.2617,
+   "density_dew_kg_m3": 11.5767
+  },
+  {
+   "z_benzene": 0.7,
+   "P_bar": 5.0,
+   "T_bubble_K": 424.617,
+   "T_dew_K": 429.503,
+   "y_benzene_at_bubble": 0.818796,
+   "phi_liquid_at_bubble": [
+    1.06958,
+    0.532881
+   ],
+   "phi_vapor_at_bubble": [
+    0.914396,
+    0.8822359999999999
+   ],
+   "H_bubble_kJ_kmol": -14892.2,
+   "S_bubble_kJ_kmol_K": -36.6115,
+   "density_bubble_kg_m3": 742.771,
+   "H_dew_kJ_kmol": 13442.2,
+   "S_dew_kJ_kmol_K": 29.7643,
+   "density_dew_kg_m3": 12.8219
+  },
+  {
+   "z_benzene": 0.5,
+   "P_bar": 0.5,
+   "T_bubble_K": 342.461,
+   "T_dew_K": 349.372,
+   "y_benzene_at_bubble": 0.728756,
+   "phi_liquid_at_bubble": [
+    1.43524,
+    0.530953
+   ],
+   "phi_vapor_at_bubble": [
+    0.9847199999999999,
+    0.9787359999999999
+   ],
+   "H_bubble_kJ_kmol": -28650.7,
+   "S_bubble_kJ_kmol_K": -69.9539,
+   "density_bubble_kg_m3": 836.143,
+   "H_dew_kJ_kmol": 5101.45,
+   "S_dew_kJ_kmol_K": 27.6055,
+   "density_dew_kg_m3": 1.49165
+  },
+  {
+   "z_benzene": 0.5,
+   "P_bar": 1.0,
+   "T_bubble_K": 364.698,
+   "T_dew_K": 371.295,
+   "y_benzene_at_bubble": 0.708776,
+   "phi_liquid_at_bubble": [
+    1.38085,
+    0.561463
+   ],
+   "phi_vapor_at_bubble": [
+    0.974108,
+    0.9639719999999999
+   ],
+   "H_bubble_kJ_kmol": -25253.1,
+   "S_bubble_kJ_kmol_K": -60.3589,
+   "density_bubble_kg_m3": 813.897,
+   "H_dew_kJ_kmol": 7490.45,
+   "S_dew_kJ_kmol_K": 28.6086,
+   "density_dew_kg_m3": 2.84406
+  },
+  {
+   "z_benzene": 0.5,
+   "P_bar": 1.5,
+   "T_bubble_K": 379.268,
+   "T_dew_K": 385.655,
+   "y_benzene_at_bubble": 0.696426,
+   "phi_liquid_at_bubble": [
+    1.34414,
+    0.5776089999999999
+   ],
+   "phi_vapor_at_bubble": [
+    0.965029,
+    0.9513469999999999
+   ],
+   "H_bubble_kJ_kmol": -22920.9,
+   "S_bubble_kJ_kmol_K": -54.1035,
+   "density_bubble_kg_m3": 798.086,
+   "H_dew_kJ_kmol": 9104.82,
+   "S_dew_kJ_kmol_K": 29.6237,
+   "density_dew_kg_m3": 4.15515
+  },
+  {
+   "z_benzene": 0.5,
+   "P_bar": 2.0,
+   "T_bubble_K": 390.413,
+   "T_dew_K": 396.634,
+   "y_benzene_at_bubble": 0.68731,
+   "phi_liquid_at_bubble": [
+    1.31536,
+    0.587877
+   ],
+   "phi_vapor_at_bubble": [
+    0.9568900000000001,
+    0.9400329999999999
+   ],
+   "H_bubble_kJ_kmol": -21079.1,
+   "S_bubble_kJ_kmol_K": -49.3315,
+   "density_bubble_kg_m3": 785.257,
+   "H_dew_kJ_kmol": 10360.6,
+   "S_dew_kJ_kmol_K": 30.5538,
+   "density_dew_kg_m3": 5.44503
+  },
+  {
+   "z_benzene": 0.5,
+   "P_bar": 2.5,
+   "T_bubble_K": 399.564,
+   "T_dew_K": 405.647,
+   "y_benzene_at_bubble": 0.680009,
+   "phi_liquid_at_bubble": [
+    1.29123,
+    0.594961
+   ],
+   "phi_vapor_at_bubble": [
+    0.949422,
+    0.9296530000000001
+   ],
+   "H_bubble_kJ_kmol": -19528.1,
+   "S_bubble_kJ_kmol_K": -45.4185,
+   "density_bubble_kg_m3": 774.204,
+   "H_dew_kJ_kmol": 11402.8,
+   "S_dew_kJ_kmol_K": 31.4016,
+   "density_dew_kg_m3": 6.72304
+  },
+  {
+   "z_benzene": 0.5,
+   "P_bar": 3.0,
+   "T_bubble_K": 407.395,
+   "T_dew_K": 413.356,
+   "y_benzene_at_bubble": 0.673875,
+   "phi_liquid_at_bubble": [
+    1.27021,
+    0.600066
+   ],
+   "phi_vapor_at_bubble": [
+    0.9424699999999999,
+    0.9199930000000001
+   ],
+   "H_bubble_kJ_kmol": -18172.6,
+   "S_bubble_kJ_kmol_K": -42.0728,
+   "density_bubble_kg_m3": 764.346,
+   "H_dew_kJ_kmol": 12300.9,
+   "S_dew_kJ_kmol_K": 32.1788,
+   "density_dew_kg_m3": 7.99459
+  },
+  {
+   "z_benzene": 0.5,
+   "P_bar": 3.5,
+   "T_bubble_K": 414.28,
+   "T_dew_K": 420.131,
+   "y_benzene_at_bubble": 0.668557,
+   "phi_liquid_at_bubble": [
+    1.25145,
+    0.603832
+   ],
+   "phi_vapor_at_bubble": [
+    0.935936,
+    0.910914
+   ],
+   "H_bubble_kJ_kmol": -16959.0,
+   "S_bubble_kJ_kmol_K": -39.1326,
+   "density_bubble_kg_m3": 755.356,
+   "H_dew_kJ_kmol": 13094.2,
+   "S_dew_kJ_kmol_K": 32.8965,
+   "density_dew_kg_m3": 9.26323
+  },
+  {
+   "z_benzene": 0.5,
+   "P_bar": 4.0,
+   "T_bubble_K": 420.449,
+   "T_dew_K": 426.2,
+   "y_benzene_at_bubble": 0.663844,
+   "phi_liquid_at_bubble": [
+    1.2344199999999999,
+    0.60664
+   ],
+   "phi_vapor_at_bubble": [
+    0.9297509999999999,
+    0.902319
+   ],
+   "H_bubble_kJ_kmol": -15853.8,
+   "S_bubble_kJ_kmol_K": -36.498,
+   "density_bubble_kg_m3": 747.029,
+   "H_dew_kJ_kmol": 13807.0,
+   "S_dew_kJ_kmol_K": 33.5634,
+   "density_dew_kg_m3": 10.5315
+  },
+  {
+   "z_benzene": 0.5,
+   "P_bar": 4.5,
+   "T_bubble_K": 426.055,
+   "T_dew_K": 431.713,
+   "y_benzene_at_bubble": 0.659597,
+   "phi_liquid_at_bubble": [
+    1.21876,
+    0.608734
+   ],
+   "phi_vapor_at_bubble": [
+    0.923865,
+    0.8941380000000001
+   ],
+   "H_bubble_kJ_kmol": -14834.4,
+   "S_bubble_kJ_kmol_K": -34.1031,
+   "density_bubble_kg_m3": 739.226,
+   "H_dew_kJ_kmol": 14456.0,
+   "S_dew_kJ_kmol_K": 34.1868,
+   "density_dew_kg_m3": 11.8012
+  },
+  {
+   "z_benzene": 0.5,
+   "P_bar": 5.0,
+   "T_bubble_K": 431.206,
+   "T_dew_K": 436.777,
+   "y_benzene_at_bubble": 0.655721,
+   "phi_liquid_at_bubble": [
+    1.20422,
+    0.610281
+   ],
+   "phi_vapor_at_bubble": [
+    0.9182380000000001,
+    0.8863160000000001
+   ],
+   "H_bubble_kJ_kmol": -13885.0,
+   "S_bubble_kJ_kmol_K": -31.9017,
+   "density_bubble_kg_m3": 731.848,
+   "H_dew_kJ_kmol": 15052.7,
+   "S_dew_kJ_kmol_K": 34.7721,
+   "density_dew_kg_m3": 13.074
+  },
+  {
+   "z_benzene": 0.3,
+   "P_bar": 0.5,
+   "T_bubble_K": 348.577,
+   "T_dew_K": 354.322,
+   "y_benzene_at_bubble": 0.529156,
+   "phi_liquid_at_bubble": [
+    1.7382499999999999,
+    0.6588860000000001
+   ],
+   "phi_vapor_at_bubble": [
+    0.985486,
+    0.97956
+   ],
+   "H_bubble_kJ_kmol": -28386.5,
+   "S_bubble_kJ_kmol_K": -67.9498,
+   "density_bubble_kg_m3": 825.275,
+   "H_dew_kJ_kmol": 5910.48,
+   "S_dew_kJ_kmol_K": 29.5335,
+   "density_dew_kg_m3": 1.52014
+  },
+  {
+   "z_benzene": 0.3,
+   "P_bar": 1.0,
+   "T_bubble_K": 371.154,
+   "T_dew_K": 376.609,
+   "y_benzene_at_bubble": 0.504888,
+   "phi_liquid_at_bubble": [
+    1.6416,
+    0.682814
+   ],
+   "phi_vapor_at_bubble": [
+    0.975426,
+    0.965377
+   ],
+   "H_bubble_kJ_kmol": -24753.3,
+   "S_bubble_kJ_kmol_K": -57.8684,
+   "density_bubble_kg_m3": 802.988,
+   "H_dew_kJ_kmol": 8485.73,
+   "S_dew_kJ_kmol_K": 30.9574,
+   "density_dew_kg_m3": 2.89909
+  },
+  {
+   "z_benzene": 0.3,
+   "P_bar": 1.5,
+   "T_bubble_K": 385.942,
+   "T_dew_K": 391.207,
+   "y_benzene_at_bubble": 0.490355,
+   "phi_liquid_at_bubble": [
+    1.5803,
+    0.694028
+   ],
+   "phi_vapor_at_bubble": [
+    0.966827,
+    0.953251
+   ],
+   "H_bubble_kJ_kmol": -22261.9,
+   "S_bubble_kJ_kmol_K": -51.3015,
+   "density_bubble_kg_m3": 787.131,
+   "H_dew_kJ_kmol": 10225.1,
+   "S_dew_kJ_kmol_K": 32.2412,
+   "density_dew_kg_m3": 4.23668
+  },
+  {
+   "z_benzene": 0.3,
+   "P_bar": 2.0,
+   "T_bubble_K": 397.249,
+   "T_dew_K": 402.366,
+   "y_benzene_at_bubble": 0.479848,
+   "phi_liquid_at_bubble": [
+    1.5341200000000002,
+    0.700261
+   ],
+   "phi_vapor_at_bubble": [
+    0.9591250000000001,
+    0.9423840000000001
+   ],
+   "H_bubble_kJ_kmol": -20295.6,
+   "S_bubble_kJ_kmol_K": -46.2947,
+   "density_bubble_kg_m3": 774.254,
+   "H_dew_kJ_kmol": 11577.7,
+   "S_dew_kJ_kmol_K": 33.3731,
+   "density_dew_kg_m3": 5.55336
+  },
+  {
+   "z_benzene": 0.3,
+   "P_bar": 2.5,
+   "T_bubble_K": 406.532,
+   "T_dew_K": 411.526,
+   "y_benzene_at_bubble": 0.471562,
+   "phi_liquid_at_bubble": [
+    1.49652,
+    0.7038920000000001
+   ],
+   "phi_vapor_at_bubble": [
+    0.952063,
+    0.9324169999999999
+   ],
+   "H_bubble_kJ_kmol": -18640.7,
+   "S_bubble_kJ_kmol_K": -42.1911,
+   "density_bubble_kg_m3": 763.151,
+   "H_dew_kJ_kmol": 12700.1,
+   "S_dew_kJ_kmol_K": 34.3839,
+   "density_dew_kg_m3": 6.8586
+  },
+  {
+   "z_benzene": 0.3,
+   "P_bar": 3.0,
+   "T_bubble_K": 414.475,
+   "T_dew_K": 419.361,
+   "y_benzene_at_bubble": 0.464687,
+   "phi_liquid_at_bubble": [
+    1.46453,
+    0.705956
+   ],
+   "phi_vapor_at_bubble": [
+    0.945493,
+    0.92314
+   ],
+   "H_bubble_kJ_kmol": -17195.1,
+   "S_bubble_kJ_kmol_K": -38.6835,
+   "density_bubble_kg_m3": 753.243,
+   "H_dew_kJ_kmol": 13667.2,
+   "S_dew_kJ_kmol_K": 35.2988,
+   "density_dew_kg_m3": 8.15792
+  },
+  {
+   "z_benzene": 0.3,
+   "P_bar": 3.5,
+   "T_bubble_K": 421.456,
+   "T_dew_K": 426.247,
+   "y_benzene_at_bubble": 0.458789,
+   "phi_liquid_at_bubble": [
+    1.4365,
+    0.706993
+   ],
+   "phi_vapor_at_bubble": [
+    0.939323,
+    0.914423
+   ],
+   "H_bubble_kJ_kmol": -15901.1,
+   "S_bubble_kJ_kmol_K": -35.6018,
+   "density_bubble_kg_m3": 744.202,
+   "H_dew_kJ_kmol": 14521.3,
+   "S_dew_kJ_kmol_K": 36.1359,
+   "density_dew_kg_m3": 9.45493
+  },
+  {
+   "z_benzene": 0.3,
+   "P_bar": 4.0,
+   "T_bubble_K": 427.711,
+   "T_dew_K": 432.414,
+   "y_benzene_at_bubble": 0.45361,
+   "phi_liquid_at_bubble": [
+    1.41146,
+    0.707318
+   ],
+   "phi_vapor_at_bubble": [
+    0.9334849999999999,
+    0.90617
+   ],
+   "H_bubble_kJ_kmol": -14723.1,
+   "S_bubble_kJ_kmol_K": -32.8413,
+   "density_bubble_kg_m3": 735.822,
+   "H_dew_kJ_kmol": 15288.9,
+   "S_dew_kJ_kmol_K": 36.9088,
+   "density_dew_kg_m3": 10.7522
+  },
+  {
+   "z_benzene": 0.3,
+   "P_bar": 4.5,
+   "T_bubble_K": 433.395,
+   "T_dew_K": 438.016,
+   "y_benzene_at_bubble": 0.44898,
+   "phi_liquid_at_bubble": [
+    1.38874,
+    0.707128
+   ],
+   "phi_vapor_at_bubble": [
+    0.9279320000000001,
+    0.8983150000000001
+   ],
+   "H_bubble_kJ_kmol": -13636.9,
+   "S_bubble_kJ_kmol_K": -30.3325,
+   "density_bubble_kg_m3": 727.966,
+   "H_dew_kJ_kmol": 15987.6,
+   "S_dew_kJ_kmol_K": 37.6272,
+   "density_dew_kg_m3": 12.0517
+  },
+  {
+   "z_benzene": 0.3,
+   "P_bar": 5.0,
+   "T_bubble_K": 438.617,
+   "T_dew_K": 443.163,
+   "y_benzene_at_bubble": 0.444785,
+   "phi_liquid_at_bubble": [
+    1.3679000000000001,
+    0.7065560000000001
+   ],
+   "phi_vapor_at_bubble": [
+    0.922628,
+    0.8908059999999999
+   ],
+   "H_bubble_kJ_kmol": -12625.5,
+   "S_bubble_kJ_kmol_K": -28.0267,
+   "density_bubble_kg_m3": 720.535,
+   "H_dew_kJ_kmol": 16630.0,
+   "S_dew_kJ_kmol_K": 38.299,
+   "density_dew_kg_m3": 13.3548
+  },
+  {
+   "z_benzene": 0.1,
+   "P_bar": 0.5,
+   "T_bubble_K": 356.089,
+   "T_dew_K": 358.59,
+   "y_benzene_at_bubble": 0.220443,
+   "phi_liquid_at_bubble": [
+    2.1745900000000002,
+    0.84933
+   ],
+   "phi_vapor_at_bubble": [
+    0.986467,
+    0.980552
+   ],
+   "H_bubble_kJ_kmol": -27815.3,
+   "S_bubble_kJ_kmol_K": -67.0417,
+   "density_bubble_kg_m3": 813.924,
+   "H_dew_kJ_kmol": 6692.23,
+   "S_dew_kJ_kmol_K": 29.4446,
+   "density_dew_kg_m3": 1.55096
+  },
+  {
+   "z_benzene": 0.1,
+   "P_bar": 1.0,
+   "T_bubble_K": 378.889,
+   "T_dew_K": 381.24,
+   "y_benzene_at_bubble": 0.204659,
+   "phi_liquid_at_bubble": [
+    1.99967,
+    0.8545820000000001
+   ],
+   "phi_vapor_at_bubble": [
+    0.977073,
+    0.9670369999999999
+   ],
+   "H_bubble_kJ_kmol": -23945.9,
+   "S_bubble_kJ_kmol_K": -56.5272,
+   "density_bubble_kg_m3": 791.557,
+   "H_dew_kJ_kmol": 9454.82,
+   "S_dew_kJ_kmol_K": 31.2949,
+   "density_dew_kg_m3": 2.95847
+  },
+  {
+   "z_benzene": 0.1,
+   "P_bar": 1.5,
+   "T_bubble_K": 393.82,
+   "T_dew_K": 396.075,
+   "y_benzene_at_bubble": 0.195612,
+   "phi_liquid_at_bubble": [
+    1.89556,
+    0.853969
+   ],
+   "phi_vapor_at_bubble": [
+    0.969042,
+    0.9554750000000001
+   ],
+   "H_bubble_kJ_kmol": -21295.2,
+   "S_bubble_kJ_kmol_K": -49.6815,
+   "density_bubble_kg_m3": 775.625,
+   "H_dew_kJ_kmol": 11320.3,
+   "S_dew_kJ_kmol_K": 32.8521,
+   "density_dew_kg_m3": 4.32452
+  },
+  {
+   "z_benzene": 0.1,
+   "P_bar": 2.0,
+   "T_bubble_K": 405.235,
+   "T_dew_K": 407.417,
+   "y_benzene_at_bubble": 0.189248,
+   "phi_liquid_at_bubble": [
+    1.8202800000000001,
+    0.851388
+   ],
+   "phi_vapor_at_bubble": [
+    0.9618490000000001,
+    0.94511
+   ],
+   "H_bubble_kJ_kmol": -19204.8,
+   "S_bubble_kJ_kmol_K": -44.464,
+   "density_bubble_kg_m3": 762.675,
+   "H_dew_kJ_kmol": 12771.0,
+   "S_dew_kJ_kmol_K": 34.1897,
+   "density_dew_kg_m3": 5.66996
+  },
+  {
+   "z_benzene": 0.1,
+   "P_bar": 2.5,
+   "T_bubble_K": 414.605,
+   "T_dew_K": 416.727,
+   "y_benzene_at_bubble": 0.18433,
+   "phi_liquid_at_bubble": [
+    1.7608199999999998,
+    0.847935
+   ],
+   "phi_vapor_at_bubble": [
+    0.955256,
+    0.9356
+   ],
+   "H_bubble_kJ_kmol": -17446.4,
+   "S_bubble_kJ_kmol_K": -40.1889,
+   "density_bubble_kg_m3": 751.501,
+   "H_dew_kJ_kmol": 13974.7,
+   "S_dew_kJ_kmol_K": 35.3671,
+   "density_dew_kg_m3": 7.00444
+  },
+  {
+   "z_benzene": 0.1,
+   "P_bar": 3.0,
+   "T_bubble_K": 422.62,
+   "T_dew_K": 424.692,
+   "y_benzene_at_bubble": 0.180314,
+   "phi_liquid_at_bubble": [
+    1.7113999999999998,
+    0.844047
+   ],
+   "phi_vapor_at_bubble": [
+    0.949124,
+    0.9267479999999999
+   ],
+   "H_bubble_kJ_kmol": -15910.9,
+   "S_bubble_kJ_kmol_K": -36.5355,
+   "density_bubble_kg_m3": 741.523,
+   "H_dew_kJ_kmol": 15011.9,
+   "S_dew_kJ_kmol_K": 36.4229,
+   "density_dew_kg_m3": 8.33359
+  },
+  {
+   "z_benzene": 0.1,
+   "P_bar": 3.5,
+   "T_bubble_K": 429.665,
+   "T_dew_K": 431.691,
+   "y_benzene_at_bubble": 0.176915,
+   "phi_liquid_at_bubble": [
+    1.66896,
+    0.8399369999999999
+   ],
+   "phi_vapor_at_bubble": [
+    0.9433670000000001,
+    0.9184270000000001
+   ],
+   "H_bubble_kJ_kmol": -14537.3,
+   "S_bubble_kJ_kmol_K": -33.3265,
+   "density_bubble_kg_m3": 732.413,
+   "H_dew_kJ_kmol": 15928.1,
+   "S_dew_kJ_kmol_K": 37.3826,
+   "density_dew_kg_m3": 9.66108
+  },
+  {
+   "z_benzene": 0.1,
+   "P_bar": 4.0,
+   "T_bubble_K": 435.976,
+   "T_dew_K": 437.96,
+   "y_benzene_at_bubble": 0.173963,
+   "phi_liquid_at_bubble": [
+    1.6316399999999998,
+    0.835719
+   ],
+   "phi_vapor_at_bubble": [
+    0.9379230000000001,
+    0.910549
+   ],
+   "H_bubble_kJ_kmol": -13287.1,
+   "S_bubble_kJ_kmol_K": -30.4525,
+   "density_bubble_kg_m3": 723.964,
+   "H_dew_kJ_kmol": 16751.3,
+   "S_dew_kJ_kmol_K": 38.2641,
+   "density_dew_kg_m3": 10.9895
+  },
+  {
+   "z_benzene": 0.1,
+   "P_bar": 4.5,
+   "T_bubble_K": 441.71,
+   "T_dew_K": 443.656,
+   "y_benzene_at_bubble": 0.171352,
+   "phi_liquid_at_bubble": [
+    1.59828,
+    0.831457
+   ],
+   "phi_vapor_at_bubble": [
+    0.932748,
+    0.903051
+   ],
+   "H_bubble_kJ_kmol": -12134.7,
+   "S_bubble_kJ_kmol_K": -27.8408,
+   "density_bubble_kg_m3": 716.039,
+   "H_dew_kJ_kmol": 17500.9,
+   "S_dew_kJ_kmol_K": 39.0803,
+   "density_dew_kg_m3": 12.321
+  },
+  {
+   "z_benzene": 0.1,
+   "P_bar": 5.0,
+   "T_bubble_K": 446.977,
+   "T_dew_K": 448.888,
+   "y_benzene_at_bubble": 0.169006,
+   "phi_liquid_at_bubble": [
+    1.56805,
+    0.82719
+   ],
+   "phi_vapor_at_bubble": [
+    0.927806,
+    0.895881
+   ],
+   "H_bubble_kJ_kmol": -11061.9,
+   "S_bubble_kJ_kmol_K": -25.4409,
+   "density_bubble_kg_m3": 708.54,
+   "H_dew_kJ_kmol": 18190.1,
+   "S_dew_kJ_kmol_K": 39.8413,
+   "density_dew_kg_m3": 13.6569
+  }
+ ],
+ "pt_flash_points": [
+  {
+   "z_benzene": 0.1,
+   "P_bar": 1.01325,
+   "T_K": 370.0,
+   "y": [
+    0.210022,
+    0.789978
+   ],
+   "x": [
+    0.1,
+    0.9
+   ],
+   "phi_liquid": [
+    1.57463,
+    0.650784
+   ],
+   "phi_vapor": [
+    0.9752609999999999,
+    0.964429
+   ],
+   "H_kJ_kmol": -25478.3,
+   "S_kJ_kmol_K": -60.6202,
+   "density_kg_m3": 800.587
+  },
+  {
+   "z_benzene": 0.1,
+   "P_bar": 1.01325,
+   "T_K": 371.053,
+   "y": [
+    0.209364,
+    0.790636
+   ],
+   "x": [
+    0.1,
+    0.9
+   ],
+   "phi_liquid": [
+    1.61846,
+    0.671617
+   ],
+   "phi_vapor": [
+    0.975446,
+    0.964695
+   ],
+   "H_kJ_kmol": -25298.5,
+   "S_kJ_kmol_K": -60.135,
+   "density_kg_m3": 799.537
+  },
+  {
+   "z_benzene": 0.1,
+   "P_bar": 1.01325,
+   "T_K": 372.105,
+   "y": [
+    0.208711,
+    0.791289
+   ],
+   "x": [
+    0.1,
+    0.9
+   ],
+   "phi_liquid": [
+    1.6631799999999999,
+    0.692966
+   ],
+   "phi_vapor": [
+    0.97563,
+    0.9649589999999999
+   ],
+   "H_kJ_kmol": -25118.3,
+   "S_kJ_kmol_K": -59.65,
+   "density_kg_m3": 798.482
+  },
+  {
+   "z_benzene": 0.1,
+   "P_bar": 1.01325,
+   "T_K": 373.158,
+   "y": [
+    0.208064,
+    0.791936
+   ],
+   "x": [
+    0.1,
+    0.9
+   ],
+   "phi_liquid": [
+    1.70881,
+    0.714837
+   ],
+   "phi_vapor": [
+    0.975811,
+    0.965221
+   ],
+   "H_kJ_kmol": -24937.6,
+   "S_kJ_kmol_K": -59.1651,
+   "density_kg_m3": 797.423
+  },
+  {
+   "z_benzene": 0.1,
+   "P_bar": 1.01325,
+   "T_K": 374.211,
+   "y": [
+    0.207422,
+    0.792578
+   ],
+   "x": [
+    0.1,
+    0.9
+   ],
+   "phi_liquid": [
+    1.75536,
+    0.7372380000000001
+   ],
+   "phi_vapor": [
+    0.975991,
+    0.9654799999999999
+   ],
+   "H_kJ_kmol": -24756.5,
+   "S_kJ_kmol_K": -58.6803,
+   "density_kg_m3": 796.357
+  },
+  {
+   "z_benzene": 0.1,
+   "P_bar": 1.01325,
+   "T_K": 375.263,
+   "y": [
+    0.206786,
+    0.793214
+   ],
+   "x": [
+    0.1,
+    0.9
+   ],
+   "phi_liquid": [
+    1.8028300000000002,
+    0.760179
+   ],
+   "phi_vapor": [
+    0.976169,
+    0.965736
+   ],
+   "H_kJ_kmol": -24574.9,
+   "S_kJ_kmol_K": -58.1957,
+   "density_kg_m3": 795.287
+  },
+  {
+   "z_benzene": 0.1,
+   "P_bar": 1.01325,
+   "T_K": 376.316,
+   "y": [
+    0.206155,
+    0.793845
+   ],
+   "x": [
+    0.1,
+    0.9
+   ],
+   "phi_liquid": [
+    1.85124,
+    0.783667
+   ],
+   "phi_vapor": [
+    0.9763459999999999,
+    0.96599
+   ],
+   "H_kJ_kmol": -24392.8,
+   "S_kJ_kmol_K": -57.7113,
+   "density_kg_m3": 794.212
+  },
+  {
+   "z_benzene": 0.1,
+   "P_bar": 1.01325,
+   "T_K": 377.368,
+   "y": [
+    0.20553,
+    0.79447
+   ],
+   "x": [
+    0.1,
+    0.9
+   ],
+   "phi_liquid": [
+    1.9006,
+    0.8077099999999999
+   ],
+   "phi_vapor": [
+    0.976521,
+    0.966242
+   ],
+   "H_kJ_kmol": -24210.3,
+   "S_kJ_kmol_K": -57.2269,
+   "density_kg_m3": 793.131
+  },
+  {
+   "z_benzene": 0.1,
+   "P_bar": 1.01325,
+   "T_K": 378.421,
+   "y": [
+    0.204911,
+    0.795089
+   ],
+   "x": [
+    0.1,
+    0.9
+   ],
+   "phi_liquid": [
+    1.95091,
+    0.832317
+   ],
+   "phi_vapor": [
+    0.9766940000000001,
+    0.966491
+   ],
+   "H_kJ_kmol": -24027.3,
+   "S_kJ_kmol_K": -56.7428,
+   "density_kg_m3": 792.045
+  },
+  {
+   "z_benzene": 0.1,
+   "P_bar": 1.01325,
+   "T_K": 379.474,
+   "y": [
+    0.199214,
+    0.800786
+   ],
+   "x": [
+    0.0971951,
+    0.902805
+   ],
+   "phi_liquid": [
+    2.00222,
+    0.857494
+   ],
+   "phi_vapor": [
+    0.9768730000000001,
+    0.966737
+   ],
+   "H_kJ_kmol": -22946.6,
+   "S_kJ_kmol_K": -53.8958,
+   "density_kg_m3": 96.5107
+  },
+  {
+   "z_benzene": 0.1,
+   "P_bar": 1.01325,
+   "T_K": 380.526,
+   "y": [
+    0.153067,
+    0.846933
+   ],
+   "x": [
+    0.0727785,
+    0.927222
+   ],
+   "phi_liquid": [
+    2.05484,
+    0.8832380000000001
+   ],
+   "phi_vapor": [
+    0.977109,
+    0.9669669999999999
+   ],
+   "H_kJ_kmol": -12542.8,
+   "S_kJ_kmol_K": -26.5316,
+   "density_kg_m3": 8.79286
+  },
+  {
+   "z_benzene": 0.1,
+   "P_bar": 1.01325,
+   "T_K": 381.579,
+   "y": [
+    0.10562,
+    0.89438
+   ],
+   "x": [
+    0.0489582,
+    0.951042
+   ],
+   "phi_liquid": [
+    2.10845,
+    0.909575
+   ],
+   "phi_vapor": [
+    0.97735,
+    0.9671989999999999
+   ],
+   "H_kJ_kmol": 6204.12,
+   "S_kJ_kmol_K": 22.6681,
+   "density_kg_m3": 3.32439
+  },
+  {
+   "z_benzene": 0.1,
+   "P_bar": 1.01325,
+   "T_K": 382.632,
+   "y": [
+    0.1,
+    0.9
+   ],
+   "x": [
+    0.0463614,
+    0.953639
+   ],
+   "phi_liquid": [
+    2.16273,
+    0.936518
+   ],
+   "phi_vapor": [
+    0.9775229999999999,
+    0.967438
+   ],
+   "H_kJ_kmol": 9635.74,
+   "S_kJ_kmol_K": 31.6627,
+   "density_kg_m3": 2.98711
+  },
+  {
+   "z_benzene": 0.1,
+   "P_bar": 1.01325,
+   "T_K": 383.684,
+   "y": [
+    0.1,
+    0.9
+   ],
+   "x": [
+    0.0465249,
+    0.953475
+   ],
+   "phi_liquid": [
+    2.21797,
+    0.964066
+   ],
+   "phi_vapor": [
+    0.977686,
+    0.967677
+   ],
+   "H_kJ_kmol": 9775.83,
+   "S_kJ_kmol_K": 32.0283,
+   "density_kg_m3": 2.97816
+  },
+  {
+   "z_benzene": 0.1,
+   "P_bar": 1.01325,
+   "T_K": 384.737,
+   "y": [
+    0.1,
+    0.9
+   ],
+   "x": [
+    0.0466879,
+    0.953312
+   ],
+   "phi_liquid": [
+    2.27422,
+    0.992228
+   ],
+   "phi_vapor": [
+    0.9778479999999999,
+    0.967913
+   ],
+   "H_kJ_kmol": 9916.28,
+   "S_kJ_kmol_K": 32.3939,
+   "density_kg_m3": 2.96927
+  },
+  {
+   "z_benzene": 0.1,
+   "P_bar": 1.01325,
+   "T_K": 385.789,
+   "y": [
+    0.1,
+    0.9
+   ],
+   "x": [
+    0.0468505,
+    0.953149
+   ],
+   "phi_liquid": [
+    2.33149,
+    1.02101
+   ],
+   "phi_vapor": [
+    0.978008,
+    0.968146
+   ],
+   "H_kJ_kmol": 10057.1,
+   "S_kJ_kmol_K": 32.7594,
+   "density_kg_m3": 2.96043
+  },
+  {
+   "z_benzene": 0.1,
+   "P_bar": 1.01325,
+   "T_K": 386.842,
+   "y": [
+    0.1,
+    0.9
+   ],
+   "x": [
+    0.0470127,
+    0.952987
+   ],
+   "phi_liquid": [
+    2.38979,
+    1.05043
+   ],
+   "phi_vapor": [
+    0.9781669999999999,
+    0.9683780000000001
+   ],
+   "H_kJ_kmol": 10198.3,
+   "S_kJ_kmol_K": 33.1248,
+   "density_kg_m3": 2.95165
+  },
+  {
+   "z_benzene": 0.1,
+   "P_bar": 1.01325,
+   "T_K": 387.895,
+   "y": [
+    0.1,
+    0.9
+   ],
+   "x": [
+    0.0471744,
+    0.952826
+   ],
+   "phi_liquid": [
+    2.4491300000000003,
+    1.08048
+   ],
+   "phi_vapor": [
+    0.978324,
+    0.968608
+   ],
+   "H_kJ_kmol": 10339.8,
+   "S_kJ_kmol_K": 33.4901,
+   "density_kg_m3": 2.94292
+  },
+  {
+   "z_benzene": 0.1,
+   "P_bar": 1.01325,
+   "T_K": 388.947,
+   "y": [
+    0.1,
+    0.9
+   ],
+   "x": [
+    0.0473357,
+    0.952664
+   ],
+   "phi_liquid": [
+    2.50951,
+    1.11117
+   ],
+   "phi_vapor": [
+    0.9784789999999999,
+    0.968835
+   ],
+   "H_kJ_kmol": 10481.7,
+   "S_kJ_kmol_K": 33.8554,
+   "density_kg_m3": 2.93425
+  },
+  {
+   "z_benzene": 0.1,
+   "P_bar": 1.01325,
+   "T_K": 390.0,
+   "y": [
+    0.1,
+    0.9
+   ],
+   "x": [
+    0.0474966,
+    0.952503
+   ],
+   "phi_liquid": [
+    2.57095,
+    1.14253
+   ],
+   "phi_vapor": [
+    0.9786339999999999,
+    0.96906
+   ],
+   "H_kJ_kmol": 10623.9,
+   "S_kJ_kmol_K": 34.2206,
+   "density_kg_m3": 2.92563
+  },
+  {
+   "z_benzene": 0.5,
+   "P_bar": 1.01325,
+   "T_K": 355.0,
+   "y": [
+    0.716651,
+    0.283349
+   ],
+   "x": [
+    0.5,
+    0.5
+   ],
+   "phi_liquid": [
+    1.0378699999999998,
+    0.40569799999999995
+   ],
+   "phi_vapor": [
+    0.9718439999999999,
+    0.960827
+   ],
+   "H_kJ_kmol": -26756.9,
+   "S_kJ_kmol_K": -64.5384,
+   "density_kg_m3": 823.906
+  },
+  {
+   "z_benzene": 0.5,
+   "P_bar": 1.01325,
+   "T_K": 356.316,
+   "y": [
+    0.715558,
+    0.284442
+   ],
+   "x": [
+    0.5,
+    0.5
+   ],
+   "phi_liquid": [
+    1.0781100000000001,
+    0.423746
+   ],
+   "phi_vapor": [
+    0.972115,
+    0.961204
+   ],
+   "H_kJ_kmol": -26555.0,
+   "S_kJ_kmol_K": -63.9707,
+   "density_kg_m3": 822.574
+  },
+  {
+   "z_benzene": 0.5,
+   "P_bar": 1.01325,
+   "T_K": 357.632,
+   "y": [
+    0.714471,
+    0.285529
+   ],
+   "x": [
+    0.5,
+    0.5
+   ],
+   "phi_liquid": [
+    1.11952,
+    0.44242400000000004
+   ],
+   "phi_vapor": [
+    0.972383,
+    0.9615759999999999
+   ],
+   "H_kJ_kmol": -26352.4,
+   "S_kJ_kmol_K": -63.4032,
+   "density_kg_m3": 821.234
+  },
+  {
+   "z_benzene": 0.5,
+   "P_bar": 1.01325,
+   "T_K": 358.947,
+   "y": [
+    0.713391,
+    0.286609
+   ],
+   "x": [
+    0.5,
+    0.5
+   ],
+   "phi_liquid": [
+    1.16212,
+    0.461748
+   ],
+   "phi_vapor": [
+    0.972648,
+    0.961943
+   ],
+   "H_kJ_kmol": -26149.2,
+   "S_kJ_kmol_K": -62.836,
+   "density_kg_m3": 819.886
+  },
+  {
+   "z_benzene": 0.5,
+   "P_bar": 1.01325,
+   "T_K": 360.263,
+   "y": [
+    0.712317,
+    0.287683
+   ],
+   "x": [
+    0.5,
+    0.5
+   ],
+   "phi_liquid": [
+    1.20594,
+    0.481733
+   ],
+   "phi_vapor": [
+    0.972909,
+    0.962306
+   ],
+   "H_kJ_kmol": -25945.2,
+   "S_kJ_kmol_K": -62.2689,
+   "density_kg_m3": 818.53
+  },
+  {
+   "z_benzene": 0.5,
+   "P_bar": 1.01325,
+   "T_K": 361.579,
+   "y": [
+    0.71125,
+    0.28875
+   ],
+   "x": [
+    0.5,
+    0.5
+   ],
+   "phi_liquid": [
+    1.2510000000000001,
+    0.502393
+   ],
+   "phi_vapor": [
+    0.973167,
+    0.962665
+   ],
+   "H_kJ_kmol": -25740.6,
+   "S_kJ_kmol_K": -61.702,
+   "density_kg_m3": 817.166
+  },
+  {
+   "z_benzene": 0.5,
+   "P_bar": 1.01325,
+   "T_K": 362.895,
+   "y": [
+    0.710189,
+    0.289811
+   ],
+   "x": [
+    0.5,
+    0.5
+   ],
+   "phi_liquid": [
+    1.29731,
+    0.523745
+   ],
+   "phi_vapor": [
+    0.973422,
+    0.9630190000000001
+   ],
+   "H_kJ_kmol": -25535.4,
+   "S_kJ_kmol_K": -61.1352,
+   "density_kg_m3": 815.794
+  },
+  {
+   "z_benzene": 0.5,
+   "P_bar": 1.01325,
+   "T_K": 364.211,
+   "y": [
+    0.70914,
+    0.29086
+   ],
+   "x": [
+    0.5,
+    0.5
+   ],
+   "phi_liquid": [
+    1.34491,
+    0.545802
+   ],
+   "phi_vapor": [
+    0.973674,
+    0.9633679999999999
+   ],
+   "H_kJ_kmol": -25329.4,
+   "S_kJ_kmol_K": -60.5687,
+   "density_kg_m3": 814.413
+  },
+  {
+   "z_benzene": 0.5,
+   "P_bar": 1.01325,
+   "T_K": 365.526,
+   "y": [
+    0.697599,
+    0.302401
+   ],
+   "x": [
+    0.487413,
+    0.512587
+   ],
+   "phi_liquid": [
+    1.39391,
+    0.568536
+   ],
+   "phi_vapor": [
+    0.973928,
+    0.9636990000000001
+   ],
+   "H_kJ_kmol": -23261.1,
+   "S_kJ_kmol_K": -54.9052,
+   "density_kg_m3": 46.2411
+  },
+  {
+   "z_benzene": 0.5,
+   "P_bar": 1.01325,
+   "T_K": 366.842,
+   "y": [
+    0.658783,
+    0.341217
+   ],
+   "x": [
+    0.444285,
+    0.555715
+   ],
+   "phi_liquid": [
+    1.44453,
+    0.591904
+   ],
+   "phi_vapor": [
+    0.9741979999999999,
+    0.9639909999999999
+   ],
+   "H_kJ_kmol": -16811.5,
+   "S_kJ_kmol_K": -37.2903,
+   "density_kg_m3": 11.1106
+  },
+  {
+   "z_benzene": 0.5,
+   "P_bar": 1.01325,
+   "T_K": 368.158,
+   "y": [
+    0.618388,
+    0.381612
+   ],
+   "x": [
+    0.402668,
+    0.597332
+   ],
+   "phi_liquid": [
+    1.49652,
+    0.6160410000000001
+   ],
+   "phi_vapor": [
+    0.974468,
+    0.9642809999999999
+   ],
+   "H_kJ_kmol": -10576.7,
+   "S_kJ_kmol_K": -20.3275,
+   "density_kg_m3": 6.41177
+  },
+  {
+   "z_benzene": 0.5,
+   "P_bar": 1.01325,
+   "T_K": 369.474,
+   "y": [
+    0.57637,
+    0.42363
+   ],
+   "x": [
+    0.362487,
+    0.637513
+   ],
+   "phi_liquid": [
+    1.54987,
+    0.640961
+   ],
+   "phi_vapor": [
+    0.974739,
+    0.9645690000000001
+   ],
+   "H_kJ_kmol": -4282.12,
+   "S_kJ_kmol_K": -3.2639,
+   "density_kg_m3": 4.49508
+  },
+  {
+   "z_benzene": 0.5,
+   "P_bar": 1.01325,
+   "T_K": 370.789,
+   "y": [
+    0.532683,
+    0.467317
+   ],
+   "x": [
+    0.323672,
+    0.676328
+   ],
+   "phi_liquid": [
+    1.60463,
+    0.666678
+   ],
+   "phi_vapor": [
+    0.9750110000000001,
+    0.964856
+   ],
+   "H_kJ_kmol": 2349.94,
+   "S_kJ_kmol_K": 14.6533,
+   "density_kg_m3": 3.41882
+  },
+  {
+   "z_benzene": 0.5,
+   "P_bar": 1.01325,
+   "T_K": 372.105,
+   "y": [
+    0.5,
+    0.5
+   ],
+   "x": [
+    0.296674,
+    0.703326
+   ],
+   "phi_liquid": [
+    1.66066,
+    0.69323
+   ],
+   "phi_vapor": [
+    0.975273,
+    0.9651529999999999
+   ],
+   "H_kJ_kmol": 7583.41,
+   "S_kJ_kmol_K": 28.7526,
+   "density_kg_m3": 2.87615
+  },
+  {
+   "z_benzene": 0.5,
+   "P_bar": 1.01325,
+   "T_K": 373.421,
+   "y": [
+    0.5,
+    0.5
+   ],
+   "x": [
+    0.297693,
+    0.702307
+   ],
+   "phi_liquid": [
+    1.71778,
+    0.7206589999999999
+   ],
+   "phi_vapor": [
+    0.975502,
+    0.965478
+   ],
+   "H_kJ_kmol": 7740.23,
+   "S_kJ_kmol_K": 29.1733,
+   "density_kg_m3": 2.86514
+  },
+  {
+   "z_benzene": 0.5,
+   "P_bar": 1.01325,
+   "T_K": 374.737,
+   "y": [
+    0.5,
+    0.5
+   ],
+   "x": [
+    0.298707,
+    0.701293
+   ],
+   "phi_liquid": [
+    1.77634,
+    0.7489210000000001
+   ],
+   "phi_vapor": [
+    0.975729,
+    0.9657990000000001
+   ],
+   "H_kJ_kmol": 7897.58,
+   "S_kJ_kmol_K": 29.5939,
+   "density_kg_m3": 2.85423
+  },
+  {
+   "z_benzene": 0.5,
+   "P_bar": 1.01325,
+   "T_K": 376.053,
+   "y": [
+    0.5,
+    0.5
+   ],
+   "x": [
+    0.299714,
+    0.700286
+   ],
+   "phi_liquid": [
+    1.8363600000000002,
+    0.7780320000000001
+   ],
+   "phi_vapor": [
+    0.9759530000000001,
+    0.9661160000000001
+   ],
+   "H_kJ_kmol": 8055.47,
+   "S_kJ_kmol_K": 30.0145,
+   "density_kg_m3": 2.8434
+  },
+  {
+   "z_benzene": 0.5,
+   "P_bar": 1.01325,
+   "T_K": 377.368,
+   "y": [
+    0.5,
+    0.5
+   ],
+   "x": [
+    0.300716,
+    0.699284
+   ],
+   "phi_liquid": [
+    1.8978400000000002,
+    0.808007
+   ],
+   "phi_vapor": [
+    0.976174,
+    0.9664289999999999
+   ],
+   "H_kJ_kmol": 8213.89,
+   "S_kJ_kmol_K": 30.4351,
+   "density_kg_m3": 2.83266
+  },
+  {
+   "z_benzene": 0.5,
+   "P_bar": 1.01325,
+   "T_K": 378.684,
+   "y": [
+    0.5,
+    0.5
+   ],
+   "x": [
+    0.301712,
+    0.698288
+   ],
+   "phi_liquid": [
+    1.96083,
+    0.838864
+   ],
+   "phi_vapor": [
+    0.9763919999999999,
+    0.9667389999999999
+   ],
+   "H_kJ_kmol": 8372.84,
+   "S_kJ_kmol_K": 30.8556,
+   "density_kg_m3": 2.82201
+  },
+  {
+   "z_benzene": 0.5,
+   "P_bar": 1.01325,
+   "T_K": 380.0,
+   "y": [
+    0.5,
+    0.5
+   ],
+   "x": [
+    0.302702,
+    0.697298
+   ],
+   "phi_liquid": [
+    2.0253200000000002,
+    0.870617
+   ],
+   "phi_vapor": [
+    0.976608,
+    0.967045
+   ],
+   "H_kJ_kmol": 8532.32,
+   "S_kJ_kmol_K": 31.276,
+   "density_kg_m3": 2.81144
+  },
+  {
+   "z_benzene": 0.9,
+   "P_bar": 1.01325,
+   "T_K": 345.0,
+   "y": [
+    0.959315,
+    0.040685
+   ],
+   "x": [
+    0.9,
+    0.1
+   ],
+   "phi_liquid": [
+    0.766607,
+    0.28919
+   ],
+   "phi_vapor": [
+    0.9695819999999999,
+    0.9582550000000001
+   ],
+   "H_kJ_kmol": -26951.3,
+   "S_kJ_kmol_K": -71.7351,
+   "density_kg_m3": 845.882
+  },
+  {
+   "z_benzene": 0.9,
+   "P_bar": 1.01325,
+   "T_K": 346.053,
+   "y": [
+    0.959139,
+    0.0408611
+   ],
+   "x": [
+    0.9,
+    0.1
+   ],
+   "phi_liquid": [
+    0.792074,
+    0.300175
+   ],
+   "phi_vapor": [
+    0.969821,
+    0.958584
+   ],
+   "H_kJ_kmol": -26805.6,
+   "S_kJ_kmol_K": -71.3136,
+   "density_kg_m3": 844.772
+  },
+  {
+   "z_benzene": 0.9,
+   "P_bar": 1.01325,
+   "T_K": 347.105,
+   "y": [
+    0.958963,
+    0.0410369
+   ],
+   "x": [
+    0.9,
+    0.1
+   ],
+   "phi_liquid": [
+    0.8181889999999999,
+    0.311493
+   ],
+   "phi_vapor": [
+    0.970058,
+    0.9589099999999999
+   ],
+   "H_kJ_kmol": -26659.6,
+   "S_kJ_kmol_K": -70.8921,
+   "density_kg_m3": 843.657
+  },
+  {
+   "z_benzene": 0.9,
+   "P_bar": 1.01325,
+   "T_K": 348.158,
+   "y": [
+    0.958788,
+    0.0412121
+   ],
+   "x": [
+    0.9,
+    0.1
+   ],
+   "phi_liquid": [
+    0.844964,
+    0.323149
+   ],
+   "phi_vapor": [
+    0.9702930000000001,
+    0.959233
+   ],
+   "H_kJ_kmol": -26513.1,
+   "S_kJ_kmol_K": -70.4708,
+   "density_kg_m3": 842.536
+  },
+  {
+   "z_benzene": 0.9,
+   "P_bar": 1.01325,
+   "T_K": 349.211,
+   "y": [
+    0.958613,
+    0.0413869
+   ],
+   "x": [
+    0.9,
+    0.1
+   ],
+   "phi_liquid": [
+    0.8724080000000001,
+    0.335153
+   ],
+   "phi_vapor": [
+    0.970525,
+    0.959552
+   ],
+   "H_kJ_kmol": -26366.2,
+   "S_kJ_kmol_K": -70.0496,
+   "density_kg_m3": 841.41
+  },
+  {
+   "z_benzene": 0.9,
+   "P_bar": 1.01325,
+   "T_K": 350.263,
+   "y": [
+    0.958439,
+    0.0415611
+   ],
+   "x": [
+    0.9,
+    0.1
+   ],
+   "phi_liquid": [
+    0.900533,
+    0.34751
+   ],
+   "phi_vapor": [
+    0.970755,
+    0.959869
+   ],
+   "H_kJ_kmol": -26218.9,
+   "S_kJ_kmol_K": -69.6284,
+   "density_kg_m3": 840.279
+  },
+  {
+   "z_benzene": 0.9,
+   "P_bar": 1.01325,
+   "T_K": 351.316,
+   "y": [
+    0.958265,
+    0.041735
+   ],
+   "x": [
+    0.9,
+    0.1
+   ],
+   "phi_liquid": [
+    0.92935,
+    0.360228
+   ],
+   "phi_vapor": [
+    0.9709819999999999,
+    0.960182
+   ],
+   "H_kJ_kmol": -26071.2,
+   "S_kJ_kmol_K": -69.2073,
+   "density_kg_m3": 839.142
+  },
+  {
+   "z_benzene": 0.9,
+   "P_bar": 1.01325,
+   "T_K": 352.368,
+   "y": [
+    0.958092,
+    0.0419083
+   ],
+   "x": [
+    0.9,
+    0.1
+   ],
+   "phi_liquid": [
+    0.958867,
+    0.373315
+   ],
+   "phi_vapor": [
+    0.9712069999999999,
+    0.960492
+   ],
+   "H_kJ_kmol": -25923.1,
+   "S_kJ_kmol_K": -68.7863,
+   "density_kg_m3": 838.0
+  },
+  {
+   "z_benzene": 0.9,
+   "P_bar": 1.01325,
+   "T_K": 353.421,
+   "y": [
+    0.957919,
+    0.0420812
+   ],
+   "x": [
+    0.9,
+    0.1
+   ],
+   "phi_liquid": [
+    0.989097,
+    0.386777
+   ],
+   "phi_vapor": [
+    0.9714299999999999,
+    0.960798
+   ],
+   "H_kJ_kmol": -25774.5,
+   "S_kJ_kmol_K": -68.3654,
+   "density_kg_m3": 836.852
+  },
+  {
+   "z_benzene": 0.9,
+   "P_bar": 1.01325,
+   "T_K": 354.474,
+   "y": [
+    0.957746,
+    0.0422535
+   ],
+   "x": [
+    0.9,
+    0.1
+   ],
+   "phi_liquid": [
+    1.02005,
+    0.40062200000000003
+   ],
+   "phi_vapor": [
+    0.971651,
+    0.961102
+   ],
+   "H_kJ_kmol": -25625.6,
+   "S_kJ_kmol_K": -67.9446,
+   "density_kg_m3": 835.698
+  },
+  {
+   "z_benzene": 0.9,
+   "P_bar": 1.01325,
+   "T_K": 355.526,
+   "y": [
+    0.945504,
+    0.0544959
+   ],
+   "x": [
+    0.873654,
+    0.126346
+   ],
+   "phi_liquid": [
+    1.0518,
+    0.41466600000000003
+   ],
+   "phi_vapor": [
+    0.9718709999999999,
+    0.961379
+   ],
+   "H_kJ_kmol": -14316.4,
+   "S_kJ_kmol_K": -36.0952,
+   "density_kg_m3": 7.61482
+  },
+  {
+   "z_benzene": 0.9,
+   "P_bar": 1.01325,
+   "T_K": 356.579,
+   "y": [
+    0.923029,
+    0.0769709
+   ],
+   "x": [
+    0.827454,
+    0.172546
+   ],
+   "phi_liquid": [
+    1.0843699999999998,
+    0.428975
+   ],
+   "phi_vapor": [
+    0.97209,
+    0.961633
+   ],
+   "H_kJ_kmol": -2183.73,
+   "S_kJ_kmol_K": -2.01338,
+   "density_kg_m3": 3.68519
+  },
+  {
+   "z_benzene": 0.9,
+   "P_bar": 1.01325,
+   "T_K": 357.632,
+   "y": [
+    0.9,
+    0.1
+   ],
+   "x": [
+    0.783155,
+    0.216845
+   ],
+   "phi_liquid": [
+    1.1177300000000001,
+    0.44371700000000003
+   ],
+   "phi_vapor": [
+    0.9723080000000001,
+    0.9618859999999999
+   ],
+   "H_kJ_kmol": 5369.58,
+   "S_kJ_kmol_K": 19.1276,
+   "density_kg_m3": 2.79208
+  },
+  {
+   "z_benzene": 0.9,
+   "P_bar": 1.01325,
+   "T_K": 358.684,
+   "y": [
+    0.9,
+    0.1
+   ],
+   "x": [
+    0.783866,
+    0.216134
+   ],
+   "phi_liquid": [
+    1.1516899999999999,
+    0.459157
+   ],
+   "phi_vapor": [
+    0.9725199999999999,
+    0.9621789999999999
+   ],
+   "H_kJ_kmol": 5479.49,
+   "S_kJ_kmol_K": 19.4344,
+   "density_kg_m3": 2.78322
+  },
+  {
+   "z_benzene": 0.9,
+   "P_bar": 1.01325,
+   "T_K": 359.737,
+   "y": [
+    0.9,
+    0.1
+   ],
+   "x": [
+    0.78457,
+    0.21543
+   ],
+   "phi_liquid": [
+    1.18641,
+    0.475018
+   ],
+   "phi_vapor": [
+    0.9727299999999999,
+    0.962469
+   ],
+   "H_kJ_kmol": 5589.73,
+   "S_kJ_kmol_K": 19.7413,
+   "density_kg_m3": 2.77442
+  },
+  {
+   "z_benzene": 0.9,
+   "P_bar": 1.01325,
+   "T_K": 360.789,
+   "y": [
+    0.9,
+    0.1
+   ],
+   "x": [
+    0.785269,
+    0.214731
+   ],
+   "phi_liquid": [
+    1.22193,
+    0.491309
+   ],
+   "phi_vapor": [
+    0.9729380000000001,
+    0.962756
+   ],
+   "H_kJ_kmol": 5700.29,
+   "S_kJ_kmol_K": 20.0482,
+   "density_kg_m3": 2.76567
+  },
+  {
+   "z_benzene": 0.9,
+   "P_bar": 1.01325,
+   "T_K": 361.842,
+   "y": [
+    0.9,
+    0.1
+   ],
+   "x": [
+    0.785961,
+    0.214039
+   ],
+   "phi_liquid": [
+    1.25824,
+    0.508036
+   ],
+   "phi_vapor": [
+    0.9731440000000001,
+    0.96304
+   ],
+   "H_kJ_kmol": 5811.17,
+   "S_kJ_kmol_K": 20.3551,
+   "density_kg_m3": 2.75699
+  },
+  {
+   "z_benzene": 0.9,
+   "P_bar": 1.01325,
+   "T_K": 362.895,
+   "y": [
+    0.9,
+    0.1
+   ],
+   "x": [
+    0.786647,
+    0.213353
+   ],
+   "phi_liquid": [
+    1.29536,
+    0.525207
+   ],
+   "phi_vapor": [
+    0.973348,
+    0.9633219999999999
+   ],
+   "H_kJ_kmol": 5922.39,
+   "S_kJ_kmol_K": 20.662,
+   "density_kg_m3": 2.74836
+  },
+  {
+   "z_benzene": 0.9,
+   "P_bar": 1.01325,
+   "T_K": 363.947,
+   "y": [
+    0.9,
+    0.1
+   ],
+   "x": [
+    0.787326,
+    0.212674
+   ],
+   "phi_liquid": [
+    1.33329,
+    0.542831
+   ],
+   "phi_vapor": [
+    0.973549,
+    0.9636009999999999
+   ],
+   "H_kJ_kmol": 6033.92,
+   "S_kJ_kmol_K": 20.9689,
+   "density_kg_m3": 2.73979
+  },
+  {
+   "z_benzene": 0.9,
+   "P_bar": 1.01325,
+   "T_K": 365.0,
+   "y": [
+    0.9,
+    0.1
+   ],
+   "x": [
+    0.788,
+    0.212
+   ],
+   "phi_liquid": [
+    1.37205,
+    0.560916
+   ],
+   "phi_vapor": [
+    0.9737490000000001,
+    0.963877
+   ],
+   "H_kJ_kmol": 6145.79,
+   "S_kJ_kmol_K": 21.2758,
+   "density_kg_m3": 2.73127
+  },
+  {
+   "z_benzene": 0.5,
+   "P_bar": 2.0,
+   "T_K": 380.0,
+   "y": [
+    0.694768,
+    0.305232
+   ],
+   "x": [
+    0.5,
+    0.5
+   ],
+   "phi_liquid": [
+    1.02796,
+    0.443045
+   ],
+   "phi_vapor": [
+    0.9536669999999999,
+    0.935555
+   ],
+   "H_kJ_kmol": -22799.2,
+   "S_kJ_kmol_K": -53.7971,
+   "density_kg_m3": 797.362
+  },
+  {
+   "z_benzene": 0.5,
+   "P_bar": 2.0,
+   "T_K": 381.316,
+   "y": [
+    0.693807,
+    0.306193
+   ],
+   "x": [
+    0.5,
+    0.5
+   ],
+   "phi_liquid": [
+    1.06149,
+    0.45965799999999996
+   ],
+   "phi_vapor": [
+    0.9540909999999999,
+    0.936144
+   ],
+   "H_kJ_kmol": -22584.3,
+   "S_kJ_kmol_K": -53.2325,
+   "density_kg_m3": 795.866
+  },
+  {
+   "z_benzene": 0.5,
+   "P_bar": 2.0,
+   "T_K": 382.632,
+   "y": [
+    0.692853,
+    0.307147
+   ],
+   "x": [
+    0.5,
+    0.5
+   ],
+   "phi_liquid": [
+    1.09582,
+    0.476743
+   ],
+   "phi_vapor": [
+    0.95451,
+    0.936726
+   ],
+   "H_kJ_kmol": -22368.7,
+   "S_kJ_kmol_K": -52.668,
+   "density_kg_m3": 794.361
+  },
+  {
+   "z_benzene": 0.5,
+   "P_bar": 2.0,
+   "T_K": 383.947,
+   "y": [
+    0.691903,
+    0.308097
+   ],
+   "x": [
+    0.5,
+    0.5
+   ],
+   "phi_liquid": [
+    1.13093,
+    0.49430900000000005
+   ],
+   "phi_vapor": [
+    0.9549239999999999,
+    0.937301
+   ],
+   "H_kJ_kmol": -22152.4,
+   "S_kJ_kmol_K": -52.1036,
+   "density_kg_m3": 792.847
+  },
+  {
+   "z_benzene": 0.5,
+   "P_bar": 2.0,
+   "T_K": 385.263,
+   "y": [
+    0.690959,
+    0.309041
+   ],
+   "x": [
+    0.5,
+    0.5
+   ],
+   "phi_liquid": [
+    1.16686,
+    0.5123639999999999
+   ],
+   "phi_vapor": [
+    0.9553329999999999,
+    0.9378700000000001
+   ],
+   "H_kJ_kmol": -21935.4,
+   "S_kJ_kmol_K": -51.5393,
+   "density_kg_m3": 791.322
+  },
+  {
+   "z_benzene": 0.5,
+   "P_bar": 2.0,
+   "T_K": 386.579,
+   "y": [
+    0.690021,
+    0.309979
+   ],
+   "x": [
+    0.5,
+    0.5
+   ],
+   "phi_liquid": [
+    1.20359,
+    0.530915
+   ],
+   "phi_vapor": [
+    0.955738,
+    0.938432
+   ],
+   "H_kJ_kmol": -21717.6,
+   "S_kJ_kmol_K": -50.9751,
+   "density_kg_m3": 789.787
+  },
+  {
+   "z_benzene": 0.5,
+   "P_bar": 2.0,
+   "T_K": 387.895,
+   "y": [
+    0.689087,
+    0.310913
+   ],
+   "x": [
+    0.5,
+    0.5
+   ],
+   "phi_liquid": [
+    1.24115,
+    0.549971
+   ],
+   "phi_vapor": [
+    0.956138,
+    0.938988
+   ],
+   "H_kJ_kmol": -21499.1,
+   "S_kJ_kmol_K": -50.4109,
+   "density_kg_m3": 788.242
+  },
+  {
+   "z_benzene": 0.5,
+   "P_bar": 2.0,
+   "T_K": 389.211,
+   "y": [
+    0.688159,
+    0.311841
+   ],
+   "x": [
+    0.5,
+    0.5
+   ],
+   "phi_liquid": [
+    1.27955,
+    0.5695410000000001
+   ],
+   "phi_vapor": [
+    0.956533,
+    0.939537
+   ],
+   "H_kJ_kmol": -21280.0,
+   "S_kJ_kmol_K": -49.8468,
+   "density_kg_m3": 786.687
+  },
+  {
+   "z_benzene": 0.5,
+   "P_bar": 2.0,
+   "T_K": 390.526,
+   "y": [
+    0.684152,
+    0.315848
+   ],
+   "x": [
+    0.496423,
+    0.503577
+   ],
+   "phi_liquid": [
+    1.3188,
+    0.5896210000000001
+   ],
+   "phi_vapor": [
+    0.956927,
+    0.940073
+   ],
+   "H_kJ_kmol": -20490.6,
+   "S_kJ_kmol_K": -47.8239,
+   "density_kg_m3": 212.773
+  },
+  {
+   "z_benzene": 0.5,
+   "P_bar": 2.0,
+   "T_K": 391.842,
+   "y": [
+    0.646865,
+    0.353135
+   ],
+   "x": [
+    0.455638,
+    0.544362
+   ],
+   "phi_liquid": [
+    1.35915,
+    0.610133
+   ],
+   "phi_vapor": [
+    0.957354,
+    0.94053
+   ],
+   "H_kJ_kmol": -13882.7,
+   "S_kJ_kmol_K": -30.9298,
+   "density_kg_m3": 23.1906
+  },
+  {
+   "z_benzene": 0.5,
+   "P_bar": 2.0,
+   "T_K": 393.158,
+   "y": [
+    0.608294,
+    0.391706
+   ],
+   "x": [
+    0.416045,
+    0.583955
+   ],
+   "phi_liquid": [
+    1.4003599999999998,
+    0.631194
+   ],
+   "phi_vapor": [
+    0.957782,
+    0.940984
+   ],
+   "H_kJ_kmol": -7477.22,
+   "S_kJ_kmol_K": -14.6119,
+   "density_kg_m3": 12.4548
+  },
+  {
+   "z_benzene": 0.5,
+   "P_bar": 2.0,
+   "T_K": 394.474,
+   "y": [
+    0.568409,
+    0.431591
+   ],
+   "x": [
+    0.377591,
+    0.622409
+   ],
+   "phi_liquid": [
+    1.44245,
+    0.652811
+   ],
+   "phi_vapor": [
+    0.9582120000000001,
+    0.9414359999999999
+   ],
+   "H_kJ_kmol": -1022.85,
+   "S_kJ_kmol_K": 1.77482,
+   "density_kg_m3": 8.49631
+  },
+  {
+   "z_benzene": 0.5,
+   "P_bar": 2.0,
+   "T_K": 395.789,
+   "y": [
+    0.527174,
+    0.472826
+   ],
+   "x": [
+    0.340197,
+    0.659803
+   ],
+   "phi_liquid": [
+    1.48542,
+    0.674991
+   ],
+   "phi_vapor": [
+    0.958643,
+    0.941887
+   ],
+   "H_kJ_kmol": 5735.46,
+   "S_kJ_kmol_K": 18.8782,
+   "density_kg_m3": 6.37544
+  },
+  {
+   "z_benzene": 0.5,
+   "P_bar": 2.0,
+   "T_K": 397.105,
+   "y": [
+    0.5,
+    0.5
+   ],
+   "x": [
+    0.317106,
+    0.682894
+   ],
+   "phi_liquid": [
+    1.5291700000000001,
+    0.697763
+   ],
+   "phi_vapor": [
+    0.959052,
+    0.9423600000000001
+   ],
+   "H_kJ_kmol": 10420.7,
+   "S_kJ_kmol_K": 30.7052,
+   "density_kg_m3": 5.43757
+  },
+  {
+   "z_benzene": 0.5,
+   "P_bar": 2.0,
+   "T_K": 398.421,
+   "y": [
+    0.5,
+    0.5
+   ],
+   "x": [
+    0.318003,
+    0.681997
+   ],
+   "phi_liquid": [
+    1.57362,
+    0.721145
+   ],
+   "phi_vapor": [
+    0.959414,
+    0.9428719999999999
+   ],
+   "H_kJ_kmol": 10588.8,
+   "S_kJ_kmol_K": 31.1278,
+   "density_kg_m3": 5.41686
+  },
+  {
+   "z_benzene": 0.5,
+   "P_bar": 2.0,
+   "T_K": 399.737,
+   "y": [
+    0.5,
+    0.5
+   ],
+   "x": [
+    0.318896,
+    0.681104
+   ],
+   "phi_liquid": [
+    1.6189600000000002,
+    0.7451049999999999
+   ],
+   "phi_vapor": [
+    0.959771,
+    0.9433779999999999
+   ],
+   "H_kJ_kmol": 10757.4,
+   "S_kJ_kmol_K": 31.5502,
+   "density_kg_m3": 5.39632
+  },
+  {
+   "z_benzene": 0.5,
+   "P_bar": 2.0,
+   "T_K": 401.053,
+   "y": [
+    0.5,
+    0.5
+   ],
+   "x": [
+    0.319783,
+    0.680217
+   ],
+   "phi_liquid": [
+    1.6652099999999999,
+    0.7696510000000001
+   ],
+   "phi_vapor": [
+    0.960124,
+    0.9438789999999999
+   ],
+   "H_kJ_kmol": 10926.5,
+   "S_kJ_kmol_K": 31.9726,
+   "density_kg_m3": 5.37595
+  },
+  {
+   "z_benzene": 0.5,
+   "P_bar": 2.0,
+   "T_K": 402.368,
+   "y": [
+    0.5,
+    0.5
+   ],
+   "x": [
+    0.320666,
+    0.679334
+   ],
+   "phi_liquid": [
+    1.7123599999999999,
+    0.794789
+   ],
+   "phi_vapor": [
+    0.960474,
+    0.944374
+   ],
+   "H_kJ_kmol": 11096.1,
+   "S_kJ_kmol_K": 32.3948,
+   "density_kg_m3": 5.35575
+  },
+  {
+   "z_benzene": 0.5,
+   "P_bar": 2.0,
+   "T_K": 403.684,
+   "y": [
+    0.5,
+    0.5
+   ],
+   "x": [
+    0.321543,
+    0.678457
+   ],
+   "phi_liquid": [
+    1.76044,
+    0.820527
+   ],
+   "phi_vapor": [
+    0.960819,
+    0.944864
+   ],
+   "H_kJ_kmol": 11266.1,
+   "S_kJ_kmol_K": 32.8167,
+   "density_kg_m3": 5.33571
+  },
+  {
+   "z_benzene": 0.5,
+   "P_bar": 2.0,
+   "T_K": 405.0,
+   "y": [
+    0.5,
+    0.5
+   ],
+   "x": [
+    0.322416,
+    0.677584
+   ],
+   "phi_liquid": [
+    1.80943,
+    0.846874
+   ],
+   "phi_vapor": [
+    0.961161,
+    0.9453480000000001
+   ],
+   "H_kJ_kmol": 11436.7,
+   "S_kJ_kmol_K": 33.2387,
+   "density_kg_m3": 5.31584
+  }
+ ]
+}
