@@ -9,9 +9,11 @@ from .heat_exchanger import HeatExchanger, HeatExchangerResult, lmtd, lmtd_corre
 from .recycle import Recycle, RecycleResult
 from .gibbs_reactor import GibbsReactor, GibbsResult
 from .dstwu import ShortcutColumn, DSTWU, ShortcutResult
+from .column import RigorousColumn, ColumnResult
 
 __all__ = ['Compressor', 'CompressorResult', 'Cooler', 'CoolerResult',
            'CompressorTrain', 'TrainResult', 'FlashDrum', 'DrumResult',
            'StoichReactor', 'ReactorResult', 'EquilibriumReactor', 'EquilibriumResult',
            'reaction_thermo', 'Valve', 'ValveResult','HeatExchanger', 'HeatExchangerResult', 'lmtd',
-           'lmtd_correction_factor','Recycle','RecycleResult','GibbsReactor','GibbsResult','ShortcutColumn','DSTWU','ShortcutResult']
+           'lmtd_correction_factor','Recycle','RecycleResult','GibbsReactor','GibbsResult','ShortcutColumn',
+           'DSTWU','ShortcutResult','RigorousColumn','ColumnResult']
