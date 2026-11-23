@@ -55,7 +55,7 @@ def dwsim_method(tmp_path_factory, database):
     methods.reload_overrides()
 
 
-def _feed(database, method, T, z_b=0.5, fn=100.0):
+def _feed(database, method, T, z_b=0.5, fn=0.1):
     return Stream('feed', fm=None, comp_mass=None, fn=fn, comp_mol={'benzene': z_b, 'toluene': 1.0 - z_b},
                   V_frac=None, T=T, P=P0, Tref=298.15, Pref=1.01325, psat_factor=None, gamma=None,
                   component_data=database, kij=None, method=method, emit_warnings=False)
@@ -204,7 +204,7 @@ def test_products_against_dwsim(tutorial, ref):
     for key, stream, stage in (('distillate', r.distillate, 0), ('bottoms', r.bottoms, -1)):
         s = ref['streams'][key]
         assert stream.T == pytest.approx(s['T_K'], abs=0.004)
-        assert stream.fn == pytest.approx(s['molar_flow_mol_s'], rel=1e-9)
+        assert stream.fn * 1000.0 == pytest.approx(s['molar_flow_mol_s'], rel=1e-9)
         assert r.x[stage, 0] == pytest.approx(s['x_benzene'], abs=2e-6)
         assert stream.props.dens_mix == pytest.approx(s['density_kg_m3'], rel=2e-4)
         assert str(stream.props.phase) == 'liquid'

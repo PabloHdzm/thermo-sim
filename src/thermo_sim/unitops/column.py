@@ -30,7 +30,8 @@ Signs: ``Qc_kW`` is the heat removed in the condenser and ``Qr_kW`` the heat add
 (DWSIM prints the reboiler duty as a negative number).
 
 Flows: ``L[j]`` is the liquid leaving stage j (for the condenser, the reflux), ``V[j]`` the vapor leaving stage j
-(0 for a total condenser), both in mol/s, as the DWSIM profile tables.
+(0 for a total condenser), both in mol/s, as the DWSIM profile tables. The feed flow is read from ``Stream.fn``
+(kmol/s) and ``bottoms_flow`` is given in mol/s; the product streams are returned in kmol/s like any ``Stream``.
 """
 from __future__ import annotations
 
@@ -117,7 +118,7 @@ class RigorousColumn:
         self.th = StageThermo(feed, h_ig_correction=self.h_ig_correction)
         self.C = self.th.n
         self.P = np.full(self.N, self.P_top)
-        self.F = float(feed.fn)
+        self.F = float(feed.fn) * 1000.0          # feed flow [mol/s] (Stream.fn is kmol/s)
         if not self.B_spec < self.F:
             raise ValueError("bottoms_flow must be smaller than the feed flow")
         self.f = np.zeros((self.N, self.C))
@@ -368,9 +369,9 @@ class RigorousColumn:
         names = self.th.names
         dist = bott = None
         try:
-            dist = self.feed.at(T=float(T[0]), P=float(self.P[0]), fn=float(D),
+            dist = self.feed.at(T=float(T[0]), P=float(self.P[0]), fn=float(D) / 1000.0,
                                 comp_mol={n: float(x[0, i]) for i, n in enumerate(names)}, description='distillate')
-            bott = self.feed.at(T=float(T[N - 1]), P=float(self.P[N - 1]), fn=float(B),
+            bott = self.feed.at(T=float(T[N - 1]), P=float(self.P[N - 1]), fn=float(B) / 1000.0,
                                 comp_mol={n: float(x[N - 1, i]) for i, n in enumerate(names)}, description='bottoms')
         except Exception as exc:                  # pragma: no cover
             warnings.warn(f"product streams could not be built: {exc}", RuntimeWarning)
