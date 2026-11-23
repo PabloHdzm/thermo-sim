@@ -19,7 +19,7 @@ db = ["CoolProp"]
 sweep = ["matplotlib", "openpyxl"]
 
 [project.urls]
-Repository = "https://github.com/PabloHdzm/thermo-sim-public"
+Repository = "https://github.com/PabloHdzm/thermo-sim"
 
 [tool.setuptools.packages.find]
 where = ["src"]

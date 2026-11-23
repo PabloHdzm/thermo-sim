@@ -22,7 +22,7 @@ import math
 from dataclasses import dataclass
 
 BAR_M3_TO_KJ = 100.0                  # 1 bar * 1 m3 = 100 kJ
-_VAPOR = ('vapor')
+_VAPOR = ('vapor',)
 _MODES = ('isentropic', 'polytropic')
 
 
@@ -89,7 +89,9 @@ class Compressor:
 
     @staticmethod
     def _state(inlet, T: float, P: float, where: str = ''):
-        st = inlet.at(T=T, P=P)
+        # A saturated-vapor inlet re-evaluated at its own (T, P) sits exactly on the dew point, where the phase
+        # label depends on round-off; the inlet already is that state, so it is used as is.
+        st = inlet if (T == inlet.T and P == inlet.P) else inlet.at(T=T, P=P)
         if st.props.phase not in _VAPOR:
             raise ValueError(
                 f"Compressor needs vapor; got phase "
