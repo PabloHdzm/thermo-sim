@@ -6,7 +6,35 @@ obtained from simulation runs performed by the author. No DWSIM code
 is used or distributed in this repository. DWSIM is an independent
 open-source project, and this repository is not affiliated with it.
 
-## How the case was produced
+## Contents
+
+All files are in `reference_data/dwsim/`. Each case lists the DWSIM setup, what is compared and
+what is excluded, and the test that uses it. Every number was read from a DWSIM 10.2.12.0 run
+made by the author; no DWSIM code is used. DWSIM prints fugacity coefficients divided by 1e5,
+"Molar Enthalpy" and "Molar Entropy" without formation terms, and "Energy Flow" with them.
+
+| Case | Files | Test |
+|---|---|---|
+| H2/N2/NH3 flash at 150 bar | `ammonia_loop_feed_150bar.json` | `test_dwsim_ammonia_feed.py` |
+| H2/N2/NH3 grids: PR, SRK, PRSV2 | `ammonia_feed_grid.csv`, `_srk.csv`, `_prsv2.csv`, `ammonia_pure_prsv2.csv` | `test_dwsim_grid.py`, `test_dwsim_pure.py` |
+| Ammonia synthesis loop | `ammonia_loop_streams.csv`, `ammonia_loop_units.json`, `ammonia_loop_cp.json` | `test_dwsim_loop.py` |
+| Equilibrium reactor | `equilibrium_reactor.csv` | `test_equilibrium_reactor.py` |
+| Propane refrigeration cycle | `propane_cycle_streams.csv`, `propane_cycle_units.json` | `test_dwsim_cycle.py` |
+| Phase envelopes | `<case>_phase_envelope*.json` and `.csv` | `test_dwsim_phase_envelope.py` |
+| Benzene/toluene flash and pure components | `flash_benzene_toluene.json`, `pure_component_properties_benzene_toluene.json` | `test_flash_dwsim_benzene_toluene.py`, `test_pure_components_dwsim.py` |
+| Shortcut column (DSTWU) | `dstwu_benzene_toluene.json` | `test_dstwu.py` |
+| Rigorous column | `rigorous_column_benzene_toluene.json` | `test_column.py` |
+| Water-gas shift | `wgs_reactors.json` | `test_wgs_reactors.py` |
+| Methanol synthesis | `methanol_synthesis.json` | `test_methanol_synthesis.py` |
+| Natural gas dew-point control | `natgas_dew_point_control.json` | `test_natgas_dew_point_control.py` |
+| Heat exchanger | `heat_exchanger_water.json` | `test_heat_exchanger.py` |
+| Recycle loop | `recycle_loop_water.json` | `test_recycle_loop.py` |
+| Entropy of mixing | `natgas_phase_envelope.json` and the cases above | `test_dwsim_mixing_entropy.py`, [`docs/validation_dwsim_entropy_mixing.md`](../../docs/validation_dwsim_entropy_mixing.md) |
+
+The comparisons are discussed in [`docs/validation_unit_operations.md`](../../docs/validation_unit_operations.md)
+and [`docs/validation_distillation.md`](../../docs/validation_distillation.md).
+
+## How the case was produced (H2/N2/NH3 flash)
 
 - Components: hydrogen, nitrogen, ammonia (ordered by critical
   temperature).
@@ -380,7 +408,8 @@ Standard state of the formation data: the formation Gibbs energy of NH3 in the d
 data (the formation entropy differs by R ln 1.01325). `EquilibriumReactor` uses P0 = 1 bar by
 default, consistent with the database; compare with DWSIM using `P_ref=1.01325`.
 
-Carbon monoxide is not in the packaged database, so the water-gas shift is not part of the tests.
+The water-gas shift (CO + H2O <-> CO2 + H2) is validated in three reactors against the DWSIM
+"Reaction Systems" tutorial; see [Water-gas shift](#water-gas-shift-reaction-systems-tutorial).
 
 ## Propane refrigeration cycle (valve, condenser, evaporator)
 
@@ -468,7 +497,7 @@ The cricondenbar of DWSIM is its maximum on a 1 K grid, so it can only be at or 
 
 Known differences, not model differences: DWSIM reports P = 1E-5 bar on the phase identification
 curve below 178.42 K (natgas); its Pi = 1 points carry finite-difference noise of about 5e-4 in P.
-`tests/test_phase_envelope.py` adds six mixtures of very different volatility with no DWSIM data
+The DWSIM comparison is `tests/test_dwsim_phase_envelope.py`; `tests/test_phase_envelope.py` adds six mixtures of very different volatility with no DWSIM data
 (binaries from ethane/propane to methane/pentane): consistency of the trace, residuals and extrema.
 
 ### PH diagram (natgas, enthalpy in kJ/kg)
@@ -565,3 +594,103 @@ The critical volume agrees to 2e-7 relative (DWSIM prints it in m3/mol, see abov
 ### Initialization of the dew branch
 
 DWSIM can also run the dew branch with default initialization (it starts at the lowest temperature it reaches, not at 1.01325 bar), as it does the bubble branch; in DWSIM the results do not change. `import_dwsim_phase_envelope.py CASE CUSTOM.txt DEFAULT.txt` writes both branches of the default-initialization export as `bubble_default_init` and `dew_default_init`; the tests and `compare_dwsim_phase_envelope.py` pick up every P-T section present (`branch_sections`), and like the bubble branch only the points above 1.01325 bar are compared, since thermo-sim traces both branches from 1.01325 bar and needs no initialization options. For natgas the dew branch was exported with and without custom initialization (`dew` and `dew_default_init`, 237 and 139 points, steps of 0.25 bar and 2.5 K): both start at 1.01325 bar and follow the same curve (max distance to thermo-sim 0.0072 and 0.0077 in (K, 100 ln P)), so unlike the bubble branch, which starts at 85.75 K and 0.05 bar without initialization, the dew branch does not depend on it. The bubble branch is the one that needs the initialization: from low pressure its K values are poorly known.
+# Benzene/toluene: flash and pure components
+
+Peng-Robinson with the DWSIM constants stored in `dstwu_benzene_toluene.json` (`constants_dwsim`),
+all kij zero, Inside-Out flash.
+
+`flash_benzene_toluene.json`:
+
+- `saturation_points`: bubble and dew temperatures from P-VF sensitivity analyses (VF 0 and VF 1),
+  5 compositions x 10 pressures (0.5 to 5 bar).
+- `pt_flash_points`: temperature sweeps through the two-phase window (1.01325 bar at z = 0.1, 0.5, 0.9,
+  and 2 bar at 0.5).
+- `ph_ps_roundtrip`: PH and PS flashes specified with the enthalpy and entropy of PT states.
+- In a single-phase row the columns x and y are DWSIM's stability-trial phase, not a real phase. The
+  vapor fraction is not reported; it follows from the lever rule on the DWSIM x and y.
+
+`pure_component_properties_benzene_toluene.json`: pure benzene and toluene at 1.01325 bar, 300 to 400 K,
+with DWSIM's ideal-gas Cp coefficients. DWSIM enthalpy and entropy exclude the formation terms, so the
+tests compare differences (a constant offset per component and phase). The liquid heat capacity of
+thermo-sim is 0.4 to 0.8 % below the one implied by the DWSIM enthalpies; the cause is the ideal-gas Cp
+polynomial (integrating the DWSIM polynomial against the database one reproduces the difference), and
+the EOS departure terms agree.
+
+The entropy of mixing in the two-phase and mixture entropy follows an empirical rule, presented as a
+hypothesis with its evidence in `docs/validation_dwsim_entropy_mixing.md`.
+
+# Shortcut column (DSTWU)
+
+`dstwu_benzene_toluene.json`: a DWSIM Shortcut Column behind a heater (300 K to 370 K), feed 100 mol/s
+50/50, total condenser, R = 3, 5 % light key in the bottoms and 5 % heavy key in the distillate,
+1.01325 bar. `additional_cases` holds the 70/30 and 90/10 feeds as vapor, the 90/10 feed as subcooled
+liquid, a partial condenser, column pressures of 2 bar and 1.01325/1.2 bar, and reflux ratios 2 and 10.
+The notes in the file give the recovered algorithm (one alpha at the feed state, Eduljee form of
+Gilliland, feed stage from the Fenske minimum stages of each section). Height and diameter are DWSIM
+estimates; the height is reproduced by `0.5 (N + 2)`, a hypothesis, and the diameter is not compared.
+
+# Rigorous column (MESH)
+
+`rigorous_column_benzene_toluene.json`: DWSIM tutorial, 30 stages including condenser (stage 1) and
+reboiler (stage 30), feed 100 mol/s 50/50 preheated to 370 K at stage 15, total condenser, reflux
+ratio 3, bottoms 50 mol/s, 1.01325 bar, Naphtali-Sandholm solver. It stores the 30-stage profile (T, P, L,
+V, x, y), the products, the preheated feed and the duties (condenser 6062.86 kW, reboiler 3787.81 kW).
+
+Conventions: `L` is the liquid leaving the stage (stage 1: the reflux of 150 mol/s, the distillate leaves
+separately) and `V` the vapor leaving it (0 for the total condenser). The feed enters stage 15 with
+liquid and vapor together. At 370 K the feed is two-phase (vapor fraction 0.721625) although the tutorial
+text calls it saturated liquid. DWSIM prints the reboiler duty as negative. "Iterations Taken: 0" is
+meaningless and is not used. Height and diameter are not compared.
+
+# Water-gas shift (Reaction Systems tutorial)
+
+`wgs_reactors.json`: CO + H2O <-> CO2 + H2 in three isothermal reactors fed with the same stream
+(10 mol/s, 600 K, 10.1325 bar, 40/40/10/10 mol % CO/H2O/CO2/H2): Conversion (80 % of CO), Equilibrium
+(`ln K = 4577.8/T - 4.33`) and Gibbs (element balance). `adiabatic` and `defined_temperature` hold
+the same reactors in adiabatic mode and with a defined outlet temperature of 700 K.
+
+- The tutorial text expects H2 near 0.28 in the products; DWSIM gives 0.42 for the Conversion reactor
+  (the 0.32 produced is added to the 0.10 already in the feed). The CO value agrees with the text.
+- DWSIM's energy flow includes the formation enthalpy, "Molar Enthalpy" does not; the reactor duty is
+  the energy flow out minus the energy flow in.
+- Product streams show a liquid flow of about 1e-14 mol/s (numerical residue); the products are vapor.
+- DWSIM's equilibrium product does not satisfy its own expression exactly (`ln K` differs by 0.0069);
+  the Gibbs product implies `ln K` 0.0377 above the expression, because DWSIM's Gibbs reactor uses its
+  own thermochemistry. The conventions of the equilibrium reactor (P0 = 1 atm, `ln K` at T + 1 K) are
+  in the section on the equilibrium reactor.
+
+# Methanol synthesis (single pass)
+
+`methanol_synthesis.json`: DWSIM "Methanol Synthesis" tutorial without recycle. Syngas (3 mol/s,
+H2:CO = 2:1, 300 K, 30 bar) -> compressor (adiabatic, 75 %, 80 bar) -> heater (525 K) -> equilibrium
+reactor (isothermal 525 K, `ln K = 11833/T - 29.07`) -> cooler (308 K) -> separator.
+
+- The separator report of DWSIM swaps the labels of its two mass flows; the stream table is consistent
+  and is what is stored.
+- The tutorial text gives H2/CO = 2.0 in the recycle gas; DWSIM gives 2.007 (CO is slightly more soluble
+  in the liquid).
+- As in the water-gas shift, the DWSIM product does not satisfy its own expression exactly, and the
+  standard-state pressure (1 bar or 1.01325 bar) matters here because the change in moles is -2; the
+  tests compare both against the DWSIM extent.
+
+# Natural gas dew-point control
+
+`natgas_dew_point_control.json`: DWSIM tutorial, wellhead gas (methane to pentane, 100 mol/s, 320 K,
+70 bar) -> chiller (240 K) -> adiabatic separator. Stores the feed, the chiller duty, the outlet
+flows and compositions, the C3+ recovery and the dew and bubble temperatures. The critical constants
+and binary parameters are DWSIM's, taken from `natgas_phase_envelope.json` (the same mixture as the
+phase envelope).
+
+# Heat exchanger
+
+`heat_exchanger_water.json`: DWSIM "Heat Exchanger Design" tutorial, water on both sides (IAPWS-IF97
+steam tables in DWSIM). The base case specifies UA with pressure drops; `case_max_duty`, `case_hot_vf`
+and `case_cold_vf` hold the same streams at the maximum duty and with the outlet vapor fraction of
+either side specified. Each case stores inputs, outlet streams and results (heat load, LMTD,
+maximum theoretical heat exchange, thermal efficiency).
+
+# Recycle loop
+
+`recycle_loop_water.json`: DWSIM "Recycle Loops" tutorial, water (steam tables). Fresh feed and
+recycle -> heater (350 K) -> 70/30 splitter, 30 % to the recycle. Stores the inputs, every stream
+and the recycle block's tolerances and final errors.
