@@ -264,12 +264,17 @@ def test_more_reflux_improves_purity_and_costs_energy(database, dwsim_method):
 
 
 @pytest.mark.parametrize('kwargs, exc', [
-    (dict(reflux_ratio=3.0), NotImplementedError),                                  # needs the bottoms flow
+    (dict(reflux_ratio=3.0), ValueError),                                           # needs a reboiler specification
     (dict(reflux_ratio=3.0, bottoms_flow=50.0, condenser='partial'), NotImplementedError),
     (dict(reflux_ratio=3.0, bottoms_flow=50.0, pressure_drop=0.2), NotImplementedError),
     (dict(reflux_ratio=3.0, bottoms_flow=50.0, efficiency=0.7), NotImplementedError),
     (dict(reflux_ratio=3.0, bottoms_flow=50.0, solver='wang_henke'), NotImplementedError),
     (dict(reflux_ratio=-1.0, bottoms_flow=50.0), ValueError),
+    (dict(distillate_flow=50.0, bottoms_flow=50.0), ValueError),                    # D + B fix the same split
+    (dict(condenser_duty=6000.0, reboiler_duty=3800.0), ValueError),                # Qc + Qr ill-posed
+    (dict(reflux_ratio=3.0, distillate_flow=50.0, bottoms_flow=50.0), ValueError),  # two condenser specifications
+    (dict(reflux_ratio=3.0, bottoms_flow=50.0, boilup_ratio=2.0), ValueError),      # two reboiler specifications
+    (dict(bottoms_flow=50.0), ValueError),                                          # no condenser specification
 ])
 def test_unsupported_and_invalid_options(kwargs, exc):
     with pytest.raises(exc):
@@ -285,3 +290,50 @@ def test_feed_stage_must_be_a_tray(stage):
 def test_bottoms_flow_must_be_smaller_than_the_feed(feed):
     with pytest.raises(ValueError):
         RigorousColumn(30, 15, P0, reflux_ratio=3.0, bottoms_flow=100.0).solve(feed)
+
+
+# ---------------------------------------------------------------------------------------------------------------------
+# phase 2a: other specification types. Round trip: the tutorial solution gives the value of each new specification,
+# and imposing it must recover the same profile.
+# ---------------------------------------------------------------------------------------------------------------------
+_ROUND_TRIP = {
+    'R+Qr': dict(reflux_ratio=3.0, reboiler_duty='Qr'),
+    'R+boil': dict(reflux_ratio=3.0, boilup_ratio='boil'),
+    'D+Qr': dict(distillate_flow=50.0, reboiler_duty='Qr'),
+    'D+boil': dict(distillate_flow=50.0, boilup_ratio='boil'),
+    'Qc+B': dict(condenser_duty='Qc', bottoms_flow=50.0),
+    'Qc+boil': dict(condenser_duty='Qc', boilup_ratio='boil'),
+}
+
+
+@pytest.mark.parametrize('name', list(_ROUND_TRIP))
+def test_specification_round_trip_recovers_the_tutorial(feed, tutorial, name):
+    _, base = tutorial
+    vals = {'Qr': base.Qr_kW, 'Qc': base.Qc_kW, 'boil': base.boilup_ratio}
+    kw = {k: (vals[v] if isinstance(v, str) else v) for k, v in _ROUND_TRIP[name].items()}
+    r = RigorousColumn(30, 15, P0, **kw).solve(feed)
+    assert r.converged
+    assert np.max(np.abs(r.T - base.T)) < 1e-4
+    assert abs(r.D - base.D) < 1e-5 and abs(r.reflux_ratio - 3.0) < 1e-6
+    assert abs(r.Qc_kW - base.Qc_kW) < 1e-3 and abs(r.Qr_kW - base.Qr_kW) < 1e-3
+
+
+def test_dwsim_duties_as_specifications_recover_the_dwsim_profile(feed, ref):
+    """The DWSIM duties (Qr 3787.81 kW) imposed as specifications land on the DWSIM split within the column tolerance."""
+    r = RigorousColumn(30, 15, P0, reflux_ratio=3.0, reboiler_duty=3787.81).solve(feed)
+    assert r.converged
+    assert abs(r.B - 50.0) < 0.02 and abs(r.Qc_kW - 6062.86) / 6062.86 < 5e-4
+
+
+@pytest.mark.parametrize('kw, check', [
+    (dict(reflux_ratio=3.0, reboiler_duty=3500.0), lambda r: abs(r.Qr_kW - 3500.0) < 1e-3 and abs(r.reflux_ratio - 3.0) < 1e-6),
+    (dict(distillate_flow=45.0, reboiler_duty=3787.744), lambda r: abs(r.D - 45.0) < 1e-6 and abs(r.Qr_kW - 3787.744) < 1e-3),
+    (dict(reflux_ratio=3.0, boilup_ratio=2.5), lambda r: abs(r.boilup_ratio - 2.5) < 1e-8 and abs(r.reflux_ratio - 3.0) < 1e-6),
+    (dict(condenser_duty=5800.0, bottoms_flow=48.0), lambda r: abs(r.Qc_kW - 5800.0) < 1e-3 and abs(r.B - 48.0) < 1e-6),
+])
+def test_off_tutorial_specifications_are_met_and_balances_close(feed, kw, check):
+    r = RigorousColumn(30, 15, P0, **kw).solve(feed)
+    assert r.converged and check(r)
+    assert abs(r.D + r.B - 100.0) < 1e-6
+    assert abs(r.energy_balance_error_kW) < 1e-4
+    assert r.x[0, 0] > 0.9 and r.x[-1, 1] > 0.9
